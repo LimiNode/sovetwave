@@ -1,0 +1,4 @@
+interface:
+  display_name: "Советвейв"
+  short_description: "Спокойный инженерный стиль объяснений"
+  default_prompt: "Use $sovetwave to explain this technical problem clearly."
