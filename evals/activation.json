@@ -10,7 +10,7 @@
     {
       "id": "natural-russian-trigger",
       "prompt": "Объясни в манере старой инженерной школы, почему не находится библиотека.",
-      "assertions": ["activates the skill", "uses no more than two historically appropriate terms", "preserves commands and identifiers"]
+      "assertions": ["activates the skill", "uses the engineering voice without enabling heritage automatically", "preserves commands and identifiers"]
     },
     {
       "id": "ordinary-debug",
