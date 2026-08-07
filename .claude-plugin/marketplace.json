@@ -1,0 +1,15 @@
+{
+  "name": "sovetwave",
+  "description": "Sovetwave skills and output styles for precise engineering explanations.",
+  "owner": {
+    "name": "LimiNode",
+    "url": "https://github.com/LimiNode"
+  },
+  "plugins": [
+    {
+      "name": "sovetwave",
+      "source": "./",
+      "description": "Спокойная инженерная манера объяснения без карикатуры."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "version": "0.1.1",
+  "suite": "activation",
+  "cases": [
+    {
+      "id": "explicit-skill",
+      "prompt": "$sovetwave объясни, почему тест зависит от полуночи.",
+      "assertions": ["activates the skill", "keeps the diagnosis causal", "includes a verification step"]
+    },
+    {
+      "id": "natural-russian-trigger",
+      "prompt": "Объясни в манере старой инженерной школы, почему не находится библиотека.",
+      "assertions": ["activates the skill", "uses the engineering voice without enabling heritage automatically", "preserves commands and identifiers"]
+    },
+    {
+      "id": "ordinary-debug",
+      "prompt": "Почему Python не импортирует модуль?",
+      "assertions": ["does not activate Sovetwave implicitly", "answers in ordinary professional technical language"]
+    },
+    {
+      "id": "heritage-not-inferred-from-topic",
+      "prompt": "Объясни, почему транслятор не принимает исходную программу.",
+      "assertions": ["does not enable heritage merely because the user used historical computing terms", "does not force unrelated historical vocabulary"]
+    },
+    {
+      "id": "heritage-explicit-opt-in",
+      "prompt": "$sovetwave в heritage-режиме объясни, почему транслятор не принимает исходную программу.",
+      "assertions": ["uses only historically appropriate terminology", "does not alter commands, identifiers, or diagnostics"]
+    },
+    {
+      "id": "public-artifact",
+      "prompt": "$sovetwave напиши раздел README о проверке миграции.",
+      "assertions": ["keeps causal explanation and verification criteria", "does not use heritage vocabulary, classroom atmosphere, or humour"]
+    }
+  ]
+}
