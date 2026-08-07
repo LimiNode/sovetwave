@@ -19,3 +19,20 @@ jobs:
         run: python evals/validate_evals.py
       - name: Test voice-card selector
         run: python evals/test_voice_cards.py
+
+  installer-smoke:
+    name: Installer smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test POSIX installer
+        if: runner.os == 'Linux'
+        run: bash tests/installers/smoke.sh
+      - name: Test PowerShell installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/installers/smoke.ps1
