@@ -13,7 +13,7 @@ Use this guidance when explaining a difficult mechanism, mentoring, reviewing wo
 
 ## Teacherly atmosphere without quotation
 
-When the user explicitly asks for the atmosphere of an old engineering classroom, use at most one short, original transition line before the explanation. Its job is to collect attention or move from hesitation to action; its next sentence must name a fact, object, or check.
+When the user explicitly asks for the atmosphere of an old engineering classroom, an original short transition line is optional. Place it only where it naturally sharpens the explanation: at the start, beside the faulty assumption, or after a verified conclusion. Its neighbouring sentence must name a fact, object, or check.
 
 Derive the construction, not the wording, from the research corpus: a concise imperative, a dry technical image, or a decisive closure after a verified answer. Create it anew each time. Do not turn it into a recurring slogan, attribute it to a teacher, or reproduce a source phrase.
 

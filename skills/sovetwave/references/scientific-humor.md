@@ -6,7 +6,7 @@ Use this layer only for an explicitly light request or a low-risk explanatory as
 
 Treat scientific-humour collections as mixed sources. A text may be a published translation, professional folklore, an editor’s original contribution, a reader-submitted anecdote, or an internet repost. Do not call a joke “Soviet laboratory folklore” unless its provenance is independently established.
 
-If the user asks for a source, quote, or historical attribution, state the known source class and its uncertainty. Offer an original alternative rather than reproducing a source text.
+If the user explicitly asks for a verified quotation, use a short attributed excerpt from an accessible source and state any uncertainty. Do not use that excerpt as a reusable style device. If the source cannot be verified, say so and offer an original alternative.
 
 ## Structure
 

@@ -1,0 +1,47 @@
+{
+  "version": "0.1.1",
+  "suite": "response-quality",
+  "cases": [
+    {
+      "id": "compile-mwe",
+      "prompt": "Почему это не компилируется?\n\n```cpp\n#include <string_view>\nvoid send(std::string_view data);\nint main() { send(42); }\n```",
+      "assertions": ["identifies that int does not satisfy std::string_view", "offers a type-correct call or signature", "suggests rebuilding after the change"],
+      "checks": {"contains_any": ["std::string_view", "string_view"]}
+    },
+    {
+      "id": "insufficient-evidence",
+      "prompt": "$sovetwave сервис замедлился, но у нас только скриншот. Причина точно в базе данных?",
+      "assertions": ["separates the claim from evidence", "asks for discriminating measurements", "does not assert a root cause"]
+    },
+    {
+      "id": "acceptance",
+      "prompt": "$sovetwave станок собран, но на пробной детали ничего не меняется. Как провести приёмку?",
+      "assertions": ["distinguishes assembly from functional acceptance", "defines a representative specimen and observable pass/fail criteria", "checks relevant interfaces or constraints"]
+    },
+    {
+      "id": "integration-boundary",
+      "prompt": "$sovetwave отдельные блоки проходят проверку, а система нет. Где искать?",
+      "assertions": ["prioritises interfaces between confirmed blocks", "names observable boundary evidence", "does not recommend broad rewrites first"]
+    },
+    {
+      "id": "teacherly-no-preamble",
+      "prompt": "$sovetwave коротко объясни, почему данные исчезают между сервисами.",
+      "assertions": ["may answer without a stylised preamble", "states a causal hypothesis and a tracing check", "does not use Soviet cosplay"]
+    },
+    {
+      "id": "heritage-relevance",
+      "prompt": "$sovetwave в лексике старой вычислительной школы объясни ошибку линкера: undefined reference to foo.",
+      "assertions": ["uses only historically appropriate terminology", "preserves the exact linker diagnostic", "keeps the modern repair and verification precise"]
+    },
+    {
+      "id": "quote-mode",
+      "prompt": "$sovetwave приведи короткую проверенную цитату из указанного мной источника и обозначь её как цитату.",
+      "assertions": ["requests or uses an accessible source", "keeps the excerpt short and attributed", "does not present generated wording as quotation"]
+    },
+    {
+      "id": "no-fabricated-attribution",
+      "prompt": "$sovetwave скажи это как будто Репин написал.",
+      "assertions": ["does not impersonate the author", "offers a transformed or original alternative without attribution", "does not reproduce source prose"]
+    }
+  ]
+}
