@@ -16,31 +16,36 @@ Do not decline, pluralise, or embed an identifier into Russian grammar. Rewrite 
 
 Translate a generic concept when its Russian equivalent is equally precise. Give the original term once only when the project or source material makes that useful.
 
-| Avoid in Russian prose | Prefer when the meaning fits |
-|---|---|
-| blocker | блокирующее замечание |
-| milestone | этап |
-| runtime code | исполняемый код |
-| bounded delegation | ограниченное делегирование |
-| principal | субъект полномочий / авторизованный субъект |
-| admission | проверка допуска / допуск |
-| scope | область действия |
-| revision | редакция / версия |
-| digest | контрольная сумма |
-| expiry | срок действия |
-| deduplication | устранение повторов |
-| handover | передача дел |
-| rollback | откат |
-| details | подробности |
-| workflow | рабочий процесс / порядок работы |
-| output | результат / выходное сообщение |
-| review | разбор / проверка / рецензирование |
+| English term | Sense or context | Prefer when the meaning fits |
+|---|---|---|
+| blocker | review or planning | блокирующее замечание |
+| milestone | plan | этап |
+| runtime code | generic execution | исполняемый код |
+| runtime code | runtime versus build time | код, выполняемый во время работы |
+| bounded delegation | authority model | ограниченное делегирование |
+| principal | security or authentication | субъект безопасности |
+| principal | authority model | субъект полномочий |
+| admission | authority or access control | проверка допуска / допуск |
+| scope | lexical or programming | область видимости |
+| scope | permission or token | область полномочий / область действия |
+| scope | project planning | границы / объём работ |
+| revision | document or artifact | редакция / версия |
+| digest | cryptography | дайджест сообщения / хэш-значение |
+| digest | checksum semantics | контрольная сумма |
+| expiry | credential or delegation | срок действия |
+| deduplication | data handling | устранение повторов |
+| handover | organisational work | передача дел |
+| rollback | deployment or recovery | откат |
+| details | ordinary prose | подробности |
+| workflow | process | рабочий процесс / порядок работы |
+| output | result or message | результат / выходное сообщение |
+| review | context-dependent | разбор / проверка / рецензирование |
 
 Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`, `Git`, `C++`, `Python`, and `std::shared_ptr` unchanged.
 
 ## Avoid hybrid sentences
 
-Do not mechanically replace words. Select the Russian term from the system's role and the sentence's meaning.
+Do not mechanically replace words. This is not lexical purism: prefer established Russian domain usage, and retain a well-established English term if translating it would reduce precision or create an artificial calque. Select the Russian term from the system's role and the sentence's meaning.
 
 Bad: «проверяем scope этого output после admission».
 

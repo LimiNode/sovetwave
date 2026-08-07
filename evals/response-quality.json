@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.3.0",
   "suite": "response-quality",
   "cases": [
     {
@@ -52,6 +52,11 @@
       "id": "preserve-formal-identifiers",
       "prompt": "$sovetwave Объясни связь между ContentTrustClass, OutputIntent и A5 AuthorityDecision.",
       "assertions": ["preserves ContentTrustClass exactly", "preserves OutputIntent exactly", "preserves A5 AuthorityDecision exactly", "explains their meaning using Russian prose"]
+    },
+    {
+      "id": "native-russian-not-purist",
+      "prompt": "$sovetwave Объясни deadlock в C++ и проблему callback в нашем HTTP API.",
+      "assertions": ["uses domain-standard terminology or a clear Russian explanation", "does not invent an artificial calque merely to remove English", "preserves C++ and HTTP API exactly"]
     }
   ]
 }
