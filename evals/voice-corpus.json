@@ -5,7 +5,7 @@
     {
       "id": "card-selection",
       "prompt": "$sovetwave объясни проверку собранной установки для производственного образца.",
-      "assertions": ["selects only acceptance or production-relevant anchors", "uses no more than three cards", "transforms card wording instead of quoting it"]
+      "assertions": ["selects only acceptance and manufacturing-relevant anchors", "uses no more than three cards", "transforms card wording instead of quoting it"]
     },
     {
       "id": "no-compulsory-preamble",

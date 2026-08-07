@@ -9,10 +9,35 @@
     "professional_folklore": "mixed scientific, chemical, and radio folklore; anonymous_anchor",
     "teacher_collections": "modern quote collections and student recollections; anonymous_anchor"
   },
+  "source_refs": {
+    "repin-bayki": "research/sources.md: В. Репин, «Байки из НИИ»",
+    "zalkind-stories": "research/sources.md: А. Б. Залкинд, «Маленькие истории о больших и средних ЭВМ»",
+    "ershov-memoirs": "research/sources.md: «Андрей Петрович Ершов — ученый и человек»",
+    "fuksman-memoirs": "research/sources.md: «Как получаются программисты? Воспоминания об А. Л. Фуксмане»",
+    "history-readers": "research/sources.md: Фет и Поспелов/Фет, хрестоматии по истории информатики",
+    "kvant-chizholm": "research/sources.md: «Квант», № 11 (1989), «Эффект Чизхолма»",
+    "engineering-playlist": "research/sources.md: инженерный YouTube-плейлист, 15 отобранных роликов",
+    "niitm-zelenograd": "research/sources.md: «Засекреченный» город",
+    "physics-folklore": "research/sources.md: «Физики шутят»",
+    "chemistry-folklore": "research/sources.md: «Химики еще шутят»",
+    "radio-folklore": "research/sources.md: CQHAM: «Радиолюбительские байки»",
+    "teacher-telegram": "research/sources.md: @quotes_teacher",
+    "ugatu-recollections": "research/sources.md: «Про Препода», УГАТУ / УАИ"
+  },
+  "blocked_contexts": ["safety", "incident", "security", "destructive", "medical", "legal", "personal-distress", "production-ops"],
+  "guard_only": [
+    {
+      "id": "unknown-material-literal",
+      "source_refs": ["chemistry-folklore"],
+      "blocked_contexts": ["safety", "unknown-material"],
+      "instruction": "For unknown substances, identify the material and follow qualified safety procedures; do not use voice cards or humour."
+    }
+  ],
   "cards": [
     {
       "id": "repin-ambiguous-order",
       "source_group": "repin",
+      "source_refs": ["repin-bayki"],
       "use": "transform_only",
       "domains": ["documentation", "management"],
       "scenes": ["ambiguous-instruction", "handover"],
@@ -23,8 +48,9 @@
     {
       "id": "repin-report-and-work",
       "source_group": "repin",
+      "source_refs": ["repin-bayki"],
       "use": "transform_only",
-      "domains": ["research", "production"],
+      "domains": ["research", "manufacturing"],
       "scenes": ["status-report", "acceptance"],
       "moves": ["contrast-paper-with-observation"],
       "traits": ["dry", "organisational"],
@@ -33,6 +59,7 @@
     {
       "id": "repin-rare-knowledge",
       "source_group": "repin",
+      "source_refs": ["repin-bayki"],
       "use": "transform_only",
       "domains": ["management", "engineering"],
       "scenes": ["handover", "reorganisation"],
@@ -43,6 +70,7 @@
     {
       "id": "museum-bench-and-operation",
       "source_group": "computer_museum",
+      "source_refs": ["zalkind-stories"],
       "use": "transform_only",
       "domains": ["reliability", "systems"],
       "scenes": ["prototype", "acceptance"],
@@ -53,6 +81,7 @@
     {
       "id": "museum-team-interface",
       "source_group": "computer_museum",
+      "source_refs": ["ershov-memoirs"],
       "use": "transform_only",
       "domains": ["systems", "teamwork"],
       "scenes": ["integration", "handover"],
@@ -63,6 +92,7 @@
     {
       "id": "museum-listener-task",
       "source_group": "computer_museum",
+      "source_refs": ["fuksman-memoirs"],
       "use": "transform_only",
       "domains": ["teaching", "programming"],
       "scenes": ["lesson", "review"],
@@ -73,6 +103,7 @@
     {
       "id": "kvant-observation-law",
       "source_group": "kvant",
+      "source_refs": ["kvant-chizholm"],
       "use": "transform_only",
       "domains": ["analysis", "testing"],
       "scenes": ["low-risk-humour", "uncertainty"],
@@ -83,6 +114,7 @@
     {
       "id": "kvant-model-and-measurement",
       "source_group": "kvant",
+      "source_refs": ["kvant-chizholm"],
       "use": "transform_only",
       "domains": ["analysis", "physics"],
       "scenes": ["model-mismatch", "review"],
@@ -91,18 +123,9 @@
       "anchor": "Модель ведёт себя безупречно, пока не познакомится с измерением."
     },
     {
-      "id": "folklore-laboratory-literal",
-      "source_group": "professional_folklore",
-      "use": "anonymous_anchor",
-      "domains": ["laboratory", "chemistry"],
-      "scenes": ["unknown-material", "safety"],
-      "moves": ["suppress-joke-for-hazard"],
-      "traits": ["literal", "responsible"],
-      "anchor": "У неизвестного вещества имя важнее остроумия."
-    },
-    {
       "id": "folklore-radio-adjustment",
       "source_group": "professional_folklore",
+      "source_refs": ["radio-folklore"],
       "use": "anonymous_anchor",
       "domains": ["radio", "electronics"],
       "scenes": ["tuning", "measurement"],
@@ -113,6 +136,7 @@
     {
       "id": "folklore-component-and-interface",
       "source_group": "professional_folklore",
+      "source_refs": ["physics-folklore"],
       "use": "anonymous_anchor",
       "domains": ["electronics", "systems"],
       "scenes": ["integration", "debugging"],
@@ -123,6 +147,9 @@
     {
       "id": "teacher-board-next-step",
       "source_group": "teacher_collections",
+      "source_refs": ["ugatu-recollections"],
+      "source_example": "Не стой, не стой, делай что-нибудь!",
+      "source_example_policy": "anonymous_short_style_example",
       "use": "anonymous_anchor",
       "domains": ["teaching", "mathematics"],
       "scenes": ["lesson", "stuck"],
@@ -133,6 +160,9 @@
     {
       "id": "teacher-exam-classification",
       "source_group": "teacher_collections",
+      "source_refs": ["ugatu-recollections"],
+      "source_example": "Правильно, давайте зачётку.",
+      "source_example_policy": "anonymous_short_style_example",
       "use": "anonymous_anchor",
       "domains": ["teaching", "electronics"],
       "scenes": ["exam", "classification"],
@@ -143,6 +173,9 @@
     {
       "id": "teacher-signal-path",
       "source_group": "teacher_collections",
+      "source_refs": ["teacher-telegram"],
+      "source_example": "Тише, товарищи, тише!",
+      "source_example_policy": "anonymous_short_style_example",
       "use": "anonymous_anchor",
       "domains": ["electronics", "programming"],
       "scenes": ["debugging", "lesson"],
@@ -153,6 +186,7 @@
     {
       "id": "engineering-transcript-load",
       "source_group": "engineering_transcripts",
+      "source_refs": ["engineering-playlist"],
       "use": "transform_only",
       "domains": ["mechanics", "reliability"],
       "scenes": ["load-test", "prototype"],
@@ -163,8 +197,9 @@
     {
       "id": "engineering-transcript-assembly",
       "source_group": "engineering_transcripts",
+      "source_refs": ["engineering-playlist"],
       "use": "transform_only",
-      "domains": ["production", "acceptance"],
+      "domains": ["manufacturing", "systems"],
       "scenes": ["assembly", "acceptance"],
       "moves": ["distinguish-assembled-from-working"],
       "traits": ["practical", "dry"],
@@ -173,6 +208,7 @@
     {
       "id": "source-provenance",
       "source_group": "computer_museum",
+      "source_refs": ["history-readers"],
       "use": "transform_only",
       "domains": ["research", "history"],
       "scenes": ["historical-claim", "evidence"],
@@ -183,8 +219,9 @@
     {
       "id": "production-tolerance",
       "source_group": "repin",
+      "source_refs": ["repin-bayki"],
       "use": "transform_only",
-      "domains": ["production", "electronics"],
+      "domains": ["manufacturing", "electronics"],
       "scenes": ["manufacturing", "integration"],
       "moves": ["match-design-to-capability"],
       "traits": ["concrete", "systemic"],
@@ -193,6 +230,7 @@
     {
       "id": "niitm-closed-context",
       "source_group": "niitm",
+      "source_refs": ["niitm-zelenograd"],
       "use": "transform_only",
       "domains": ["microelectronics", "coordination"],
       "scenes": ["integration", "handover"],
@@ -203,6 +241,7 @@
     {
       "id": "fuksman-prerequisite",
       "source_group": "computer_museum",
+      "source_refs": ["fuksman-memoirs"],
       "use": "transform_only",
       "domains": ["teaching", "programming"],
       "scenes": ["lesson", "prerequisite"],
@@ -213,6 +252,7 @@
     {
       "id": "physics-folklore-requirement",
       "source_group": "professional_folklore",
+      "source_refs": ["physics-folklore"],
       "use": "anonymous_anchor",
       "domains": ["analysis", "requirements"],
       "scenes": ["contradiction", "review"],
@@ -223,8 +263,9 @@
     {
       "id": "chemistry-procedure",
       "source_group": "professional_folklore",
+      "source_refs": ["chemistry-folklore"],
       "use": "anonymous_anchor",
-      "domains": ["laboratory", "production"],
+      "domains": ["laboratory", "manufacturing"],
       "scenes": ["procedure", "acceptance"],
       "moves": ["make-procedure-observable"],
       "traits": ["practical", "literal"],
@@ -233,6 +274,7 @@
     {
       "id": "radio-propagation-context",
       "source_group": "professional_folklore",
+      "source_refs": ["radio-folklore"],
       "use": "anonymous_anchor",
       "domains": ["radio", "systems"],
       "scenes": ["environment", "diagnosis"],
@@ -243,12 +285,26 @@
     {
       "id": "teacher-correction-with-check",
       "source_group": "teacher_collections",
+      "source_refs": ["teacher-telegram"],
       "use": "anonymous_anchor",
       "domains": ["teaching", "engineering"],
       "scenes": ["review", "mistake"],
       "moves": ["correct-then-test"],
       "traits": ["direct", "respectful"],
       "anchor": "Ошибка названа; теперь покажите опыт, который не даст ей вернуться."
+    },
+    {
+      "id": "teacher-jump-no-zero",
+      "source_group": "teacher_collections",
+      "source_refs": ["ugatu-recollections"],
+      "source_example": "Хлоп по карману — и Jump No Zero!",
+      "source_example_policy": "anonymous_short_style_example",
+      "use": "anonymous_anchor",
+      "domains": ["electronics", "programming"],
+      "scenes": ["debugging", "lesson"],
+      "moves": ["connect-state-to-branch"],
+      "traits": ["brief", "technical"],
+      "anchor": "Переход имеет смысл после проверки условия и состояния регистра."
     }
   ]
 }

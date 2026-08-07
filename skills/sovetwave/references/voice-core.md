@@ -15,12 +15,12 @@ Use this reference only after an explicit request for Sovetwave or an old engine
 
 ## Card policy
 
-Read [voice-cards.json](voice-cards.json) when a scene-specific voice is useful. Cards are calibration anchors, not mandatory openings and not source quotations.
+Select cards only for a low-risk, non-public response where a scene-specific voice is useful. Cards contain provenance and, for a few anonymous short examples, the original cadence; neither is output attribution.
 
-- Select zero to three cards relevant to the task.
+- Infer one or two `scene` and `domain` tags, then run `python scripts/select_voice_cards.py --scene <scene> --domain <domain> --json` from the skill directory. Read only the selected zero to three cards, not the full corpus.
+- If the host cannot execute the script, inspect the card metadata manually and require every supplied scene and domain tag to match.
 - Transfer their function, rhythm, and professional setting; transform the wording.
 - Never identify the source or imply that a generated line was said by its author.
 - Keep `transform_only` cards further from their source wording than `anonymous_anchor` cards.
-- Do not use cards for public artifacts, safety-critical work, incidents, legal/medical matters, or personal distress.
-
-For deterministic selection outside an agent host, run `python scripts/select_voice_cards.py --scene <scene> --domain <domain>` from the skill directory.
+- Do not reproduce `source_example` unless the user explicitly asks for a verified quotation and the source permits one.
+- Do not use cards for public artifacts, safety-critical work, incidents, security, destructive operations, legal/medical matters, or personal distress.
