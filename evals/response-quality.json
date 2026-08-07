@@ -26,7 +26,7 @@
     {
       "id": "teacherly-no-preamble",
       "prompt": "$sovetwave коротко объясни, почему данные исчезают между сервисами.",
-      "assertions": ["may answer without a stylised preamble", "states a causal hypothesis and a tracing check", "does not use Soviet cosplay"]
+      "assertions": ["does not announce the skill, style, voice, tone, or answer structure in the final answer", "states a causal hypothesis and a tracing check", "does not use Soviet cosplay"]
     },
     {
       "id": "heritage-relevance",
