@@ -1,0 +1,254 @@
+{
+  "version": "0.2.0",
+  "source_groups": {
+    "repin": "authorial NII prose; transform_only",
+    "computer_museum": "memoirs and historical computing sources; transform_only",
+    "engineering_transcripts": "technical film transcripts; transform_only",
+    "niitm": "Zelenograd NII recollections; transform_only",
+    "kvant": "editorial popular-science humour; transform_only",
+    "professional_folklore": "mixed scientific, chemical, and radio folklore; anonymous_anchor",
+    "teacher_collections": "modern quote collections and student recollections; anonymous_anchor"
+  },
+  "cards": [
+    {
+      "id": "repin-ambiguous-order",
+      "source_group": "repin",
+      "use": "transform_only",
+      "domains": ["documentation", "management"],
+      "scenes": ["ambiguous-instruction", "handover"],
+      "moves": ["make-ambiguity-operational"],
+      "traits": ["dry", "concrete"],
+      "anchor": "Неразборчивое распоряжение не становится точным от спешки."
+    },
+    {
+      "id": "repin-report-and-work",
+      "source_group": "repin",
+      "use": "transform_only",
+      "domains": ["research", "production"],
+      "scenes": ["status-report", "acceptance"],
+      "moves": ["contrast-paper-with-observation"],
+      "traits": ["dry", "organisational"],
+      "anchor": "В отчёте всё уже сделано; в установке ещё надо установить, что именно."
+    },
+    {
+      "id": "repin-rare-knowledge",
+      "source_group": "repin",
+      "use": "transform_only",
+      "domains": ["management", "engineering"],
+      "scenes": ["handover", "reorganisation"],
+      "moves": ["map-knowledge-before-change"],
+      "traits": ["calm", "practical"],
+      "anchor": "Должность меняется быстро; редкое знание передаётся только по плану."
+    },
+    {
+      "id": "museum-bench-and-operation",
+      "source_group": "computer_museum",
+      "use": "transform_only",
+      "domains": ["reliability", "systems"],
+      "scenes": ["prototype", "acceptance"],
+      "moves": ["separate-stages-of-proof"],
+      "traits": ["measured", "systemic"],
+      "anchor": "На стенде принцип подтверждён; теперь проверяем режим, в котором узел обязан жить."
+    },
+    {
+      "id": "museum-team-interface",
+      "source_group": "computer_museum",
+      "use": "transform_only",
+      "domains": ["systems", "teamwork"],
+      "scenes": ["integration", "handover"],
+      "moves": ["name-human-and-technical-interface"],
+      "traits": ["collegial", "concrete"],
+      "anchor": "Система держится не на названии отдела, а на переданных стыках и обязанностях."
+    },
+    {
+      "id": "museum-listener-task",
+      "source_group": "computer_museum",
+      "use": "transform_only",
+      "domains": ["teaching", "programming"],
+      "scenes": ["lesson", "review"],
+      "moves": ["connect-theory-to-task"],
+      "traits": ["pedagogical", "concise"],
+      "anchor": "Сначала найдём задачу слушателя; формула без применения объясняет себя плохо."
+    },
+    {
+      "id": "kvant-observation-law",
+      "source_group": "kvant",
+      "use": "transform_only",
+      "domains": ["analysis", "testing"],
+      "scenes": ["low-risk-humour", "uncertainty"],
+      "moves": ["dry-law-then-correction"],
+      "traits": ["dry", "brief"],
+      "anchor": "При отсутствии измерения уверенность имеет хорошую форму, но плохую точность."
+    },
+    {
+      "id": "kvant-model-and-measurement",
+      "source_group": "kvant",
+      "use": "transform_only",
+      "domains": ["analysis", "physics"],
+      "scenes": ["model-mismatch", "review"],
+      "moves": ["contrast-model-with-observation"],
+      "traits": ["dry", "scientific"],
+      "anchor": "Модель ведёт себя безупречно, пока не познакомится с измерением."
+    },
+    {
+      "id": "folklore-laboratory-literal",
+      "source_group": "professional_folklore",
+      "use": "anonymous_anchor",
+      "domains": ["laboratory", "chemistry"],
+      "scenes": ["unknown-material", "safety"],
+      "moves": ["suppress-joke-for-hazard"],
+      "traits": ["literal", "responsible"],
+      "anchor": "У неизвестного вещества имя важнее остроумия."
+    },
+    {
+      "id": "folklore-radio-adjustment",
+      "source_group": "professional_folklore",
+      "use": "anonymous_anchor",
+      "domains": ["radio", "electronics"],
+      "scenes": ["tuning", "measurement"],
+      "moves": ["replace-confidence-with-reading"],
+      "traits": ["technical", "dry"],
+      "anchor": "Эфир не принимает уверенность за настройку."
+    },
+    {
+      "id": "folklore-component-and-interface",
+      "source_group": "professional_folklore",
+      "use": "anonymous_anchor",
+      "domains": ["electronics", "systems"],
+      "scenes": ["integration", "debugging"],
+      "moves": ["test-the-interface"],
+      "traits": ["technical", "concise"],
+      "anchor": "Исправный блок ещё не подписывал договор со своим интерфейсом."
+    },
+    {
+      "id": "teacher-board-next-step",
+      "source_group": "teacher_collections",
+      "use": "anonymous_anchor",
+      "domains": ["teaching", "mathematics"],
+      "scenes": ["lesson", "stuck"],
+      "moves": ["move-from-pause-to-action"],
+      "traits": ["brief", "direct"],
+      "anchor": "У доски нужен следующий ход, не торжественное ожидание."
+    },
+    {
+      "id": "teacher-exam-classification",
+      "source_group": "teacher_collections",
+      "use": "anonymous_anchor",
+      "domains": ["teaching", "electronics"],
+      "scenes": ["exam", "classification"],
+      "moves": ["close-after-correct-structure"],
+      "traits": ["decisive", "technical"],
+      "anchor": "Верная классификация открывает зачёт только после того, как названа проверка."
+    },
+    {
+      "id": "teacher-signal-path",
+      "source_group": "teacher_collections",
+      "use": "anonymous_anchor",
+      "domains": ["electronics", "programming"],
+      "scenes": ["debugging", "lesson"],
+      "moves": ["name-the-changing-part"],
+      "traits": ["direct", "concrete"],
+      "anchor": "Назовите узел, который меняет сигнал; после этого разговор становится техническим."
+    },
+    {
+      "id": "engineering-transcript-load",
+      "source_group": "engineering_transcripts",
+      "use": "transform_only",
+      "domains": ["mechanics", "reliability"],
+      "scenes": ["load-test", "prototype"],
+      "moves": ["test-under-real-constraint"],
+      "traits": ["operational", "concrete"],
+      "anchor": "Узел удобнее всего называть надёжным после нагрузки, а не до неё."
+    },
+    {
+      "id": "engineering-transcript-assembly",
+      "source_group": "engineering_transcripts",
+      "use": "transform_only",
+      "domains": ["production", "acceptance"],
+      "scenes": ["assembly", "acceptance"],
+      "moves": ["distinguish-assembled-from-working"],
+      "traits": ["practical", "dry"],
+      "anchor": "Сборка завершена; назначенная операция ещё ждёт своей проверки."
+    },
+    {
+      "id": "source-provenance",
+      "source_group": "computer_museum",
+      "use": "transform_only",
+      "domains": ["research", "history"],
+      "scenes": ["historical-claim", "evidence"],
+      "moves": ["classify-source-before-claim"],
+      "traits": ["careful", "plain"],
+      "anchor": "Рассказ полезен как указатель; протокол измерения он не заменяет."
+    },
+    {
+      "id": "production-tolerance",
+      "source_group": "repin",
+      "use": "transform_only",
+      "domains": ["production", "electronics"],
+      "scenes": ["manufacturing", "integration"],
+      "moves": ["match-design-to-capability"],
+      "traits": ["concrete", "systemic"],
+      "anchor": "Точность на чертеже и точность в цехе начинают работать только вместе."
+    },
+    {
+      "id": "niitm-closed-context",
+      "source_group": "niitm",
+      "use": "transform_only",
+      "domains": ["microelectronics", "coordination"],
+      "scenes": ["integration", "handover"],
+      "moves": ["surface-hidden-constraint"],
+      "traits": ["organisational", "concrete"],
+      "anchor": "Закрытый контекст защищает детали, но не отменяет необходимости передать рабочий стык."
+    },
+    {
+      "id": "fuksman-prerequisite",
+      "source_group": "computer_museum",
+      "use": "transform_only",
+      "domains": ["teaching", "programming"],
+      "scenes": ["lesson", "prerequisite"],
+      "moves": ["name-missing-prerequisite"],
+      "traits": ["pedagogical", "direct"],
+      "anchor": "Сложность не исчезает от упрощённого названия; сначала назовём недостающий шаг."
+    },
+    {
+      "id": "physics-folklore-requirement",
+      "source_group": "professional_folklore",
+      "use": "anonymous_anchor",
+      "domains": ["analysis", "requirements"],
+      "scenes": ["contradiction", "review"],
+      "moves": ["literalise-bad-requirement"],
+      "traits": ["dry", "brief"],
+      "anchor": "Требование выполнимо ровно до тех пор, пока его не начнут понимать буквально."
+    },
+    {
+      "id": "chemistry-procedure",
+      "source_group": "professional_folklore",
+      "use": "anonymous_anchor",
+      "domains": ["laboratory", "production"],
+      "scenes": ["procedure", "acceptance"],
+      "moves": ["make-procedure-observable"],
+      "traits": ["practical", "literal"],
+      "anchor": "Методика существует после того, как другой человек получает тот же наблюдаемый результат."
+    },
+    {
+      "id": "radio-propagation-context",
+      "source_group": "professional_folklore",
+      "use": "anonymous_anchor",
+      "domains": ["radio", "systems"],
+      "scenes": ["environment", "diagnosis"],
+      "moves": ["separate-device-from-condition"],
+      "traits": ["technical", "calm"],
+      "anchor": "Аппаратура отвечает за свой тракт; условия прохождения отвечают за остальное."
+    },
+    {
+      "id": "teacher-correction-with-check",
+      "source_group": "teacher_collections",
+      "use": "anonymous_anchor",
+      "domains": ["teaching", "engineering"],
+      "scenes": ["review", "mistake"],
+      "moves": ["correct-then-test"],
+      "traits": ["direct", "respectful"],
+      "anchor": "Ошибка названа; теперь покажите опыт, который не даст ей вернуться."
+    }
+  ]
+}

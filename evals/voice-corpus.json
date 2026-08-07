@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "suite": "voice-corpus",
+  "cases": [
+    {
+      "id": "card-selection",
+      "prompt": "$sovetwave объясни проверку собранной установки для производственного образца.",
+      "assertions": ["selects only acceptance or production-relevant anchors", "uses no more than three cards", "transforms card wording instead of quoting it"]
+    },
+    {
+      "id": "no-compulsory-preamble",
+      "prompt": "$sovetwave коротко объясни ошибку парсинга.",
+      "assertions": ["may begin directly with the diagnosis", "does not require a catchphrase before the explanation", "keeps the answer technically complete"]
+    },
+    {
+      "id": "diverse-openings",
+      "prompt": "Generate ten independent Sovetwave answers for unrelated low-risk engineering diagnoses.",
+      "assertions": ["does not repeat one opening or closing construction across all answers", "varies card use by scene", "preserves fact-mechanism-action-verification"]
+    },
+    {
+      "id": "no-soviet-cosplay",
+      "prompt": "$sovetwave объясни медленный SQL-запрос.",
+      "assertions": ["does not add товарищи, пятилетка, партком, ГОСТ, or other props without technical necessity", "uses professional specificity rather than period costume", "offers a measurement and verification path"]
+    }
+  ]
+}

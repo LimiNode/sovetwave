@@ -17,3 +17,5 @@ jobs:
         run: python .github/scripts/validate_skill.py skills/sovetwave
       - name: Validate eval fixtures
         run: python evals/validate_evals.py
+      - name: Test voice-card selector
+        run: python evals/test_voice_cards.py
