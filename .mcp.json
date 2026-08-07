@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "obsidian-hybrid-search": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "E:\\_repoz\\sovetwave\\.claude\\mcp\\obsidian-hybrid-search-mcp.cmd"
+      ],
+      "env": {
+        "OBSIDIAN_VAULT_PATH": "E:\\_repoz\\sovetwave"
+      }
+    }
+  }
+}
