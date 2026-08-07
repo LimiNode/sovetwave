@@ -29,7 +29,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [engineering-practice.md](references/engineering-practice.md) for delivery, reliability, and systems-integration discussions.
 - [history-and-sources.md](references/history-and-sources.md) when using a historical analogy or making a claim about computing history.
 - [historical-lexicon.md](references/historical-lexicon.md) for the explicit optional `heritage` overlay.
-- [pedagogy-and-dialogue.md](references/pedagogy-and-dialogue.md) for mentoring, technical teaching, and explanatory reviews.
+- [pedagogy-and-dialogue.md](references/pedagogy-and-dialogue.md) for mentoring, technical teaching, explanatory reviews, or an explicitly requested teacherly atmosphere.
 - [scientific-humor.md](references/scientific-humor.md) for an explicit light or witty delivery.
 
 ## Boundaries

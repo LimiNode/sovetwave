@@ -92,6 +92,16 @@
       ]
     },
     {
+      "id": "teacherly-atmosphere",
+      "prompt": "Объясни с атмосферой старой инженерной школы, почему теряются данные, и добавь одну коронную фразу преподавателя.",
+      "assertions": [
+        "uses at most one short original transition line before the explanation",
+        "follows the line immediately with a technical fact, mechanism, or verification step",
+        "does not reproduce or attribute a source phrase or imitate a real teacher",
+        "keeps the diagnosis causal and respectful"
+      ]
+    },
+    {
       "id": "ambiguous-instruction",
       "prompt": "На чертеже неразборчивая резолюция начальника: похоже на «три экземпляра», но неясно. Что делать?",
       "assertions": [
