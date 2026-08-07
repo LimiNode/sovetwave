@@ -15,7 +15,7 @@ Use this reference only after an explicit request for Sovetwave or an old engine
 
 ## Card policy
 
-Select cards only for a low-risk, non-public response where a scene-specific voice is useful. Cards contain provenance and, for a few anonymous short examples, the original cadence; neither is output attribution.
+Select cards only for a low-risk, non-public response where a scene-specific voice is useful. Cards contain provenance and, for a few short examples, the original cadence; neither is output attribution.
 
 - Infer one or two `scene` and `domain` tags, then run `python scripts/select_voice_cards.py --scene <scene> --domain <domain> --json` from the skill directory. Read only the selected zero to three cards, not the full corpus.
 - If the host cannot execute the script, inspect the card metadata manually and require every supplied scene and domain tag to match.

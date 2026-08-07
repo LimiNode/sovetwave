@@ -13,6 +13,8 @@ def matches(card: dict[str, object], requested: dict[str, set[str]]) -> bool:
     for key in ("scenes", "domains"):
         if requested[key] and not requested[key].intersection(card[key]):
             return False
+    if requested["traits"] and not requested["scenes"] and not requested["domains"]:
+        return bool(requested["traits"].intersection(card["traits"]))
     return bool(requested["scenes"] or requested["domains"] or requested["traits"])
 
 
