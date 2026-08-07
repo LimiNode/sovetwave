@@ -2,3 +2,5 @@
 temp/
 .obsidian-hybrid-search.db
 .obsidian-hybrid-search.db-*
+.mcp.json
+/.claude/mcp/

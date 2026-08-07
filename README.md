@@ -46,6 +46,16 @@ POSIX shell:
 
 Скрипты проверяют все цели до первой записи и не перезаписывают существующую установку без явного `-Force` или `--force`. По умолчанию skill для Codex ставится в `$HOME/.agents/skills/sovetwave`; устаревший путь доступен только через `-LegacyCodex` или `--legacy-codex`.
 
+Чтобы установить skill только для одного Git-репозитория, укажите его путь. Codex обнаруживает `.agents/skills` от рабочей папки до корня репозитория:
+
+```powershell
+./install.ps1 -CodexScope Repo -RepoPath E:\_repoz\my-project
+```
+
+```sh
+./install.sh --codex-scope repo --repo-path /path/to/my-project
+```
+
 После установки output style для Claude Code:
 
 1. Откройте `/config`.
@@ -60,21 +70,10 @@ POSIX shell:
 
 ```powershell
 python .github\scripts\validate_skill.py skills\sovetwave
-python evals\run_evals.py
+python evals\validate_evals.py
 ```
 
-Evals описывают ожидаемое поведение; их качественная оценка требует запуска на выбранной модели и отдельного human/LLM grading. GitHub Actions проверяет схему и целостность наборов на каждом PR.
-
-## Поиск по исследовательскому корпусу
-
-Репозиторий содержит локальную конфигурацию `obsidian-hybrid-search` для поиска по правилам, источникам и будущим стилевым карточкам. После установки CLI выполните начальную индексацию:
-
-```powershell
-npm install -g obsidian-hybrid-search
-.\.claude\mcp\obsidian-hybrid-search-cli.cmd reindex
-```
-
-Для Claude Code уже добавлен MCP-сервер в `.mcp.json`. В новой сессии сначала вызывайте `status`, затем используйте `fulltext` для точных источников и `hybrid` для поиска связанных приёмов. Локальная база индекса намеренно не входит в Git.
+Evals описывают ожидаемое поведение; их качественная оценка требует запуска на выбранной модели и отдельного human/LLM grading. GitHub Actions проверяет структурную целостность наборов на каждом PR.
 
 ## Принцип безопасности
 

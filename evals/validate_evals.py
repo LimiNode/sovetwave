@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""Validate Sovetwave eval suites and optionally check deterministic fixtures."""
+"""Validate Sovetwave eval-suite fixtures without running a model."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
 
 REQUIRED_SUITE_FIELDS = {"version": str, "suite": str, "cases": list}
 REQUIRED_CASE_FIELDS = {"id": str, "prompt": str, "assertions": list}
+CASE_ID = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
 def fail(message: str) -> None:
@@ -45,10 +47,17 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
                 errors += 1
         case_id = case.get("id")
         if isinstance(case_id, str):
+            if not CASE_ID.fullmatch(case_id):
+                fail(f"{path}: case id {case_id!r} must match {CASE_ID.pattern!r}")
+                errors += 1
             if case_id in seen_ids:
                 fail(f"duplicate eval id: {case_id}")
                 errors += 1
             seen_ids.add(case_id)
+        assertions = case.get("assertions")
+        if isinstance(assertions, list) and not all(isinstance(item, str) and item.strip() for item in assertions):
+            fail(f"{path}: assertions for {case_id!r} must be non-empty strings")
+            errors += 1
         checks = case.get("checks", {})
         if not isinstance(checks, dict):
             fail(f"{path}: checks for {case_id!r} must be an object")

@@ -15,5 +15,5 @@ jobs:
           python-version: "3.11"
       - name: Validate skill metadata
         run: python .github/scripts/validate_skill.py skills/sovetwave
-      - name: Validate eval suites
-        run: python evals/run_evals.py
+      - name: Validate eval fixtures
+        run: python evals/validate_evals.py

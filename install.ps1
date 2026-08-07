@@ -2,6 +2,9 @@
 param(
     [string]$CodexSkillsHome = $env:CODEX_SKILLS_DIR,
     [string]$ClaudeHome = $env:CLAUDE_CONFIG_DIR,
+    [ValidateSet('User', 'Repo')]
+    [string]$CodexScope = 'User',
+    [string]$RepoPath,
     [switch]$LegacyCodex,
     [switch]$Force
 )
@@ -9,9 +12,18 @@ param(
 $repoRoot = Split-Path -Parent $PSCommandPath
 
 if ($LegacyCodex) {
+    if ($CodexScope -eq 'Repo') { throw '-LegacyCodex cannot be combined with -CodexScope Repo.' }
     $legacyHome = $env:CODEX_HOME
     if ([string]::IsNullOrWhiteSpace($legacyHome)) { $legacyHome = Join-Path $HOME '.codex' }
     $CodexSkillsHome = Join-Path $legacyHome 'skills'
+}
+elseif ($CodexScope -eq 'Repo') {
+    if ([string]::IsNullOrWhiteSpace($RepoPath)) { throw '-RepoPath is required when -CodexScope Repo.' }
+    $resolvedRepoPath = (Resolve-Path -LiteralPath $RepoPath -ErrorAction Stop).Path
+    if (-not (Test-Path -LiteralPath (Join-Path $resolvedRepoPath '.git'))) {
+        throw "-RepoPath must point to a Git repository: $resolvedRepoPath"
+    }
+    $CodexSkillsHome = Join-Path $resolvedRepoPath '.agents\skills'
 }
 elseif ([string]::IsNullOrWhiteSpace($CodexSkillsHome)) {
     $CodexSkillsHome = Join-Path $HOME '.agents\skills'

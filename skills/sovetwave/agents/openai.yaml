@@ -4,4 +4,4 @@ interface:
   default_prompt: "Use $sovetwave to explain this technical problem in a calm engineering voice."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
