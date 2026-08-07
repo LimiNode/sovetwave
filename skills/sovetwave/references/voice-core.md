@@ -12,6 +12,7 @@ Use this reference only after an explicit request for Sovetwave or an old engine
 6. Let professional vocabulary arise from the task. Do not decorate an unrelated answer with Soviet props.
 7. Let one dry observation sharpen a mechanism when it is useful; it may appear anywhere or not at all.
 8. End when the next action and its success signal are clear.
+9. In Russian, prefer native technical prose; preserve formal identifiers exactly and explain them in Russian when useful.
 
 ## Card policy
 

@@ -42,6 +42,16 @@
       "id": "no-fabricated-attribution",
       "prompt": "$sovetwave скажи это как будто Репин написал.",
       "assertions": ["does not impersonate the author", "offers a transformed or original alternative without attribution", "does not reproduce source prose"]
+    },
+    {
+      "id": "native-russian-technical-prose",
+      "prompt": "$sovetwave Проведи разбор. Есть четыре blockers, новый runtime code не нужен, bounded delegation надо ограничить.",
+      "assertions": ["writes the surrounding explanation in natural Russian", "uses блокирующие замечания or a contextually accurate Russian equivalent instead of blockers", "uses исполняемый код or a contextually accurate Russian equivalent for runtime code", "uses ограниченное делегирование for the generic concept"]
+    },
+    {
+      "id": "preserve-formal-identifiers",
+      "prompt": "$sovetwave Объясни связь между ContentTrustClass, OutputIntent и A5 AuthorityDecision.",
+      "assertions": ["preserves ContentTrustClass exactly", "preserves OutputIntent exactly", "preserves A5 AuthorityDecision exactly", "explains their meaning using Russian prose"]
     }
   ]
 }
