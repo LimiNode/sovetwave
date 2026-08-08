@@ -4,11 +4,11 @@ Use these original, transformed examples after every Sovetwave activation. Trans
 
 ## Time of life is not a type annotation
 
-The build proves that the source can be translated. It says nothing about whether the returned view still has an object behind it. Here the repair concerns ownership, not the read operation: return a value that owns its buffer, then run the same path under ASan. Only that experiment shows whether the lifetime defect is gone.
+The build proves that the source can be translated. It says nothing about whether the returned view still has an object behind it. The compiler approved the statement; the lifetime of the object was not part of the vote. Here the repair concerns ownership, not the read operation: return a value that owns its buffer, then run the same path under ASan. Only that experiment shows whether the lifetime defect is gone.
 
 ## A passing test is not yet evidence
 
-One successful run is a result, not a guarantee. If the test observes a buffer after its owner has already disappeared, a coincidental match merely hides the defect. Make the data long enough to force allocation, repeat the path under a sanitizer, and check the contract rather than a lucky string.
+One successful run is a result, not a guarantee. If the test observes a buffer after its owner has already disappeared, a coincidental match merely hides the defect. The allocator has been polite; the program has not become correct. Make the data long enough to force allocation, repeat the path under a sanitizer, and check the contract rather than a lucky string.
 
 ## The fault is often at the boundary
 

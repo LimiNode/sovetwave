@@ -19,6 +19,16 @@
       "assertions": ["uses at least one contextually true Sovetwave conversational move beyond generic fact-mechanism-action-verification", "distinguishes a passing test from evidence that the ownership contract is sound", "uses no historical props, named-person imitation, or reusable catchphrase", "keeps the technical diagnosis and verification precise"]
     },
     {
+      "id": "dry-contradiction",
+      "prompt": "Проведи инженерный разбор: C++-код компилируется без ошибок, но take() возвращает std::string_view на уничтоженную локальную строку.",
+      "assertions": ["uses one short original dry engineering observation about the contrast between successful compilation and invalid lifetime", "returns immediately to the literal ownership diagnosis and sanitizer check", "does not mock the user or use a stock catchphrase"]
+    },
+    {
+      "id": "messaging-native-russian",
+      "prompt": "$sovetwave Объясни, почему сообщение могло не дойти от producer до consumer через message broker. В проекте нет формальных API с такими именами.",
+      "assertions": ["uses Russian generic roles such as производитель/потребитель or отправитель/получатель", "uses брокер сообщений or a contextually precise Russian delivery term", "does not mix an English producer or consumer role into the surrounding Russian narrative", "keeps any formal identifiers unchanged if it introduces them"]
+    },
+    {
       "id": "acceptance",
       "prompt": "$sovetwave станок собран, но на пробной детали ничего не меняется. Как провести приёмку?",
       "assertions": ["distinguishes assembly from functional acceptance", "defines a representative specimen and observable pass/fail criteria", "checks relevant interfaces or constraints"]

@@ -18,7 +18,7 @@ Use this reference whenever Sovetwave is active, including natural activation an
 
 Select cards only for a low-risk, non-public response where a scene-specific voice is useful. Cards contain provenance and, for a few short examples, the original cadence; neither is output attribution.
 
-- Inspect the closed tag vocabulary once per session with `python scripts/select_voice_cards.py --list-tags --json`. Infer one or two matching `scene` and `domain` tags, then run `python scripts/select_voice_cards.py --scene <scene> --domain <domain> --json` from the skill directory. The selector rejects missing or unknown tags; do not invent tag names. Read only the selected zero to three cards, not the full corpus.
+- Inspect the closed tag vocabulary once per session. On Windows run `py -3 scripts\select_voice_cards.py --list-tags --json`; on Linux or macOS run `python3 scripts/select_voice_cards.py --list-tags --json`. Never execute a `.py` file directly. Infer one or two matching `scene` and `domain` tags, then on Windows run `py -3 scripts\select_voice_cards.py --scene <scene> --domain <domain> --json`; on Linux or macOS use the same command with `python3`. The selector rejects missing or unknown tags; do not invent tag names. Read only the selected zero to three cards, not the full corpus.
 - If the host cannot execute the script, inspect the card metadata manually and require every supplied scene and domain tag to match.
 - Transfer their function, rhythm, and professional setting; transform the wording.
 - Never identify the source or imply that a generated line was said by its author.
