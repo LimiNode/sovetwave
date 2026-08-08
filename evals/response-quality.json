@@ -26,7 +26,7 @@
     {
       "id": "string-view-lifetime-terminology",
       "prompt": "$sovetwave Объясни дефект: take() возвращает std::string_view на локальную std::string, которая уничтожается до возврата.",
-      "assertions": ["preserves std::string_view exactly", "calls the result a dangling or non-owning string representation in natural Russian, such as висячее строковое представление or невладеющее строковое представление", "does not use the calque висячий вид", "explains that the repair concerns ownership or lifetime and gives a sanitizer check"],
+      "assertions": ["preserves std::string_view exactly", "calls the result a dangling or non-owning string representation in natural Russian, such as висячее строковое представление or невладеющее строковое представление", "does not call std::string_view a C++ reference or replace its role with ссылка", "does not use the calque висячий вид", "explains that the repair concerns ownership or lifetime and gives a sanitizer check"],
       "checks": {"contains_any": ["строковое представление", "владени", "время жизни"], "not_contains": ["висячий вид"]}
     },
     {
@@ -43,12 +43,17 @@
     {
       "id": "verify-architecture-before-diagnosis",
       "prompt": "$sovetwave Сообщение потерялось между producer и consumer через broker. Проверь проект: возможно, это только локальная очередь JobQueue.",
-      "assertions": ["does not treat producer, consumer, or broker as confirmed project entities", "establishes whether the named components exist before recommending broker-specific changes", "maps the abstract path to JobQueue or another actual project boundary when evidence supports it", "traces an observable message identifier across the confirmed route"]
+      "assertions": ["does not treat producer, consumer, or broker as confirmed project entities when repository evidence is available", "establishes whether the named components exist before recommending broker-specific changes", "maps the abstract path to JobQueue or another actual project boundary when evidence supports it", "traces an existing observable message value across the confirmed route or explicitly identifies the missing observability needed for tracing"]
     },
     {
       "id": "table-supports-causal-account",
       "prompt": "$sovetwave Проведи разбор JobQueue: take() возвращает std::string_view на локальную строку, remember_last() сохраняет представление, а доступ защищён std::mutex. Таблица допустима.",
-      "assertions": ["states the shared lifetime or ownership mechanism before or outside any table", "uses a table only as supporting detail if it uses one", "states that ownership must be repaired before synchronisation", "may use one original dry observation but does not add decorative humour"]
+      "assertions": ["states the shared lifetime or ownership mechanism before or outside any table", "uses a table only as supporting detail if it uses one", "states that synchronisation alone cannot repair the ownership or lifetime defects", "may use one original dry observation but does not add decorative humour"]
+    },
+    {
+      "id": "queue-contract-not-inferred",
+      "prompt": "$sovetwave В JobQueue take() сразу возвращает пустой результат, нет подтверждения обработки и пустая строка неотличима от пустой очереди. В требованиях о доставке ничего не сказано.",
+      "assertions": ["treats waiting, empty-payload distinction, acknowledgement, and redelivery as contract questions rather than unconditional defects", "states which delivery requirement would make each property necessary", "does not call the mutex-protected queue неблокирующей merely because take() returns immediately"]
     },
     {
       "id": "acceptance",

@@ -68,7 +68,7 @@ def main() -> int:
     parser.add_argument("--scene", action="append", default=[])
     parser.add_argument("--domain", action="append", default=[])
     parser.add_argument("--trait", action="append", default=[])
-    parser.add_argument("--max", type=int, default=3)
+    parser.add_argument("--max", type=int, default=2)
     parser.add_argument("--list-tags", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()

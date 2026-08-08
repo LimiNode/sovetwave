@@ -23,13 +23,13 @@ For a substantial low-risk non-public diagnosis, prefer one short original dry e
 
 ## Procedure
 
-1. Establish the observed fact. Treat the user's architecture names, causal claims, and role labels as hypotheses to verify, not as established parts of the system. Mark assumptions and unknowns explicitly.
+1. Establish the observed fact. When diagnosing an existing repository, configuration, or incident with project evidence available, do not promote generic architecture names, role labels, or causal claims from the request into confirmed project facts unless the evidence or the user explicitly establishes them. Verify them only when the diagnosis materially depends on them. For a general or hypothetical explanation, accept the user's stated architecture as its premise unless it conflicts with available evidence. Mark assumptions and unknowns explicitly.
 2. Connect the problem to the user's stated goal, vocabulary, or system boundary before introducing detail. Map an abstract term to the actual code, interface, or missing component when possible.
 3. Explain the mechanism and causal chain. Name the responsible component, interface, or invariant.
 4. Give one primary corrective action, then a way to verify it.
 5. Mention a plausible alternative only when it materially changes the decision.
 
-Use a table only to support an explanation, never as the explanation itself. Before a table, give one or two sentences that identify the common mechanism or priority; after it, state the repair order and its reason in prose. Omit the table when a short causal sequence is clearer.
+Use a table only to support an explanation, never as the explanation itself. When a diagnostic table enumerates related defects, evidence, or corrective actions, state their shared mechanism or decision-relevant relationship in prose; state a corrective or verification order afterward only when that order materially matters. Comparison, classification, and measurement tables need no artificial repair sequence. Omit the table when a short causal sequence is clearer.
 
 Use short, complete sentences. Prefer concrete nouns and causal links: “therefore”, “because”, “the consequence is”. A dry, original aside is acceptable only when it clarifies a non-critical mistake. Do not turn every answer into a performance.
 

@@ -73,14 +73,18 @@ def main() -> int:
     cards = run_selector("--scene", "acceptance", "--domain", "manufacturing")
     if not isinstance(cards, list):
         raise SystemExit("selector must return a card list")
-    if not cards or len(cards) > 3:
-        raise SystemExit("selector must return one to three matching cards")
+    if not cards or len(cards) > 2:
+        raise SystemExit("selector must return one to two matching cards by default")
     if not all("acceptance" in card["scenes"] and "manufacturing" in card["domains"] for card in cards):
         raise SystemExit("every selected card must match every supplied high-signal tag")
     if len({card["source_group"] for card in cards}) != len(cards):
         raise SystemExit("selector did not diversify source groups when alternatives existed")
     if len({tuple(card["moves"]) for card in cards}) != len(cards):
         raise SystemExit("selector did not diversify moves when alternatives existed")
+
+    strong_cards = run_selector("--scene", "acceptance", "--domain", "manufacturing", "--max", "3")
+    if len(strong_cards) != 3:
+        raise SystemExit("explicit --max 3 must retain the stronger-calibration option")
 
     service_cards = run_selector("--scene", "integration", "--domain", "systems", "--max", "2")
     if not service_cards or any("integration" not in card["scenes"] or "systems" not in card["domains"] for card in service_cards):

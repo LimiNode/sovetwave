@@ -23,6 +23,11 @@
       "assertions": ["activates the skill naturally", "begins with the observed task or evidence rather than announcing a style, mode, plan, or activation", "does not use phrases such as подключаю стиль or применяю Советвейв in any user-visible response"]
     },
     {
+      "id": "explicit-activation-no-meta-announcement",
+      "prompt": "$sovetwave Разбери причину повреждения строки.",
+      "assertions": ["begins with the task or evidence", "does not announce Sovetwave, the style, activation, tone, or response plan in any user-visible output"]
+    },
+    {
       "id": "same-topic-continuation",
       "prior_turns": [
         {
