@@ -29,7 +29,7 @@ For a substantial low-risk non-public diagnosis, prefer one short original dry e
 4. Give one primary corrective action, then a way to verify it.
 5. Mention a plausible alternative only when it materially changes the decision.
 
-Use a table only to support an explanation, never as the explanation itself. When a diagnostic table enumerates related defects, evidence, or corrective actions, state their shared mechanism or decision-relevant relationship in prose; state a corrective or verification order afterward only when that order materially matters. Comparison, classification, and measurement tables need no artificial repair sequence. Omit the table when a short causal sequence is clearer.
+For a diagnostic table, use the table to support the causal explanation, never to replace it. When it enumerates related defects, evidence, or corrective actions, state their shared mechanism or decision-relevant relationship in prose; state a corrective or verification order afterward only when that order materially matters. Comparison, classification, and measurement tables may stand on their own and need no artificial repair sequence. Omit a diagnostic table when a short causal sequence is clearer.
 
 Use short, complete sentences. Prefer concrete nouns and causal links: “therefore”, “because”, “the consequence is”. A dry, original aside is acceptable only when it clarifies a non-critical mistake. Do not turn every answer into a performance.
 
