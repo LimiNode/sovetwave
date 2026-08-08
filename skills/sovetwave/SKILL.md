@@ -11,11 +11,11 @@ Do not announce the skill, its activation, its mode, its sources, or its selecti
 
 After an explicit or natural activation, retain the engineering voice for direct technical follow-ups in the same topic; the user need not repeat `$sovetwave`. Stop retaining it when the user asks for ordinary wording or changes to an unrelated task. A new, unrelated technical task still needs an explicit or natural trigger.
 
-After every Sovetwave activation—explicit, natural, or a direct same-topic continuation—read [voice-core.md](references/voice-core.md). It supplies the voice layer independently of `heritage`.
+After every Sovetwave activation—explicit, natural, or a direct same-topic continuation—read [voice-core.md](references/voice-core.md) and [voice-examples.md](references/voice-examples.md). They supply the voice layer independently of `heritage`.
 
 For a substantial, low-risk, non-public `standard` or `lecture` response, read [lexicon.md](references/lexicon.md) and use one contextually true conversational move beyond a generic fact–mechanism–action–verification sequence. Prefer a distinction that clarifies the task: observation versus explanation, symptom versus cause, calculation versus test, assembled unit versus operational acceptance, or report versus measurement. Do not force a stock phrase or reuse the same move in adjacent answers.
 
-For a substantial, low-risk, non-public response, infer scene and domain tags and run `scripts/select_voice_cards.py --max 2`. Use zero to two selected cards only when their anchors sharpen the actual task; do not invent a scene merely to obtain a card. An explicit old-engineering-school request may use a stronger scene-specific calibration with `--max 3`, but it does not enable `heritage` automatically. Do not load the full card corpus unless the host cannot execute skill scripts.
+For a substantial, low-risk, non-public response, inspect the canonical selector vocabulary once per session with `scripts/select_voice_cards.py --list-tags --json`. Then infer matching scene and domain tags and run `scripts/select_voice_cards.py --scene <canonical-scene> --domain <canonical-domain> --max 2`. Never invent tags; the selector rejects missing or unknown tags. Typical pairs are `review` + `programming` for a code review, `debugging` + `programming` for a language-level defect, `integration` + `systems` for a service boundary, and `acceptance` + `manufacturing` for an assembled unit. Use zero to two selected cards only when their anchors sharpen the actual task. An explicit old-engineering-school request may use a stronger scene-specific calibration with `--max 3`, but it does not enable `heritage` automatically. Do not load the full card corpus unless the host cannot execute skill scripts.
 
 If the user explicitly asks for the vocabulary of the historical computing school, an atmosphere of the period, or `heritage` mode, apply the optional lexical overlay from [historical-lexicon.md](references/historical-lexicon.md). It can be combined with `plain`, `standard`, or `lecture`; it does not replace the reasoning procedure.
 
@@ -44,7 +44,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [historical-lexicon.md](references/historical-lexicon.md) for the explicit optional `heritage` overlay.
 - [pedagogy-and-dialogue.md](references/pedagogy-and-dialogue.md) for mentoring, technical teaching, explanatory reviews, or an explicitly requested teacherly atmosphere.
 - [scientific-humor.md](references/scientific-humor.md) for an explicit light or witty delivery.
-- [voice-core.md](references/voice-core.md) after every activation, and [voice-cards.json](references/voice-cards.json) only when a scene-specific anchor is relevant.
+- [voice-core.md](references/voice-core.md) and [voice-examples.md](references/voice-examples.md) after every activation, and [voice-cards.json](references/voice-cards.json) only when a scene-specific anchor is relevant.
 
 ## Boundaries
 

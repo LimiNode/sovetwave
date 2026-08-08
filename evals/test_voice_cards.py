@@ -16,7 +16,7 @@ CORPUS = ROOT / "skills" / "sovetwave" / "references" / "voice-cards.json"
 SOURCE_REGISTRY = ROOT / "research" / "sources.md"
 
 
-def run_selector(*arguments: str, expected_returncode: int = 0) -> list[dict[str, object]]:
+def run_selector(*arguments: str, expected_returncode: int = 0) -> object:
     environment = dict(os.environ)
     environment["PYTHONUTF8"] = "1"
     result = subprocess.run(
@@ -28,6 +28,19 @@ def run_selector(*arguments: str, expected_returncode: int = 0) -> list[dict[str
     if result.returncode != expected_returncode:
         raise SystemExit(result.stderr or f"selector exited with {result.returncode}")
     return json.loads(result.stdout) if result.stdout else []
+
+
+def assert_selector_error(*arguments: str, fragment: str) -> None:
+    environment = dict(os.environ)
+    environment["PYTHONUTF8"] = "1"
+    result = subprocess.run(
+        [sys.executable, str(SELECTOR), *arguments, "--json"],
+        capture_output=True,
+        encoding="utf-8",
+        env=environment,
+    )
+    if result.returncode != 2 or fragment not in result.stderr:
+        raise SystemExit(result.stderr or "selector did not report the expected error")
 
 
 def main() -> int:
@@ -51,7 +64,15 @@ def main() -> int:
                 if not card.get("claimed_attribution") or card.get("output_attribution") is not False:
                     raise SystemExit("unverified short examples must keep attribution provenance and suppress output attribution")
 
+    tags = run_selector("--list-tags")
+    if not isinstance(tags, dict) or {"scenes", "domains", "traits", "blocked_contexts"} != set(tags):
+        raise SystemExit("--list-tags must return the complete tag vocabulary")
+    if "review" not in tags["scenes"] or "programming" not in tags["domains"]:
+        raise SystemExit("--list-tags omitted a canonical review/programming tag")
+
     cards = run_selector("--scene", "acceptance", "--domain", "manufacturing")
+    if not isinstance(cards, list):
+        raise SystemExit("selector must return a card list")
     if not cards or len(cards) > 3:
         raise SystemExit("selector must return one to three matching cards")
     if not all("acceptance" in card["scenes"] and "manufacturing" in card["domains"] for card in cards):
@@ -64,10 +85,10 @@ def main() -> int:
     repeated = run_selector("--scene", "acceptance", "--domain", "manufacturing")
     if cards != repeated:
         raise SystemExit("selector tie-breaking must be deterministic")
-    if run_selector("--scene", "nowhere", "--domain", "nothing") != []:
-        raise SystemExit("selector must return [] when no card matches")
-    if run_selector("--trait", "nonexistent") != []:
-        raise SystemExit("trait-only selection must return [] when no trait matches")
+    assert_selector_error("--scene", "nowhere", "--domain", "nothing", fragment="unknown scene")
+    assert_selector_error("--scene", "code_review", "--domain", "cpp", fragment="unknown scene")
+    assert_selector_error(fragment="provide at least one")
+    assert_selector_error("--trait", "nonexistent", fragment="unknown trait")
     trait_cards = run_selector("--trait", "dry")
     if not trait_cards or not all("dry" in card["traits"] for card in trait_cards):
         raise SystemExit("trait-only selection must return only matching cards")
