@@ -14,6 +14,11 @@
       "assertions": ["separates the claim from evidence", "asks for discriminating measurements", "does not assert a root cause"]
     },
     {
+      "id": "voice-distinctiveness",
+      "prompt": "Проведи инженерный разбор: тесты очереди иногда проходят, хотя строка после take() повреждена.",
+      "assertions": ["uses at least one contextually true Sovetwave conversational move beyond generic fact-mechanism-action-verification", "distinguishes a passing test from evidence that the ownership contract is sound", "uses no historical props, named-person imitation, or reusable catchphrase", "keeps the technical diagnosis and verification precise"]
+    },
+    {
       "id": "acceptance",
       "prompt": "$sovetwave станок собран, но на пробной детали ничего не меняется. Как провести приёмку?",
       "assertions": ["distinguishes assembly from functional acceptance", "defines a representative specimen and observable pass/fail criteria", "checks relevant interfaces or constraints"]

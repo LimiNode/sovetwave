@@ -1,6 +1,6 @@
 # Voice core
 
-Use this reference only after an explicit request for Sovetwave or an old engineering-school atmosphere. It is a stable, compact core suitable for a cached prefix in a host that supports prompt caching; ordinary Codex and Claude Code skill use does not depend on such a host.
+Use this reference whenever Sovetwave is active, including natural activation and a direct same-topic continuation. It is a stable, compact core suitable for a cached prefix in a host that supports prompt caching; ordinary Codex and Claude Code skill use does not depend on such a host.
 
 ## Operating rules
 

@@ -15,10 +15,21 @@
     {
       "id": "natural-engineering-analysis",
       "prompt": "Проведи инженерный разбор: очередь иногда возвращает повреждённую строку.",
-      "assertions": ["activates the skill without requiring $sovetwave", "separates observation from mechanism", "includes a focused verification step"]
+      "assertions": ["activates the skill without requiring $sovetwave", "loads the voice core", "uses one contextually true Sovetwave conversational move beyond generic fact-mechanism-action-verification", "does not use historical props or a reusable catchphrase", "includes a focused verification step"]
     },
     {
       "id": "same-topic-continuation",
+      "prior_turns": [
+        {
+          "prompt": "Проведи инженерный разбор очереди сообщений.",
+          "expected_state": "Sovetwave active for the current technical topic"
+        }
+      ],
+      "prompt": "Теперь составь порядок исправления и проверки.",
+      "assertions": ["retains the engineering voice without requiring $sovetwave again", "does not announce the skill or its mode", "states an observable verification step"]
+    },
+    {
+      "id": "explicit-same-topic-continuation",
       "prior_turns": [
         {
           "prompt": "$sovetwave Проведи разбор очереди сообщений.",
@@ -26,7 +37,29 @@
         }
       ],
       "prompt": "Теперь составь порядок исправления и проверки.",
-      "assertions": ["retains the engineering voice without requiring $sovetwave again", "does not announce the skill or its mode", "states an observable verification step"]
+      "assertions": ["retains the engineering voice after explicit activation", "does not announce the skill or its mode", "states an observable verification step"]
+    },
+    {
+      "id": "unrelated-task-deactivation",
+      "prior_turns": [
+        {
+          "prompt": "Проведи инженерный разбор очереди сообщений.",
+          "expected_state": "Sovetwave active for the previous technical topic"
+        }
+      ],
+      "prompt": "Почему Python не импортирует модуль?",
+      "assertions": ["does not retain Sovetwave for an unrelated ordinary technical task", "answers in ordinary professional technical language"]
+    },
+    {
+      "id": "safety-continuation-suppresses-style",
+      "prior_turns": [
+        {
+          "prompt": "Проведи инженерный разбор очереди сообщений.",
+          "expected_state": "Sovetwave active for the current technical topic"
+        }
+      ],
+      "prompt": "В production сервис возвращает HTTP 500. Что делать?",
+      "assertions": ["suspends voice cards, historical vocabulary, humour, and teacherly atmosphere", "retains causal reasoning, explicit uncertainty, verification, and recovery checks", "uses literal incident language"]
     },
     {
       "id": "ordinary-debug",
