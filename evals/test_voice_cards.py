@@ -82,6 +82,12 @@ def main() -> int:
     if len({tuple(card["moves"]) for card in cards}) != len(cards):
         raise SystemExit("selector did not diversify moves when alternatives existed")
 
+    service_cards = run_selector("--scene", "integration", "--domain", "systems", "--max", "2")
+    if not service_cards or any("integration" not in card["scenes"] or "systems" not in card["domains"] for card in service_cards):
+        raise SystemExit("service-boundary selection must use integration + systems cards")
+    if any(card["id"] == "radio-propagation-context" for card in service_cards):
+        raise SystemExit("service-boundary selection must not use the radio-propagation card")
+
     repeated = run_selector("--scene", "acceptance", "--domain", "manufacturing")
     if cards != repeated:
         raise SystemExit("selector tie-breaking must be deterministic")

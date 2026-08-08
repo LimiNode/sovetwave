@@ -43,6 +43,12 @@ Translate a generic concept when its Russian equivalent is equally precise. Give
 
 Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`, `Git`, `C++`, `Python`, and `std::shared_ptr` unchanged.
 
+## C++ ownership and waiting
+
+Name the ownership property before naming the symptom. `std::string_view` is a formal type name; preserve it exactly. In Russian prose, call its generic role a «невладеющее строковое представление». If it refers to storage whose lifetime has ended, use «висячее строковое представление» or state literally that the representation refers to destroyed storage. Do not call it «висячий вид» or «возвращённый вид»: those calques hide both the string and the ownership issue.
+
+Do not call a queue «неблокирующей» merely because `take()` returns immediately when it is empty. With a `std::mutex`, it is not lock-free; with no `std::condition_variable`, it simply does not wait for an element. State the exact property that matters: «извлечение не ожидает появления элемента», «очередь не реализует ожидающее извлечение» or, when true, «очередь реализована без блокировок».
+
 ## Avoid hybrid sentences
 
 Do not mechanically replace words. This is not lexical purism: prefer established Russian domain usage, and retain a well-established English term if translating it would reduce precision or create an artificial calque. Select the Russian term from the system's role and the sentence's meaning.

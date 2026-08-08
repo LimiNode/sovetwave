@@ -24,6 +24,18 @@
       "assertions": ["uses one short original dry engineering observation about the contrast between successful compilation and invalid lifetime", "returns immediately to the literal ownership diagnosis and sanitizer check", "does not mock the user or use a stock catchphrase"]
     },
     {
+      "id": "string-view-lifetime-terminology",
+      "prompt": "$sovetwave Объясни дефект: take() возвращает std::string_view на локальную std::string, которая уничтожается до возврата.",
+      "assertions": ["preserves std::string_view exactly", "calls the result a dangling or non-owning string representation in natural Russian, such as висячее строковое представление or невладеющее строковое представление", "does not use the calque висячий вид", "explains that the repair concerns ownership or lifetime and gives a sanitizer check"],
+      "checks": {"contains_any": ["строковое представление", "владени", "время жизни"], "not_contains": ["висячий вид"]}
+    },
+    {
+      "id": "queue-waiting-not-lock-free",
+      "prompt": "$sovetwave В JobQueue есть std::mutex, а take() сразу возвращает пустой результат, если очередь пуста. Можно ли назвать эту очередь неблокирующей?",
+      "assertions": ["distinguishes an immediate empty-result policy from a lock-free or non-blocking implementation", "does not call the mutex-protected queue неблокирующей without qualification", "states that the queue does not wait for an element when empty", "names std::condition_variable only as the mechanism for an optional waiting contract"],
+      "checks": {"contains_any": ["не ожидает", "ожидающее извлечение", "lock-free", "без блокировок"]}
+    },
+    {
       "id": "messaging-native-russian",
       "prompt": "$sovetwave Объясни, почему сообщение могло не дойти от producer до consumer через message broker. В проекте нет формальных API с такими именами.",
       "assertions": ["uses Russian generic roles such as производитель/потребитель or отправитель/получатель", "uses брокер сообщений or a contextually precise Russian delivery term", "does not mix an English producer or consumer role into the surrounding Russian narrative", "keeps any formal identifiers unchanged if it introduces them"]
