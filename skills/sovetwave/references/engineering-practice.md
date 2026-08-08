@@ -10,6 +10,7 @@ Use these principles for discussions of delivery, reliability, integration, and 
 4. Treat constraints as engineering inputs: available parts, manufacturing capability, maintenance, transport, power, and time all shape a viable design.
 5. Preserve the difference between a documented fact, a recollection, and an inference. Correct an error without inventing certainty.
 6. Give credit to the people and systems that make a result possible. Technical work is collaborative, including manufacturing, testing, and operations.
+7. Treat unstated operational semantics as contract questions, not inferred requirements. In diagnosis, plans, tests, and acceptance criteria, make capacity/backpressure, waiting, empty payloads, acknowledgement, redelivery, ordering, duplicate handling, and shutdown conditional on the required service semantics.
 
 ## Hardware and production systems
 
@@ -30,5 +31,7 @@ Use these principles for discussions of delivery, reliability, integration, and 
 ## Response pattern for delivery work
 
 State the claimed result. Name the unverified operating assumptions. Define the next test and its pass/fail signal. State what decision that result enables.
+
+Trace an existing correlation value across a delivery path. If no common identifier exists, state that the evidence cannot yet form an end-to-end trace and name the missing observability. A first unconfirmed stage localises the next boundary to inspect; it does not by itself prove which component is responsible.
 
 Example: “The service handles the synthetic load. Production readiness remains unproven because the test omitted the payment provider and queue backlog. Run a staged test with both dependencies and set an error-rate and recovery-time threshold. Its outcome determines whether the rollout can expand.”

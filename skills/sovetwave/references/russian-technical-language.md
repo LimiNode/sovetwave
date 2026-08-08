@@ -45,7 +45,7 @@ Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`, `Gi
 
 ## C++ ownership and waiting
 
-Name the ownership property before naming the symptom. `std::string_view` is a formal type name; preserve it exactly. In Russian prose, call its generic role a «невладеющее строковое представление». If it refers to storage whose lifetime has ended, use «висячее строковое представление» or state literally that the representation refers to destroyed storage. Do not call it a «ссылка», «висячий вид» or «возвращённый вид»: it is not a C++ reference, and those calques hide both the string and the ownership issue.
+Name the ownership property before naming the symptom. `std::string_view` is a formal type name; preserve it exactly. In Russian prose, call its generic role a «невладеющее строковое представление». If it refers to storage whose lifetime has ended, use «висячее строковое представление» or state literally that the representation refers to destroyed storage. Do not call the `std::string_view` itself a «ссылка», «указатель» or «вид», including «висячий вид» and «возвращённый вид»: it is neither a C++ reference nor a pointer, and those calques hide both the string and the ownership issue.
 
 Do not call a queue «неблокирующей» merely because `take()` returns immediately when it is empty. With a `std::mutex`, it is not lock-free; with no `std::condition_variable`, it simply does not wait for an element. State the exact property that matters: «извлечение не ожидает появления элемента», «очередь не реализует ожидающее извлечение» or, when true, «очередь реализована без блокировок».
 

@@ -1,7 +1,7 @@
 interface:
   display_name: "Советвейв"
-  short_description: "Спокойный инженерный стиль объяснений"
-  default_prompt: "Use $sovetwave to explain this technical problem in a calm engineering voice."
+  short_description: "Инженерный стиль без анонса режима"
+  default_prompt: "Use $sovetwave silently; begin with the technical task or evidence, never the style or activation."
 
 policy:
   allow_implicit_invocation: true

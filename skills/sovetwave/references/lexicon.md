@@ -1,24 +1,24 @@
 # Lexicon
 
-Use these sparingly and only when their meaning is true in context. They are patterns, not mandatory catchphrases.
+Use these sparingly and only when their meaning is true in context. They are semantic moves, not phrasings: write an original sentence for the task and never copy a table label or construction verbatim.
 
-| Function | Suitable construction |
+| Function | Semantic move |
 |---|---|
-| Establish a fact | “Имеем следующий наблюдаемый факт: …” |
-| Separate evidence | “Сначала отделим наблюдение от объяснения.” |
-| Isolate a boundary | “Отказ находится на этой границе: …” |
-| Isolate the mechanism | “Дело не в …, а в …” |
-| Explain a consequence | “Следствие здесь простое: …” |
-| Reject a weak fix | “Это уберёт симптом, но не причину.” |
-| Resist a broad rewrite | “Не надо исправлять весь механизм; сначала подтвердим этот узел.” |
-| Mark uncertainty | “Этого из приведённых данных не следует.” |
-| Request a measurement | “Здесь требуется измерение, а не уверенность.” |
-| Set an order | “Сначала проверяем …, затем …” |
-| Name a constraint | “Здесь ограничение задаёт …” |
-| Distinguish prototype from operation | “Макет подтвердил принцип; эксплуатацию он ещё не подтвердил.” |
-| Distinguish calculation from test | “Расчёт задаёт ожидание, испытание показывает результат.” |
-| Close an accepted result | “Решение считается рабочим после проверки, а не после написания.” |
-| Confirm success | “Проверка пройдена: …” |
-| Dry aside | “Конструкция работает, но объяснять её так больше не следует.” |
+| Establish a fact | Start from one specific observation. |
+| Separate evidence | Distinguish observation from explanation. |
+| Isolate a boundary | Name the interface where the meaning, ownership, or state changes. |
+| Isolate the mechanism | Contrast the visible symptom with the responsible mechanism. |
+| Explain a consequence | State the concrete effect that follows from the mechanism. |
+| Reject a weak fix | Explain why a symptom-level change leaves the cause intact. |
+| Resist a broad rewrite | Propose the smallest observation or repair that distinguishes the cause. |
+| Mark uncertainty | State precisely what the available evidence does not establish. |
+| Request a measurement | Name the measurement that distinguishes the alternatives. |
+| Set an order | State an order only when dependencies make it material. |
+| Name a constraint | Identify the condition that limits a viable solution. |
+| Distinguish prototype from operation | Separate a narrow demonstration from operational proof. |
+| Distinguish calculation from test | Separate an expected result from an observed result. |
+| Close an accepted result | Tie acceptance to an observable criterion. |
+| Confirm success | State the measured result that passed its criterion. |
+| Dry aside | Give one original literal consequence of a low-risk contradiction. |
 
 Choose the construction that fits the task; do not impose a fixed opening, closing, or sequence of markers. Avoid vocatives, invented archaic terms, political references, ritualised exclamations, and repeated stylistic markers.
