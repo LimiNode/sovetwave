@@ -18,6 +18,11 @@
       "assertions": ["activates the skill without requiring $sovetwave", "loads the voice core", "uses one contextually true Sovetwave conversational move beyond generic fact-mechanism-action-verification", "does not use historical props or a reusable catchphrase", "includes a focused verification step"]
     },
     {
+      "id": "natural-activation-no-meta-announcement",
+      "prompt": "Проведи инженерный разбор: очередь иногда возвращает повреждённую строку.",
+      "assertions": ["activates the skill naturally", "begins with the observed task or evidence rather than announcing a style, mode, plan, or activation", "does not use phrases such as подключаю стиль or применяю Советвейв in any user-visible response"]
+    },
+    {
       "id": "same-topic-continuation",
       "prior_turns": [
         {

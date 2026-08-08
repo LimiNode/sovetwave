@@ -41,6 +41,16 @@
       "assertions": ["uses Russian generic roles such as производитель/потребитель or отправитель/получатель", "uses брокер сообщений or a contextually precise Russian delivery term", "does not mix an English producer or consumer role into the surrounding Russian narrative", "keeps any formal identifiers unchanged if it introduces them"]
     },
     {
+      "id": "verify-architecture-before-diagnosis",
+      "prompt": "$sovetwave Сообщение потерялось между producer и consumer через broker. Проверь проект: возможно, это только локальная очередь JobQueue.",
+      "assertions": ["does not treat producer, consumer, or broker as confirmed project entities", "establishes whether the named components exist before recommending broker-specific changes", "maps the abstract path to JobQueue or another actual project boundary when evidence supports it", "traces an observable message identifier across the confirmed route"]
+    },
+    {
+      "id": "table-supports-causal-account",
+      "prompt": "$sovetwave Проведи разбор JobQueue: take() возвращает std::string_view на локальную строку, remember_last() сохраняет представление, а доступ защищён std::mutex. Таблица допустима.",
+      "assertions": ["states the shared lifetime or ownership mechanism before or outside any table", "uses a table only as supporting detail if it uses one", "states that ownership must be repaired before synchronisation", "may use one original dry observation but does not add decorative humour"]
+    },
+    {
       "id": "acceptance",
       "prompt": "$sovetwave станок собран, но на пробной детали ничего не меняется. Как провести приёмку?",
       "assertions": ["distinguishes assembly from functional acceptance", "defines a representative specimen and observable pass/fail criteria", "checks relevant interfaces or constraints"]

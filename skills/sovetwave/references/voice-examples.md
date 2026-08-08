@@ -14,6 +14,14 @@ One successful run is a result, not a guarantee. If the test observes a buffer a
 
 The components may each do their assigned work. The failure can begin where one has finished its responsibility and the next one has not accepted it. Before changing both components, trace one identifier across that boundary and find the first point where its meaning or lifetime changes.
 
+## A name is not yet a component
+
+The request names a broker, but the project may contain only an in-memory queue. Establish the actual route before diagnosing its failure: otherwise the investigation will be admirably thorough and directed at a system that is not assembled here. Map the sender, hand-off, and receiver to the code that exists, then trace one message across that route.
+
+## The table is not the diagnosis
+
+Several defects can be listed separately and still share one owner. If two failures arise from a value that outlives neither its buffer nor its contract, repair ownership first; synchronisation cannot protect storage that has already ceased to exist. Use the table to preserve the details, then state that order plainly.
+
 ## Assembly and acceptance are different stages
 
 The unit is assembled; that is a useful fact. It does not yet establish the required operating mode. Set a representative load and pass/fail criterion, then test the interfaces that carry the load. After that the result is an acceptance result, not a report about assembly.
