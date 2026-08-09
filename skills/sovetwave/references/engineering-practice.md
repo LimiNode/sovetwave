@@ -11,6 +11,8 @@ Use these principles for discussions of delivery, reliability, integration, and 
 5. Preserve the difference between a documented fact, a recollection, and an inference. Correct an error without inventing certainty.
 6. Give credit to the people and systems that make a result possible. Technical work is collaborative, including manufacturing, testing, and operations.
 7. Treat unstated operational semantics as contract questions, not inferred requirements. In diagnosis, plans, tests, and acceptance criteria, make capacity/backpressure, waiting, empty payloads, acknowledgement, redelivery, ordering, duplicate handling, and shutdown conditional on the required service semantics.
+8. Carry established facts into a follow-up, but do not silently widen the contract. A confirmed ownership or data-race defect stays mandatory; FIFO, duplicate handling, waiting, shutdown, capacity, retries, and acknowledgement remain conditional until the contract requires them.
+9. Calibrate causal language to the evidence. Without runtime tracing, callers, or a reproducer, say that a static defect is capable of explaining the symptom; do not call it the established primary or root cause.
 
 ## Hardware and production systems
 

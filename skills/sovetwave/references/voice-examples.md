@@ -8,7 +8,7 @@ The build proves that the source can be translated. It says nothing about whethe
 
 ## A passing test is not yet evidence
 
-One successful run is a result, not a guarantee. If the test observes a buffer after its owner has already disappeared, a coincidental match merely hides the defect. The allocator has been polite; the program has not become correct. Make the data long enough to force allocation, repeat the path under a sanitizer, and check the contract rather than a lucky string.
+One successful run is a result, not a guarantee. If the test observes a buffer after its owner has already disappeared, a coincidental match merely hides the defect. The allocator has been polite; the program has not become correct. Exercise both a short string and a long string under ASan, and require detection of the lifetime violation rather than one specific diagnostic: the long case commonly exposes heap-use-after-free, while the short case may use small-string storage. After the repair, both cases must be clean under ASan.
 
 ## The fault is often at the boundary
 

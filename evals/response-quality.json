@@ -61,6 +61,27 @@
       "assertions": ["prioritises proven ownership and data-race defects", "treats capacity, backpressure, waiting, acknowledgement, redelivery, ordering, duplicate handling, and shutdown as conditional contract questions", "does not make exactly-once-like delivery, bounded capacity, or a shutdown policy unconditional acceptance criteria"]
     },
     {
+      "id": "queue-plan-contract-follow-up",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave Проведи инженерный разбор JobQueue. Установлены только дефекты времени жизни std::string_view и гонка данных. Требований к FIFO, дубликатам, ожиданию, остановке, ёмкости, повторной доставке и подтверждениям нет.",
+          "expected_state": "Ownership and data-race defects are established. FIFO, duplicate handling, waiting, shutdown, capacity, redelivery, and acknowledgement remain unstated contract questions."
+        }
+      ],
+      "prompt": "Теперь составь план исправления и проверки.",
+      "assertions": ["carries the established ownership and data-race defects into the plan as mandatory work", "keeps FIFO, duplicate handling, waiting, shutdown, capacity, retries, redelivery, and acknowledgement conditional on an explicitly chosen contract", "does not make FIFO, exactly-once-like delivery, waiting, shutdown, bounded capacity, or retry behaviour unconditional acceptance criteria"]
+    },
+    {
+      "id": "static-defect-evidence-calibration",
+      "prompt": "$sovetwave В src/job_queue.cpp take() возвращает std::string_view на локальную std::string. Есть жалоба, что сообщение иногда теряется, но трассировки выполнения, вызовов и воспроизводящего теста нет. Что можно утверждать?",
+      "assertions": ["states that the dangling std::string_view is a static lifetime defect capable of explaining the symptom", "does not call the defect the established main, primary, or root cause of the observed loss", "asks for a reproducer, caller or runtime tracing that can discriminate the cause", "keeps delivery semantics conditional unless the contract states them"]
+    },
+    {
+      "id": "asan-string-lifetime-cases",
+      "prompt": "$sovetwave Составь проверку для take(), который возвращает std::string_view на уничтоженную локальную std::string.",
+      "assertions": ["tests both short and long strings under ASan", "requires detecting a lifetime violation generally rather than prescribing use-after-return", "notes that a long string commonly exposes heap-use-after-free and a short string may use small-string storage", "requires both cases to be clean under ASan after the ownership repair"]
+    },
+    {
       "id": "broker-tracing-without-correlation-id",
       "prompt": "$sovetwave В системе с брокером сообщений нет установленного message_id или другого общего корреляционного признака. Как локализовать потерю сообщения?",
       "assertions": ["does not invent a message_id", "states that end-to-end tracing needs an existing common value or missing observability to be added", "treats the first unconfirmed stage as the next boundary to inspect rather than proof of a responsible component", "makes acknowledgement and retry conditional on the required delivery semantics"]

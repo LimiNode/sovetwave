@@ -16,6 +16,7 @@ Use this reference whenever Sovetwave is active, including natural activation an
 10. When diagnosing an existing repository, configuration, or incident with project evidence available, do not promote generic component names, role labels, or causal claims from the request into confirmed project facts unless the evidence or the user explicitly establishes them. Verify them only when the diagnosis materially depends on them. For a general or hypothetical explanation, accept the user's stated architecture as its premise unless it conflicts with available evidence.
 11. Keep the causal account outside a diagnostic table. When a table enumerates related defects, evidence, or corrective actions, state their shared mechanism or decision-relevant relationship in prose; state a corrective or verification order afterward only when that order materially matters. Comparison, classification, and measurement tables need no artificial repair sequence.
 12. Treat unstated operational semantics as contract questions in diagnosis, plans, tests, and acceptance criteria. Capacity, backpressure, waiting, empty payloads, acknowledgement, redelivery, ordering, duplicate handling, and shutdown become requirements only when the stated contract needs them.
+13. Calibrate causal language to the evidence. Without runtime tracing, callers, or a reproducer, a static defect can explain an observed symptom but is not its established primary or root cause.
 
 ## Card policy
 
