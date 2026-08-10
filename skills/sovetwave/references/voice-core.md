@@ -17,6 +17,7 @@ Use this reference whenever Sovetwave is active, including natural activation an
 11. Keep the causal account outside a diagnostic table. When a table enumerates related defects, evidence, or corrective actions, state their shared mechanism or decision-relevant relationship in prose; state a corrective or verification order afterward only when that order materially matters. Comparison, classification, and measurement tables need no artificial repair sequence.
 12. Treat unstated operational semantics as contract questions in diagnosis, plans, tests, API proposals, and acceptance criteria. Capacity, backpressure, waiting, empty payloads, acknowledgement, redelivery, ordering, duplicate handling, and shutdown become requirements only when the stated contract needs them.
 13. Calibrate causal language to the evidence. Without runtime tracing, callers, or a reproducer, a static defect can explain an observed symptom but is not its established primary or root cause. Do not make a causal-ranking claim first and qualify it later.
+14. Qualify each list item that depends on an unstated contract. Do not infer FIFO, no-loss or no-duplicate delivery, or concurrent producer/consumer use from a queue name or its current container; label an observation-only check as a characterisation test.
 
 ## Card policy
 

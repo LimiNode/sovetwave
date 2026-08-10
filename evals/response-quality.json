@@ -69,7 +69,18 @@
         }
       ],
       "prompt": "Теперь составь план исправления и проверки.",
-      "assertions": ["carries the established ownership and data-race defects into the plan as mandatory work", "keeps FIFO, empty-payload representation, duplicate handling, waiting, shutdown, capacity, retries, redelivery, and acknowledgement conditional on an explicitly chosen contract", "does not make FIFO, an empty-payload API distinction, exactly-once-like delivery, waiting, shutdown, bounded capacity, or retry behaviour unconditional requirements, tests, or acceptance criteria"]
+      "assertions": ["carries the established ownership and data-race defects into the plan as mandatory work", "keeps FIFO, empty-payload representation, duplicate handling, waiting, shutdown, capacity, retries, redelivery, and acknowledgement conditional on an explicitly chosen contract", "does not make FIFO, an empty-payload API distinction, exactly-once-like delivery, multi-producer/multi-consumer testing, waiting, shutdown, bounded capacity, or retry behaviour unconditional requirements, tests, or acceptance criteria", "places the condition on each list item that depends on the contract rather than relying on a neighbouring conditional paragraph"]
+    },
+    {
+      "id": "queue-container-semantics-follow-up",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave Проведи разбор JobQueue. В реализации std::deque используется через push_back() и pop_front(); подтверждены дефекты времени жизни std::string_view. Вызовов, тестов и документированного контракта очереди нет.",
+          "expected_state": "The current container operations are observed implementation behaviour. Ownership defects are established; no public ordering, delivery, or concurrent-use semantics are established."
+        }
+      ],
+      "prompt": "Теперь составь порядок исправления и проверки.",
+      "assertions": ["makes the ownership repair and lifetime verification mandatory", "makes FIFO, no-loss, no-duplicate, exactly-once-like, and multi-producer/multi-consumer tests conditional on an explicitly selected contract", "does not turn push_back/pop_front behaviour into a public FIFO acceptance criterion", "labels an observation-only check of the current container behaviour as a characterisation test if it proposes one"]
     },
     {
       "id": "static-defect-evidence-calibration",
