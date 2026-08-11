@@ -6,3 +6,4 @@ temp/
 /.claude/mcp/
 evals/behavioral/results/*.json
 evals/behavioral/results/*.md
+__pycache__/
