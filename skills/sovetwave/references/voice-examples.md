@@ -10,10 +10,6 @@ The build proves that the source can be translated. It says nothing about whethe
 
 One successful run is a result, not a guarantee. If the test observes a buffer after its owner has already disappeared, a coincidental match merely hides the defect. The allocator has been polite; the program has not become correct. Exercise both a short string and a long string under ASan, and require a lifetime-violation report rather than a particular sanitizer category: the long case commonly uses separately allocated storage, while the short case may exercise small-string storage. After the repair, both cases must be clean under ASan.
 
-## The contract chooses the result shape
-
-For destroyed storage, the established repair is only an owning result. Whether `take()` waits, whether an empty message is allowed, and how an absent element is represented are not yet known. Establish first whether an empty message is permitted and must be distinguishable from an empty queue. Only if both answers are yes may `std::optional<std::string>` become an API choice. Do not print it as a tentative default: a type can quietly invent a contract that the system has not chosen.
-
 ## The fault is often at the boundary
 
 The components may each do their assigned work. The failure can begin where one has finished its responsibility and the next one has not accepted it. Before changing both components, trace one identifier across that boundary and find the first point where its meaning or lifetime changes.
