@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0 — 2026-08-11
+
+- Hardened behavioral rules for evidence-based diagnosis: static defects, delivery guarantees, and API shapes now remain conditional when the project contract is unknown.
+- Added regression fixtures for silent activation, causal calibration, queue delivery semantics, local lifetime verification, and choosing an empty-result API only after the contract is known.
+- Refined the low-risk engineering voice with short, original causal observations while retaining literal language for critical contexts.
+
 ## v0.3.0 — 2026-08-07
 
 - Added the engineering core: fact, mechanism, action, and verification.
