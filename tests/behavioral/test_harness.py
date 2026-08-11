@@ -12,11 +12,19 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "scripts"))
+from run_model_evals import redact_secrets
+
+
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
 COMPARE = ROOT / "scripts" / "compare_runs.py"
 
 
 class BehavioralHarnessTests(unittest.TestCase):
+    def test_stderr_redacts_credentials(self) -> None:
+        self.assertEqual(redact_secrets("Bearer abc.def_123"), "[redacted credential]")
+        self.assertEqual(redact_secrets("api_key=sk-example-secret"), "[redacted credential]")
+
     def test_codex_dry_run_creates_pairs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "run.json"

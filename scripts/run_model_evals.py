@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +18,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "behavioral" / "cases"
 DEFAULT_RESULTS = ROOT / "evals" / "behavioral" / "results"
+SECRET = re.compile(r"(?:sk-[A-Za-z0-9_-]+|Bearer\s+[A-Za-z0-9._-]+|(?:api[_ -]?key|access[_ -]?token)\s*[=:]\s*\S+)", re.IGNORECASE)
 
 
 def load_cases(case_dir: Path) -> list[dict[str, Any]]:
@@ -38,6 +40,10 @@ def load_cases(case_dir: Path) -> list[dict[str, Any]]:
     return cases
 
 
+def redact_secrets(text: str) -> str:
+    return SECRET.sub("[redacted credential]", text)
+
+
 def make_workspace(root: Path, styled: bool) -> tempfile.TemporaryDirectory[str]:
     workspace = tempfile.TemporaryDirectory(prefix="sovetwave-eval-")
     if styled:
@@ -51,7 +57,7 @@ def command_for(provider: str, workspace: Path, prompt: str, styled: bool, model
     if provider == "codex":
         command = [
             "codex", "exec", "--skip-git-repo-check", "--ephemeral", "--ignore-user-config",
-            "--sandbox", "read-only", "--ask-for-approval", "never", "-C", str(workspace),
+            "--sandbox", "read-only", "-C", str(workspace),
             "--output-last-message", str(output_path),
         ]
         if model:
@@ -88,7 +94,7 @@ def run_variant(provider: str, case: dict[str, Any], styled: bool, model: str | 
             "status": "completed" if completed.returncode == 0 else "failed",
             "returncode": completed.returncode,
             "response": response.strip(),
-            "stderr": completed.stderr.strip(),
+            "stderr": redact_secrets(completed.stderr.strip()),
         })
         return result
 
