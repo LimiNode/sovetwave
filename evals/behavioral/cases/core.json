@@ -10,7 +10,7 @@
     {
       "id": "queue-api-after-contract",
       "prompt": "В JobQueue take() возвращает std::string_view на уничтожаемую локальную std::string. Не установлено, допустима ли пустая полезная нагрузка и как представляется отсутствие элемента. Предложи исправление API и порядок проверки.",
-      "assertions": ["requires an owning result", "keeps std::optional<std::string> conditional on the selected empty-payload contract", "does not make acknowledgement or retry mandatory"]
+      "assertions": ["requires an owning result", "does not present std::optional<std::string> as a default or justify it with a merely possible empty payload", "offers std::optional<std::string> only after the selected contract permits empty payloads and requires distinguishing them from absence", "does not make acknowledgement or retry mandatory"]
     },
     {
       "id": "native-russian-review",
