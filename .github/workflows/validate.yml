@@ -19,6 +19,8 @@ jobs:
         run: python evals/validate_evals.py
       - name: Test voice-card selector
         run: python evals/test_voice_cards.py
+      - name: Test behavioral eval harness
+        run: python tests/behavioral/test_harness.py
 
   installer-smoke:
     name: Installer smoke (${{ matrix.os }})

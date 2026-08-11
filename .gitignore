@@ -4,3 +4,6 @@ temp/
 .obsidian-hybrid-search.db-*
 .mcp.json
 /.claude/mcp/
+evals/behavioral/results/*.json
+evals/behavioral/results/*.md
+__pycache__/
