@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+"""Run paired baseline/Sovetwave behavioral evaluations through a local agent CLI."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CASES = ROOT / "evals" / "behavioral" / "cases"
+DEFAULT_RESULTS = ROOT / "evals" / "behavioral" / "results"
+
+
+def load_cases(case_dir: Path) -> list[dict[str, Any]]:
+    cases: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for path in sorted(case_dir.glob("*.json")):
+        suite = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(suite.get("cases"), list):
+            raise ValueError(f"{path}: cases must be an array")
+        for case in suite["cases"]:
+            if not isinstance(case, dict) or not isinstance(case.get("id"), str) or not isinstance(case.get("prompt"), str):
+                raise ValueError(f"{path}: every case needs string id and prompt")
+            if case["id"] in seen:
+                raise ValueError(f"duplicate behavioral case id: {case['id']}")
+            seen.add(case["id"])
+            cases.append(case)
+    if not cases:
+        raise ValueError(f"no behavioral cases in {case_dir}")
+    return cases
+
+
+def make_workspace(root: Path, styled: bool) -> tempfile.TemporaryDirectory[str]:
+    workspace = tempfile.TemporaryDirectory(prefix="sovetwave-eval-")
+    if styled:
+        destination = Path(workspace.name) / ".agents" / "skills" / "sovetwave"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(root / "skills" / "sovetwave", destination)
+    return workspace
+
+
+def command_for(provider: str, workspace: Path, prompt: str, styled: bool, model: str | None, output_path: Path) -> list[str]:
+    if provider == "codex":
+        command = [
+            "codex", "exec", "--skip-git-repo-check", "--ephemeral", "--ignore-user-config",
+            "--sandbox", "read-only", "--ask-for-approval", "never", "-C", str(workspace),
+            "--output-last-message", str(output_path),
+        ]
+        if model:
+            command.extend(["--model", model])
+        return command + (["$sovetwave\n" + prompt] if styled else [prompt])
+    if provider == "claude":
+        command = ["claude", "--print", "--bare", "--tools", "", "--permission-mode", "plan"]
+        if styled:
+            command.extend(["--append-system-prompt-file", str(ROOT / "output-styles" / "sovetwave.md")])
+        if model:
+            command.extend(["--model", model])
+        return command + [prompt]
+    raise ValueError(f"unsupported provider: {provider}")
+
+
+def run_variant(provider: str, case: dict[str, Any], styled: bool, model: str | None, timeout: int, dry_run: bool) -> dict[str, Any]:
+    with make_workspace(ROOT, styled) as temp_dir:
+        workspace = Path(temp_dir)
+        response_path = workspace / "last-message.txt"
+        command = command_for(provider, workspace, case["prompt"], styled, model, response_path)
+        result: dict[str, Any] = {
+            "case_id": case["id"],
+            "variant": "sovetwave" if styled else "baseline",
+            "prompt": case["prompt"],
+            "assertions": case.get("assertions", []),
+            "command": command,
+        }
+        if dry_run:
+            result["status"] = "planned"
+            return result
+        completed = subprocess.run(command, cwd=workspace, text=True, capture_output=True, timeout=timeout, check=False)
+        response = response_path.read_text(encoding="utf-8") if response_path.exists() else completed.stdout
+        result.update({
+            "status": "completed" if completed.returncode == 0 else "failed",
+            "returncode": completed.returncode,
+            "response": response.strip(),
+            "stderr": completed.stderr.strip(),
+        })
+        return result
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--provider", choices=("codex", "claude"), required=True)
+    parser.add_argument("--model")
+    parser.add_argument("--case-dir", type=Path, default=DEFAULT_CASES)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--timeout", type=int, default=120)
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+
+    cases = load_cases(args.case_dir)
+    if args.limit is not None:
+        cases = cases[:args.limit]
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    output = args.output or DEFAULT_RESULTS / f"{timestamp}-{args.provider}.json"
+    payload = {
+        "schema_version": "1.0",
+        "created_at": datetime.now(UTC).isoformat(),
+        "provider": args.provider,
+        "model": args.model,
+        "dry_run": args.dry_run,
+        "results": [
+            run_variant(args.provider, case, styled, args.model, args.timeout, args.dry_run)
+            for case in cases for styled in (False, True)
+        ],
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"Wrote {len(payload['results'])} planned or completed variants to {output}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
