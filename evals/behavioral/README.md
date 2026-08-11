@@ -18,4 +18,6 @@ py -3 scripts\compare_runs.py evals\behavioral\results\<run>.json
 
 The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. The Claude adapter uses `--bare`; its Sovetwave variant appends the repository Output Style. Neither adapter enables model tools.
 
+By default a live run stops on the first failed invocation, so an invalid login or unavailable model does not produce a full set of empty results. Use `--continue-on-error` only when failures themselves are part of the investigation.
+
 `compare_runs.py` produces a side-by-side Markdown sheet with the human scoring axes from `rubric.json`. Apply the [grader contract](graders/grader-contract.md) for a human or LLM score. Keep completed run artefacts local unless a result is intentionally chosen as a reviewed baseline.

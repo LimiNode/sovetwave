@@ -108,6 +108,7 @@ def main() -> int:
     parser.add_argument("--limit", type=int)
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--continue-on-error", action="store_true", help="run remaining variants after a failed model invocation")
     args = parser.parse_args()
 
     cases = load_cases(args.case_dir)
@@ -115,16 +116,25 @@ def main() -> int:
         cases = cases[:args.limit]
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     output = args.output or DEFAULT_RESULTS / f"{timestamp}-{args.provider}.json"
+    results: list[dict[str, Any]] = []
+    stopped_early = False
+    for case in cases:
+        for styled in (False, True):
+            result = run_variant(args.provider, case, styled, args.model, args.timeout, args.dry_run)
+            results.append(result)
+            if result.get("status") == "failed" and not args.continue_on_error:
+                stopped_early = True
+                break
+        if stopped_early:
+            break
     payload = {
         "schema_version": "1.0",
         "created_at": datetime.now(UTC).isoformat(),
         "provider": args.provider,
         "model": args.model,
         "dry_run": args.dry_run,
-        "results": [
-            run_variant(args.provider, case, styled, args.model, args.timeout, args.dry_run)
-            for case in cases for styled in (False, True)
-        ],
+        "stopped_early": stopped_early,
+        "results": results,
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
