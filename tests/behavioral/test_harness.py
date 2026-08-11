@@ -37,6 +37,33 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertEqual([item["variant"] for item in run["results"]], ["baseline", "sovetwave", "baseline", "sovetwave"])
             self.assertTrue(run["results"][1]["command"][-1].startswith("$sovetwave\n"))
 
+    def test_codex_dry_run_copies_only_selected_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            config = directory_path / "config.toml"
+            output = directory_path / "run.json"
+            config.write_text(
+                """model_provider = \"local-lb\"\n\n[model_providers.local-lb]\nname = \"openai\"\nbase_url = \"http://127.0.0.1:2455/backend-api/codex\"\nwire_api = \"responses\"\nrequires_openai_auth = true\n""",
+                encoding="utf-8",
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(RUNNER),
+                    "--provider", "codex",
+                    "--dry-run",
+                    "--limit", "1",
+                    "--codex-provider-config", str(config),
+                    "--output", str(output),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            command = json.loads(output.read_text(encoding="utf-8"))["results"][0]["command"]
+            self.assertIn("--ignore-user-config", command)
+            self.assertIn('model_provider="local-lb"', command)
+            self.assertIn('model_providers.local-lb.base_url="http://127.0.0.1:2455/backend-api/codex"', command)
+            self.assertIn("model_providers.local-lb.requires_openai_auth=true", command)
+
     def test_comparison_sheet_contains_both_variants(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             run = Path(directory) / "run.json"

@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -44,6 +45,47 @@ def redact_secrets(text: str) -> str:
     return SECRET.sub("[redacted credential]", text)
 
 
+def toml_scalar(value: Any) -> str:
+    """Render the subset of TOML values accepted by Codex --config."""
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int | float):
+        return str(value)
+    raise ValueError(f"unsupported provider configuration value: {value!r}")
+
+
+def codex_provider_overrides(config_path: Path) -> list[str]:
+    """Copy only the selected model provider from a user Codex config.
+
+    Eval runs deliberately ignore all ordinary user configuration. A local
+    provider is an explicit exception: its endpoint definition must accompany
+    the isolated invocation, while credentials continue to come from
+    CODEX_HOME in the usual Codex way.
+    """
+    try:
+        config = tomllib.loads(config_path.read_text(encoding="utf-8"))
+    except OSError as error:
+        raise ValueError(f"cannot read Codex provider config {config_path}: {error}") from error
+    except tomllib.TOMLDecodeError as error:
+        raise ValueError(f"invalid TOML in Codex provider config {config_path}: {error}") from error
+
+    provider = config.get("model_provider")
+    providers = config.get("model_providers")
+    if not isinstance(provider, str) or not provider:
+        raise ValueError(f"{config_path}: expected top-level string model_provider")
+    if not isinstance(providers, dict) or not isinstance(providers.get(provider), dict):
+        raise ValueError(f"{config_path}: no [model_providers.{provider}] section")
+
+    overrides = ["--config", f"model_provider={toml_scalar(provider)}"]
+    for key, value in providers[provider].items():
+        if not isinstance(key, str):
+            raise ValueError(f"{config_path}: provider keys must be strings")
+        overrides.extend(["--config", f"model_providers.{provider}.{key}={toml_scalar(value)}"])
+    return overrides
+
+
 def make_workspace(root: Path, styled: bool) -> tempfile.TemporaryDirectory[str]:
     workspace = tempfile.TemporaryDirectory(prefix="sovetwave-eval-")
     if styled:
@@ -53,13 +95,23 @@ def make_workspace(root: Path, styled: bool) -> tempfile.TemporaryDirectory[str]
     return workspace
 
 
-def command_for(provider: str, workspace: Path, prompt: str, styled: bool, model: str | None, output_path: Path) -> list[str]:
+def command_for(
+    provider: str,
+    workspace: Path,
+    prompt: str,
+    styled: bool,
+    model: str | None,
+    output_path: Path,
+    codex_overrides: list[str] | None = None,
+) -> list[str]:
     if provider == "codex":
         command = [
             "codex", "exec", "--skip-git-repo-check", "--ephemeral", "--ignore-user-config",
             "--sandbox", "read-only", "-C", str(workspace),
             "--output-last-message", str(output_path),
         ]
+        if codex_overrides:
+            command.extend(codex_overrides)
         if model:
             command.extend(["--model", model])
         return command + (["$sovetwave\n" + prompt] if styled else [prompt])
@@ -73,11 +125,19 @@ def command_for(provider: str, workspace: Path, prompt: str, styled: bool, model
     raise ValueError(f"unsupported provider: {provider}")
 
 
-def run_variant(provider: str, case: dict[str, Any], styled: bool, model: str | None, timeout: int, dry_run: bool) -> dict[str, Any]:
+def run_variant(
+    provider: str,
+    case: dict[str, Any],
+    styled: bool,
+    model: str | None,
+    timeout: int,
+    dry_run: bool,
+    codex_overrides: list[str] | None = None,
+) -> dict[str, Any]:
     with make_workspace(ROOT, styled) as temp_dir:
         workspace = Path(temp_dir)
         response_path = workspace / "last-message.txt"
-        command = command_for(provider, workspace, case["prompt"], styled, model, response_path)
+        command = command_for(provider, workspace, case["prompt"], styled, model, response_path, codex_overrides)
         result: dict[str, Any] = {
             "case_id": case["id"],
             "variant": "sovetwave" if styled else "baseline",
@@ -109,7 +169,23 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=120)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--continue-on-error", action="store_true", help="run remaining variants after a failed model invocation")
+    parser.add_argument(
+        "--codex-provider-config",
+        type=Path,
+        help="copy the selected model provider from this Codex config into isolated Codex runs",
+    )
     args = parser.parse_args()
+
+    if args.codex_provider_config is not None and args.provider != "codex":
+        parser.error("--codex-provider-config is only valid with --provider codex")
+    try:
+        codex_overrides = (
+            codex_provider_overrides(args.codex_provider_config)
+            if args.codex_provider_config is not None
+            else None
+        )
+    except ValueError as error:
+        parser.error(str(error))
 
     cases = load_cases(args.case_dir)
     if args.limit is not None:
@@ -120,7 +196,15 @@ def main() -> int:
     stopped_early = False
     for case in cases:
         for styled in (False, True):
-            result = run_variant(args.provider, case, styled, args.model, args.timeout, args.dry_run)
+            result = run_variant(
+                args.provider,
+                case,
+                styled,
+                args.model,
+                args.timeout,
+                args.dry_run,
+                codex_overrides,
+            )
             results.append(result)
             if result.get("status") == "failed" and not args.continue_on_error:
                 stopped_early = True
