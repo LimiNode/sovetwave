@@ -51,6 +51,8 @@ Do not call a queue or a `std::mutex`-using operation «неблокирующе
 
 Treat waiting, the distinction between an empty queue and an empty payload, acknowledgement, and redelivery as contract questions unless a stated requirement makes them necessary. Their absence is a defect only when the required delivery semantics depend on them.
 
+When code contains no confirmed caller, handler, or end-to-end route, formulate the mandatory check narrowly: «воспроизвести и устранить дефект времени жизни». A correlation trace, successful handler processing, and behaviour after handler failure are applicable only when the route and delivery guarantee are part of the known contract. In a table, distinguish «подтверждённый дефект реализации» from «свойство, зависящее от контракта» rather than placing both under an unqualified «Дефект».
+
 ## Avoid hybrid sentences
 
 Do not mechanically replace words. This is not lexical purism: prefer established Russian domain usage, and retain a well-established English term if translating it would reduce precision or create an artificial calque. Select the Russian term from the system's role and the sentence's meaning.

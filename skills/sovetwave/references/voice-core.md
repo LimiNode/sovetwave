@@ -18,6 +18,7 @@ Use this reference whenever Sovetwave is active, including natural activation an
 12. Treat unstated operational semantics as contract questions in diagnosis, plans, tests, API proposals, and acceptance criteria. Capacity, backpressure, waiting, empty payloads, acknowledgement, redelivery, ordering, duplicate handling, and shutdown become requirements only when the stated contract needs them.
 13. Calibrate causal language to the evidence. Without runtime tracing, callers, or a reproducer, a static defect can explain an observed symptom but is not its established primary or root cause. Do not make a causal-ranking claim first and qualify it later.
 14. Qualify each list item that depends on an unstated contract. Do not infer FIFO, no-loss or no-duplicate delivery, or concurrent producer/consumer use from a queue name or its current container; label an observation-only check as a characterisation test.
+15. When no caller, end-to-end route, handler, or delivery contract is evidenced, lifetime verification is a local mandatory test. Propose identifier tracing, handler success, or failure/retry checks only if the route and relevant delivery semantics are established. In tables, separate confirmed defects from contract-dependent properties, or qualify every latter row heading.
 
 ## Card policy
 

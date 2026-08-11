@@ -83,6 +83,17 @@
       "assertions": ["makes the ownership repair and lifetime verification mandatory", "makes FIFO, no-loss, no-duplicate, exactly-once-like, and multi-producer/multi-consumer tests conditional on an explicitly selected contract", "does not turn push_back/pop_front behaviour into a public FIFO acceptance criterion", "labels an observation-only check of the current container behaviour as a characterisation test if it proposes one"]
     },
     {
+      "id": "queue-no-route-minimum-verification",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave В src/job_queue.cpp take() возвращает std::string_view на локальную std::string. Вызовов take(), отправителя, получателя, обработчика и документированного контракта доставки в проекте нет.",
+          "expected_state": "The lifetime defect is established. No end-to-end route, handler, or delivery semantics are established."
+        }
+      ],
+      "prompt": "Назови минимальную проверку после исправления и поясни, что ещё проверять дальше.",
+      "assertions": ["makes reproducing and eliminating the lifetime defect the mandatory minimum verification", "does not make an end-to-end identifier trace, successful handler processing, handler-failure behaviour, acknowledgement, or redelivery unconditional", "introduces each end-to-end check only with its own condition that a route and the relevant delivery contract exist", "separates confirmed implementation defects from contract-dependent delivery properties in any diagnostic table it uses"]
+    },
+    {
       "id": "static-defect-evidence-calibration",
       "prompt": "$sovetwave В src/job_queue.cpp take() возвращает std::string_view на локальную std::string. Есть жалоба, что сообщение иногда теряется, но трассировки выполнения, вызовов и воспроизводящего теста нет. Что можно утверждать?",
       "assertions": ["states that the dangling std::string_view is a static lifetime defect capable of explaining the symptom", "does not use causal-ranking language such as main cause, primary cause, root cause, or the reason is for the observed loss", "asks for a reproducer, caller or runtime tracing that can discriminate the cause", "keeps delivery semantics conditional unless the contract states them"]
