@@ -148,13 +148,22 @@ def run_variant(
         if dry_run:
             result["status"] = "planned"
             return result
-        completed = subprocess.run(command, cwd=workspace, text=True, capture_output=True, timeout=timeout, check=False)
-        response = response_path.read_text(encoding="utf-8") if response_path.exists() else completed.stdout
+        completed = subprocess.run(
+            command,
+            cwd=workspace,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+        )
+        response = response_path.read_text(encoding="utf-8") if response_path.exists() else (completed.stdout or "")
         result.update({
             "status": "completed" if completed.returncode == 0 else "failed",
             "returncode": completed.returncode,
             "response": response.strip(),
-            "stderr": redact_secrets(completed.stderr.strip()),
+            "stderr": redact_secrets((completed.stderr or "").strip()),
         })
         return result
 

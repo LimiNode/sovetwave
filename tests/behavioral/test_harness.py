@@ -8,12 +8,13 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_model_evals import redact_secrets
+from run_model_evals import redact_secrets, run_variant
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -63,6 +64,17 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn('model_provider="local-lb"', command)
             self.assertIn('model_providers.local-lb.base_url="http://127.0.0.1:2455/backend-api/codex"', command)
             self.assertIn("model_providers.local-lb.requires_openai_auth=true", command)
+
+    def test_live_run_uses_utf8_and_handles_missing_streams(self) -> None:
+        completed = subprocess.CompletedProcess(args=["codex"], returncode=1, stdout=None, stderr=None)
+        case = {"id": "sample", "prompt": "Explain"}
+        with patch("run_model_evals.subprocess.run", return_value=completed) as run:
+            result = run_variant("codex", case, False, None, 30, False)
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["response"], "")
+        self.assertEqual(result["stderr"], "")
+        self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
+        self.assertEqual(run.call_args.kwargs["errors"], "replace")
 
     def test_comparison_sheet_contains_both_variants(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
