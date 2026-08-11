@@ -47,12 +47,29 @@ def select(cards: list[dict[str, object]], requested: dict[str, set[str]], maxim
     return selected
 
 
+def vocabulary(corpus: dict[str, object]) -> dict[str, list[str]]:
+    cards = corpus["cards"]
+    return {
+        "scenes": sorted({tag for card in cards for tag in card["scenes"]}),
+        "domains": sorted({tag for card in cards for tag in card["domains"]}),
+        "traits": sorted({tag for card in cards for tag in card["traits"]}),
+        "blocked_contexts": sorted(corpus["blocked_contexts"]),
+    }
+
+
+def reject_unknown(parser: argparse.ArgumentParser, label: str, supplied: set[str], known: set[str]) -> None:
+    unknown = sorted(supplied - known)
+    if unknown:
+        parser.error(f"unknown {label}: {', '.join(unknown)}; known {label}s: {', '.join(sorted(known))}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--scene", action="append", default=[])
     parser.add_argument("--domain", action="append", default=[])
     parser.add_argument("--trait", action="append", default=[])
-    parser.add_argument("--max", type=int, default=3)
+    parser.add_argument("--max", type=int, default=2)
+    parser.add_argument("--list-tags", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     if args.max < 0 or args.max > 3:
@@ -60,11 +77,27 @@ def main() -> int:
 
     cards_path = Path(__file__).parents[1] / "references" / "voice-cards.json"
     corpus = json.loads(cards_path.read_text(encoding="utf-8"))
+    known = vocabulary(corpus)
+    if args.list_tags:
+        if args.scene or args.domain or args.trait:
+            parser.error("--list-tags cannot be combined with --scene, --domain, or --trait")
+        if args.json:
+            print(json.dumps(known, ensure_ascii=False, indent=2))
+        else:
+            for label, values in known.items():
+                print(f"{label}: {', '.join(values)}")
+        return 0
+
     requested = {
         "scenes": set(args.scene),
         "domains": set(args.domain),
         "traits": set(args.trait),
     }
+    if not any(requested.values()):
+        parser.error("provide at least one --scene, --domain, or --trait; use --list-tags to inspect the vocabulary")
+    reject_unknown(parser, "scene", requested["scenes"], set(known["scenes"]) | set(known["blocked_contexts"]))
+    reject_unknown(parser, "domain", requested["domains"], set(known["domains"]) | set(known["blocked_contexts"]))
+    reject_unknown(parser, "trait", requested["traits"], set(known["traits"]))
     blocked = set(corpus["blocked_contexts"])
     if blocked.intersection(requested["scenes"] | requested["domains"]):
         selected: list[dict[str, object]] = []

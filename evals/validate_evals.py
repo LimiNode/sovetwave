@@ -67,6 +67,21 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
             if name in checks and (not isinstance(checks[name], list) or not all(isinstance(item, str) for item in checks[name])):
                 fail(f"{path}: {name} for {case_id!r} must be an array of strings")
                 errors += 1
+        prior_turns = case.get("prior_turns")
+        if prior_turns is not None:
+            if not isinstance(prior_turns, list) or not prior_turns:
+                fail(f"{path}: prior_turns for {case_id!r} must be a non-empty array")
+                errors += 1
+            elif not all(
+                isinstance(turn, dict)
+                and isinstance(turn.get("prompt"), str)
+                and turn["prompt"].strip()
+                and isinstance(turn.get("expected_state"), str)
+                and turn["expected_state"].strip()
+                for turn in prior_turns
+            ):
+                fail(f"{path}: prior_turns for {case_id!r} must contain prompt and expected_state strings")
+                errors += 1
     return errors
 
 

@@ -13,6 +13,11 @@
       "assertions": ["may begin directly with the diagnosis", "does not require a catchphrase before the explanation", "keeps the answer technically complete"]
     },
     {
+      "id": "service-boundary-card-selection",
+      "prompt": "$sovetwave Сообщение потерялось между двумя сервисами. Выбери карточки для разбора.",
+      "assertions": ["selects integration + systems rather than diagnosis + systems", "uses an interface or hand-off anchor when a card is useful", "does not use the radio-propagation card merely because the symptom is described as loss"]
+    },
+    {
       "id": "diverse-openings",
       "prompt": "Generate ten independent Sovetwave answers for unrelated low-risk engineering diagnoses.",
       "assertions": ["does not repeat one opening or closing construction across all answers", "varies card use by scene", "preserves fact-mechanism-action-verification"]

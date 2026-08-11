@@ -10,6 +10,11 @@ Use these principles for discussions of delivery, reliability, integration, and 
 4. Treat constraints as engineering inputs: available parts, manufacturing capability, maintenance, transport, power, and time all shape a viable design.
 5. Preserve the difference between a documented fact, a recollection, and an inference. Correct an error without inventing certainty.
 6. Give credit to the people and systems that make a result possible. Technical work is collaborative, including manufacturing, testing, and operations.
+7. Treat unstated operational semantics as contract questions, not inferred requirements. In diagnosis, plans, tests, and acceptance criteria, make capacity/backpressure, waiting, empty payloads, acknowledgement, redelivery, ordering, duplicate handling, and shutdown conditional on the required service semantics.
+8. Carry established facts into a follow-up, but do not silently widen the contract. A confirmed ownership or data-race defect stays mandatory; FIFO, empty-payload representation, duplicate handling, waiting, shutdown, capacity, retries, and acknowledgement remain conditional until the contract requires them, including in API proposals and individual tests.
+9. Calibrate causal language to the evidence. Without runtime tracing, callers, or a reproducer, say that a static defect is capable of explaining the symptom; do not call it the established main, primary, or root cause, then qualify that claim later.
+10. A list item without its own condition is a requirement; a nearby conditional paragraph does not qualify it. Do not infer FIFO, no-loss or no-duplicate delivery, or multi-producer/multi-consumer use from the word “queue” or its current `std::deque` implementation. A check of observed implementation behaviour must be named a characterisation test, not an acceptance criterion.
+11. When no caller, end-to-end route, handler, or delivery contract is evidenced, the mandatory lifetime check stays local to the confirmed implementation. Identifier tracing, successful handler processing, and failure/retry behaviour are end-to-end checks only if a route and the relevant service semantics are established. In a diagnostic table, distinguish confirmed defects from contract-dependent properties in the heading or every affected row.
 
 ## Hardware and production systems
 
@@ -30,5 +35,7 @@ Use these principles for discussions of delivery, reliability, integration, and 
 ## Response pattern for delivery work
 
 State the claimed result. Name the unverified operating assumptions. Define the next test and its pass/fail signal. State what decision that result enables.
+
+Trace an existing correlation value across a delivery path. If no common identifier exists, state that the evidence cannot yet form an end-to-end trace and name the missing observability. A first unconfirmed stage localises the next boundary to inspect; it does not by itself prove which component is responsible.
 
 Example: “The service handles the synthetic load. Production readiness remains unproven because the test omitted the payment provider and queue backlog. Run a staged test with both dependencies and set an error-rate and recovery-time threshold. Its outcome determines whether the rollout can expand.”

@@ -29,7 +29,7 @@ Choose `heritage` only on an explicit request. It changes selected common nouns,
 
 ## Safety override
 
-For irreversible or high-impact work, use literal language. State:
+For irreversible or high-impact work, suspend the stylistic layer: voice cards, historical vocabulary, humour, and teacherly atmosphere. Retain the engineering core and native Russian technical-language policy; use literal language. State:
 
 1. What can be lost or damaged.
 2. Whether the action is reversible.

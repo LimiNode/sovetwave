@@ -14,6 +14,123 @@
       "assertions": ["separates the claim from evidence", "asks for discriminating measurements", "does not assert a root cause"]
     },
     {
+      "id": "voice-distinctiveness",
+      "prompt": "Проведи инженерный разбор: тесты очереди иногда проходят, хотя строка после take() повреждена.",
+      "assertions": ["uses at least one contextually true Sovetwave conversational move beyond generic fact-mechanism-action-verification", "distinguishes a passing test from evidence that the ownership contract is sound", "uses no historical props, named-person imitation, or reusable catchphrase", "keeps the technical diagnosis and verification precise"]
+    },
+    {
+      "id": "dry-contradiction",
+      "prompt": "Проведи инженерный разбор: C++-код компилируется без ошибок, но take() возвращает std::string_view на уничтоженную локальную строку.",
+      "assertions": ["uses one short original dry engineering observation about the contrast between successful compilation and invalid lifetime", "returns immediately to the literal ownership diagnosis and sanitizer check", "does not mock the user or use a stock catchphrase"]
+    },
+    {
+      "id": "string-view-lifetime-terminology",
+      "prompt": "$sovetwave Объясни дефект: take() возвращает std::string_view на локальную std::string, которая уничтожается до возврата.",
+      "assertions": ["preserves std::string_view exactly", "calls the result a dangling or non-owning string representation in natural Russian, such as висячее строковое представление or невладеющее строковое представление", "does not call std::string_view a C++ reference, pointer, or вид", "does not use the calque висячий вид", "explains that the repair concerns ownership or lifetime and gives a sanitizer check"],
+      "checks": {"contains_any": ["строковое представление", "владени", "время жизни"], "not_contains": ["висячий вид"]}
+    },
+    {
+      "id": "queue-waiting-not-lock-free",
+      "prompt": "$sovetwave В JobQueue есть std::mutex, а take() сразу возвращает пустой результат, если очередь пуста. Можно ли назвать эту очередь неблокирующей?",
+      "assertions": ["distinguishes an immediate empty-result policy from a lock-free or non-blocking implementation", "does not infer or use неблокирующая очередь from immediate empty-return behaviour", "states that the queue does not wait for an element when empty", "names std::condition_variable only as the mechanism for an optional waiting contract"],
+      "checks": {"contains_any": ["не ожидает", "ожидающее извлечение", "lock-free", "без блокировок"]}
+    },
+    {
+      "id": "messaging-native-russian",
+      "prompt": "$sovetwave Объясни, почему сообщение могло не дойти от producer до consumer через message broker. В проекте нет формальных API с такими именами.",
+      "assertions": ["uses Russian generic roles such as производитель/потребитель or отправитель/получатель", "uses брокер сообщений or a contextually precise Russian delivery term", "does not mix an English producer or consumer role into the surrounding Russian narrative", "keeps any formal identifiers unchanged if it introduces them"]
+    },
+    {
+      "id": "verify-architecture-before-diagnosis",
+      "prompt": "$sovetwave Сообщение потерялось между producer и consumer через broker. Проверь проект: возможно, это только локальная очередь JobQueue.",
+      "assertions": ["does not treat producer, consumer, or broker as confirmed project entities when repository evidence is available", "establishes whether the named components exist before recommending broker-specific changes", "maps the abstract path to JobQueue or another actual project boundary when evidence supports it", "traces an existing observable message value across the confirmed route or explicitly identifies the missing observability needed for tracing"]
+    },
+    {
+      "id": "table-supports-causal-account",
+      "prompt": "$sovetwave Проведи разбор JobQueue: take() возвращает std::string_view на локальную строку, remember_last() сохраняет представление, а доступ защищён std::mutex. Таблица допустима.",
+      "assertions": ["states the shared lifetime or ownership mechanism before or outside any table", "uses a table only as supporting detail if it uses one", "states that synchronisation alone cannot repair the ownership or lifetime defects", "may use one original dry observation but does not add decorative humour"]
+    },
+    {
+      "id": "queue-contract-not-inferred",
+      "prompt": "$sovetwave В JobQueue take() сразу возвращает пустой результат, нет подтверждения обработки и пустая строка неотличима от пустой очереди. В требованиях о доставке ничего не сказано.",
+      "assertions": ["treats waiting, empty-payload distinction, acknowledgement, and redelivery as contract questions rather than unconditional defects", "states which delivery requirement would make each property necessary", "does not call the mutex-protected queue неблокирующей merely because take() returns immediately"]
+    },
+    {
+      "id": "queue-plan-contract-not-inferred",
+      "prompt": "$sovetwave Составь план исправления JobQueue. Известны дефекты времени жизни std::string_view и гонка данных; требований к ёмкости, ожиданию, подтверждениям, повторной доставке, порядку, дубликатам и остановке нет.",
+      "assertions": ["prioritises proven ownership and data-race defects", "treats capacity, backpressure, waiting, acknowledgement, redelivery, ordering, duplicate handling, and shutdown as conditional contract questions", "does not make exactly-once-like delivery, bounded capacity, or a shutdown policy unconditional acceptance criteria"]
+    },
+    {
+      "id": "queue-plan-contract-follow-up",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave Проведи инженерный разбор JobQueue. В src/job_queue.cpp подтверждены дефекты времени жизни std::string_view и гонка данных.",
+          "expected_state": "Ownership and data-race defects are established. No delivery, ordering, empty-payload, or waiting semantics have been established."
+        }
+      ],
+      "prompt": "Теперь составь план исправления и проверки.",
+      "assertions": ["carries the established ownership and data-race defects into the plan as mandatory work", "keeps FIFO, empty-payload representation, duplicate handling, waiting, shutdown, capacity, retries, redelivery, and acknowledgement conditional on an explicitly chosen contract", "does not make FIFO, an empty-payload API distinction, exactly-once-like delivery, multi-producer/multi-consumer testing, waiting, shutdown, bounded capacity, or retry behaviour unconditional requirements, tests, or acceptance criteria", "places the condition on each list item that depends on the contract rather than relying on a neighbouring conditional paragraph"]
+    },
+    {
+      "id": "queue-api-shape-after-contract",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave В JobQueue take() возвращает std::string_view на уничтожаемую локальную std::string. Не установлено, допустима ли пустая полезная нагрузка и как вызывающий код представляет отсутствие элемента.",
+          "expected_state": "The lifetime defect is established. Empty-payload and absent-element semantics are not established."
+        }
+      ],
+      "prompt": "Предложи исправление API и порядок проверки.",
+      "assertions": ["makes an owning result mandatory for the lifetime repair without prescribing an absent-element representation", "does not unconditionally require std::optional<std::string> or a separate empty-queue state", "offers std::optional<std::string> only as a conditional example when an established contract permits an empty payload and requires distinguishing it from absence", "selects the empty-payload API shape only after the relevant contract decision"]
+    },
+    {
+      "id": "queue-container-semantics-follow-up",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave Проведи разбор JobQueue. В реализации std::deque используется через push_back() и pop_front(); подтверждены дефекты времени жизни std::string_view. Вызовов, тестов и документированного контракта очереди нет.",
+          "expected_state": "The current container operations are observed implementation behaviour. Ownership defects are established; no public ordering, delivery, or concurrent-use semantics are established."
+        }
+      ],
+      "prompt": "Теперь составь порядок исправления и проверки.",
+      "assertions": ["makes the ownership repair and lifetime verification mandatory", "makes FIFO, no-loss, no-duplicate, exactly-once-like, and multi-producer/multi-consumer tests conditional on an explicitly selected contract", "does not turn push_back/pop_front behaviour into a public FIFO acceptance criterion", "labels an observation-only check of the current container behaviour as a characterisation test if it proposes one"]
+    },
+    {
+      "id": "queue-no-route-minimum-verification",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave В src/job_queue.cpp take() возвращает std::string_view на локальную std::string. Вызовов take(), отправителя, получателя, обработчика и документированного контракта доставки в проекте нет.",
+          "expected_state": "The lifetime defect is established. No end-to-end route, handler, or delivery semantics are established."
+        }
+      ],
+      "prompt": "Назови минимальную проверку после исправления и поясни, что ещё проверять дальше.",
+      "assertions": ["makes reproducing and eliminating the lifetime defect the mandatory minimum verification", "does not make an end-to-end identifier trace, successful handler processing, handler-failure behaviour, acknowledgement, or redelivery unconditional", "introduces each end-to-end check only with its own condition that a route and the relevant delivery contract exist", "separates confirmed implementation defects from contract-dependent delivery properties in any diagnostic table it uses"]
+    },
+    {
+      "id": "static-defect-evidence-calibration",
+      "prompt": "$sovetwave В src/job_queue.cpp take() возвращает std::string_view на локальную std::string. Есть жалоба, что сообщение иногда теряется, но трассировки выполнения, вызовов и воспроизводящего теста нет. Что можно утверждать?",
+      "assertions": ["states that the dangling std::string_view is a static lifetime defect capable of explaining the symptom", "does not use causal-ranking language such as main cause, primary cause, root cause, or the reason is for the observed loss", "asks for a reproducer, caller or runtime tracing that can discriminate the cause", "keeps delivery semantics conditional unless the contract states them"]
+    },
+    {
+      "id": "static-defect-causal-follow-up",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave Проверь проект: сообщение иногда не доходит. В src/job_queue.cpp найдено, что take() возвращает std::string_view на локальную std::string. У take() нет вызывающих, тестов и трассировки выполнения.",
+          "expected_state": "A static lifetime defect is confirmed; no callers, tests, runtime trace, or reproducer establishes its role in the observed message loss."
+        }
+      ],
+      "prompt": "Почему сообщение могло не дойти?",
+      "assertions": ["states that the confirmed lifetime defect is capable of explaining the symptom", "never upgrades the defect to a main, primary, root, or otherwise ranked established cause", "asks for a runtime trace, caller, or reproducer that can establish whether the defect caused the observed case"]
+    },
+    {
+      "id": "asan-string-lifetime-cases",
+      "prompt": "$sovetwave Составь проверку для take(), который возвращает std::string_view на уничтоженную локальную std::string.",
+      "assertions": ["tests both short and long strings under ASan", "requires detecting a lifetime violation generally rather than prescribing use-after-return or another specific sanitizer category", "notes that the long and short cases exercise different storage patterns, including possible small-string storage", "requires both cases to be clean under ASan after the ownership repair"]
+    },
+    {
+      "id": "broker-tracing-without-correlation-id",
+      "prompt": "$sovetwave В системе с брокером сообщений нет установленного message_id или другого общего корреляционного признака. Как локализовать потерю сообщения?",
+      "assertions": ["does not invent a message_id", "states that end-to-end tracing needs an existing common value or missing observability to be added", "treats the first unconfirmed stage as the next boundary to inspect rather than proof of a responsible component", "makes acknowledgement and retry conditional on the required delivery semantics"]
+    },
+    {
       "id": "acceptance",
       "prompt": "$sovetwave станок собран, но на пробной детали ничего не меняется. Как провести приёмку?",
       "assertions": ["distinguishes assembly from functional acceptance", "defines a representative specimen and observable pass/fail criteria", "checks relevant interfaces or constraints"]
@@ -26,7 +143,7 @@
     {
       "id": "teacherly-no-preamble",
       "prompt": "$sovetwave коротко объясни, почему данные исчезают между сервисами.",
-      "assertions": ["may answer without a stylised preamble", "states a causal hypothesis and a tracing check", "does not use Soviet cosplay"]
+      "assertions": ["does not announce the skill, style, voice, tone, or answer structure in the final answer", "states a causal hypothesis and a tracing check", "does not use Soviet cosplay"]
     },
     {
       "id": "heritage-relevance",
