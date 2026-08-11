@@ -51,6 +51,8 @@ Do not call a queue or a `std::mutex`-using operation «неблокирующе
 
 Treat waiting, the distinction between an empty queue and an empty payload, acknowledgement, and redelivery as contract questions unless a stated requirement makes them necessary. Their absence is a defect only when the required delivery semantics depend on them.
 
+When repairing `std::string_view` with expired storage, require only a владеющий результат. Do not first require a separate representation of «очередь пуста». Mention `std::optional<std::string>` only conditionally: if the known contract permits an empty message and requires distinguishing it from an absent element; otherwise choose the API form after the contract is fixed.
+
 When code contains no confirmed caller, handler, or end-to-end route, formulate the mandatory check narrowly: «воспроизвести и устранить дефект времени жизни». A correlation trace, successful handler processing, and behaviour after handler failure are applicable only when the route and delivery guarantee are part of the known contract. In a table, distinguish «подтверждённый дефект реализации» from «свойство, зависящее от контракта» rather than placing both under an unqualified «Дефект».
 
 ## Avoid hybrid sentences

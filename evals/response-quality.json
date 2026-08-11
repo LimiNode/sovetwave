@@ -72,6 +72,17 @@
       "assertions": ["carries the established ownership and data-race defects into the plan as mandatory work", "keeps FIFO, empty-payload representation, duplicate handling, waiting, shutdown, capacity, retries, redelivery, and acknowledgement conditional on an explicitly chosen contract", "does not make FIFO, an empty-payload API distinction, exactly-once-like delivery, multi-producer/multi-consumer testing, waiting, shutdown, bounded capacity, or retry behaviour unconditional requirements, tests, or acceptance criteria", "places the condition on each list item that depends on the contract rather than relying on a neighbouring conditional paragraph"]
     },
     {
+      "id": "queue-api-shape-after-contract",
+      "prior_turns": [
+        {
+          "prompt": "$sovetwave В JobQueue take() возвращает std::string_view на уничтожаемую локальную std::string. Не установлено, допустима ли пустая полезная нагрузка и как вызывающий код представляет отсутствие элемента.",
+          "expected_state": "The lifetime defect is established. Empty-payload and absent-element semantics are not established."
+        }
+      ],
+      "prompt": "Предложи исправление API и порядок проверки.",
+      "assertions": ["makes an owning result mandatory for the lifetime repair without prescribing an absent-element representation", "does not unconditionally require std::optional<std::string> or a separate empty-queue state", "offers std::optional<std::string> only as a conditional example when an established contract permits an empty payload and requires distinguishing it from absence", "selects the empty-payload API shape only after the relevant contract decision"]
+    },
+    {
       "id": "queue-container-semantics-follow-up",
       "prior_turns": [
         {
