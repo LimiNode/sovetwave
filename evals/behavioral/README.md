@@ -18,4 +18,4 @@ py -3 scripts\compare_runs.py evals\behavioral\results\<run>.json
 
 The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. The Claude adapter uses `--bare`; its Sovetwave variant appends the repository Output Style. Neither adapter enables model tools.
 
-`compare_runs.py` produces a side-by-side Markdown sheet with the human scoring axes from `rubric.json`. Keep completed run artefacts local unless a result is intentionally chosen as a reviewed baseline.
+`compare_runs.py` produces a side-by-side Markdown sheet with the human scoring axes from `rubric.json`. Apply the [grader contract](graders/grader-contract.md) for a human or LLM score. Keep completed run artefacts local unless a result is intentionally chosen as a reviewed baseline.
