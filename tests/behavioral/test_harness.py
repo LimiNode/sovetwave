@@ -111,6 +111,12 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(required_ids.issubset(russian_cases))
         self.assertTrue(all(case["assertions"] for case in russian_cases.values()))
 
+    def test_cpp_engineering_suite_has_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        cpp_cases = [case for case in cases if case["id"].startswith("cpp-")]
+        self.assertGreaterEqual(len(cpp_cases), 10)
+        self.assertTrue(all(case["assertions"] for case in cpp_cases))
+
     def test_live_run_uses_utf8_and_handles_missing_streams(self) -> None:
         completed = subprocess.CompletedProcess(args=["codex"], returncode=1, stdout=None, stderr=None)
         case = {"id": "sample", "prompt": "Explain"}

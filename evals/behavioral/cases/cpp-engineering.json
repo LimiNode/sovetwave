@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "suite": "cpp-engineering",
+  "cases": [
+    {
+      "id": "cpp-vector-invalidation",
+      "prompt": "В C++17 `std::vector<int> values` имеет `reserve(1)`, затем в коде сохраняют `int* first = &values[0]` и вызывают второй `push_back`. После этого `first` передают в другой слой. Что проверить и что можно утверждать?",
+      "assertions": ["identifies possible invalidation after reallocation", "requires checking uses outside the mutating function", "does not call one successful run proof of pointer validity"]
+    },
+    {
+      "id": "cpp-exception-ownership",
+      "prompt": "В C++ коде `Node* node = new Node; table.emplace(key, node);` вызывается до `delete node`; `table` хранит обычные указатели, а `emplace` может выбросить исключение. Проведи review владения.",
+      "assertions": ["tracks ownership on success and exception paths", "identifies the raw-pointer lifetime risk without assuming the exact container outcome", "proposes an ownership representation or explicit cleanup boundary"]
+    },
+    {
+      "id": "cpp-moved-from-state",
+      "prompt": "Функция делает `std::string payload = std::move(request.body);` и затем считает `request.body.empty()` доказательством, что тело уже обработано. Верно ли это?",
+      "assertions": ["does not assume a moved-from string is necessarily empty", "distinguishes object validity from a promised value", "asks for or proposes an explicit processed-state invariant"]
+    },
+    {
+      "id": "cpp-behaviour-classification",
+      "prompt": "Один C++ билд считает plain `char` signed, другой unsigned; код ветвится по `std::numeric_limits<char>::is_signed`. Как точно описать это различие и что не следует называть UB?",
+      "assertions": ["classifies the signedness choice as implementation-defined rather than automatically undefined behaviour", "preserves formal identifiers", "uses Russian terminology for the behaviour class"]
+    },
+    {
+      "id": "cpp-optimization-clue",
+      "prompt": "C++ тест падает с `-O2`, но проходит с `-O0`. Команда предлагает оставить `-O0` в production как fix. Как ответить?",
+      "assertions": ["treats the optimisation difference as diagnostic evidence", "does not present disabling optimisation as a repair", "asks for a minimal reproducer and an invariant or rule to verify"]
+    },
+    {
+      "id": "cpp-data-race-read",
+      "prompt": "Один поток вызывает `jobs.push_back(job)`, другой одновременно проверяет `jobs.empty()`; `jobs` — обычный `std::vector<Job>`, синхронизации нет. Некоторые считают чтение harmless. Что установить до исправления?",
+      "assertions": ["identifies that reads as well as writes matter for shared non-atomic state", "does not call the read harmless", "asks to establish the intended synchronization or concurrency contract"]
+    },
+    {
+      "id": "cpp-condition-variable-predicate",
+      "prompt": "Потребитель должен ждать задачу. В C++17 он вызывает `cv.wait(lock);`, затем без проверки читает `queue.front()`. Какие условия и проверку нужно добавить?",
+      "assertions": ["requires a predicate or loop that rechecks the queue condition", "ties waiting behaviour to the stated consumer requirement", "does not invent delivery guarantees unrelated to waiting"]
+    },
+    {
+      "id": "cpp-sanitizer-scope",
+      "prompt": "После исправления C++ кода ASan не нашёл ошибок в одном тесте. Можно ли написать, что use-after-free устранён во всём модуле?",
+      "assertions": ["treats a clean sanitizer run as evidence for the executed path rather than complete proof", "asks for relevant coverage or a reproducer", "does not dismiss sanitizers as useless"]
+    },
+    {
+      "id": "cpp-odr-abi-boundary",
+      "prompt": "После обновления shared library приложение стало падать только у одного клиента. Есть подозрение, что `Config` собран с разными определениями по разные стороны ABI boundary, но точные заголовки и флаги неизвестны. Что можно утверждать и что проверить?",
+      "assertions": ["keeps the ODR or ABI issue conditional until build evidence is available", "asks for headers, compilation flags, and boundary details", "does not call the suspected mismatch a proven root cause"]
+    },
+    {
+      "id": "cpp-uninitialized-state",
+      "prompt": "В C++17 локальный `bool ready;` читается в `if (ready)` до присваивания. В debug тест обычно проходит. Как сформулировать дефект и минимальную проверку?",
+      "assertions": ["identifies reading an uninitialized state as a defect", "does not treat a passing debug test as proof", "requires explicit initialization and a focused check"]
+    }
+  ]
+}
