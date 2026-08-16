@@ -5,7 +5,7 @@
     {
       "id": "russian-pr-status-report",
       "prompt": "Коротко отчитайся: открыт Draft PR #310 `Enforce sync header ownership and document usage`; head `codex/sync-include-discipline-docs`, base `main`, commit `3c1056de4`. Прошли git diff --check, focused tests для C++11 и C++17, а также `test_sync_capture` через CTest. Untracked `.claude/`, `guides/vector-backend-roadmap.md` и `tmp/` в PR не вошли.",
-      "assertions": ["keeps formal identifiers, commands, paths, tool names, and test names exact", "uses Russian for generic PR state, branch role, test scope, and file state", "does not translate `main`, `CTest`, C++ versions, hashes, or paths"]
+      "assertions": ["keeps formal identifiers, commands, paths, tool names, and test names exact", "uses Russian for generic PR state, commit role, branch role, test scope, and file state", "does not translate `main`, `CTest`, C++ versions, hashes, or paths"]
     },
     {
       "id": "russian-ci-result-summary",

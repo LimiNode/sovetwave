@@ -4,11 +4,12 @@ Read this reference for Russian reports and discussions about Git, pull requests
 
 ## Pull requests and Git
 
-Keep `PR`, `Git`, commit hashes, branch names, commands, paths, and file names unchanged. Describe their ordinary roles in Russian.
+Keep `PR`, `Git`, commit hashes, branch names, commands, paths, and file names unchanged. Describe their ordinary roles in Russian: «коммит» names the Git object, while its hash remains exact.
 
 | English wording | Role in the sentence | Prefer when the meaning fits |
 |---|---|---|
 | draft PR | PR state | черновой PR |
+| commit / commit hash | Git object / identifier | коммит / хэш коммита |
 | base branch | target role | целевая ветка |
 | head branch | source role | ветка изменений / исходная ветка |
 | untracked files | Git state | неотслеживаемые файлы |
