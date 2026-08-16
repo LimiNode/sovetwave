@@ -32,6 +32,10 @@ def load_cases(case_dir: Path) -> list[dict[str, Any]]:
         for case in suite["cases"]:
             if not isinstance(case, dict) or not isinstance(case.get("id"), str) or not isinstance(case.get("prompt"), str):
                 raise ValueError(f"{path}: every case needs string id and prompt")
+            if not isinstance(case.get("assertions"), list) or not all(
+                isinstance(assertion, str) and assertion.strip() for assertion in case["assertions"]
+            ):
+                raise ValueError(f"{path}: every case needs non-empty string assertions")
             if case["id"] in seen:
                 raise ValueError(f"duplicate behavioral case id: {case['id']}")
             seen.add(case["id"])
@@ -173,6 +177,7 @@ def main() -> int:
     parser.add_argument("--provider", choices=("codex", "claude"), required=True)
     parser.add_argument("--model")
     parser.add_argument("--case-dir", type=Path, default=DEFAULT_CASES)
+    parser.add_argument("--case-id", help="run exactly one behavioral case by id")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--timeout", type=int, default=120)
@@ -197,6 +202,10 @@ def main() -> int:
         parser.error(str(error))
 
     cases = load_cases(args.case_dir)
+    if args.case_id is not None:
+        cases = [case for case in cases if case["id"] == args.case_id]
+        if not cases:
+            parser.error(f"no behavioral case with id {args.case_id!r}")
     if args.limit is not None:
         cases = cases[:args.limit]
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")

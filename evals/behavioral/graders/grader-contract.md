@@ -4,6 +4,8 @@ Score the baseline and Sovetwave responses independently on each applicable axis
 
 Use the case assertions as observable checks, not as prose to reward mechanically. Leave an axis blank when it is not relevant to the case; record one short evidence-based note for every score below 3.
 
+For `english_intrusion`, do not penalise a formal identifier, command, path, API or protocol name, tool name, project entity, status code, package name, or established special term. Penalise English that stands in for an equally precise ordinary Russian role, state, action, property, or description.
+
 For an LLM grader, provide the prompt, both responses, the applicable rubric rows, and this contract. Require JSON with one object per axis:
 
 ```json

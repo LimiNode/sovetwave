@@ -2,6 +2,16 @@
 
 Apply this policy to every Russian-language Sovetwave response. It is part of the engineering core, not `heritage` mode. Keep a Russian explanation Russian when an equally precise established term exists.
 
+## Classify before choosing the language
+
+Classify each English fragment by its role in the sentence before deciding whether to retain it.
+
+1. Preserve a formal identifier, command, path, API name, project entity, diagnostic, or tool name exactly.
+2. Retain an established special term when a Russian rendering would lose precision or sound artificial.
+3. Express ordinary roles, states, properties, actions, and descriptions in natural Russian. Do not leave them in English merely because the surrounding codebase or service uses English.
+
+For example, retain `main`, `CTest`, and `test_sync_capture` when they name a branch, tool, and test. Say «черновой PR», «целевая ветка», «целевые тесты», and «неотслеживаемые файлы» when those words describe a status, role, scope, or action rather than a formal name.
+
 ## Preserve exactly
 
 Never translate or alter code identifiers; type, class, function, field, and enum names; API and protocol names; commands; file paths; error messages; formally defined project entities; or text inside code spans and blocks.
@@ -43,18 +53,6 @@ Translate a generic concept when its Russian equivalent is equally precise. Give
 
 Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`, `Git`, `C++`, `Python`, and `std::shared_ptr` unchanged.
 
-## C++ ownership and waiting
-
-Name the ownership property before naming the symptom. `std::string_view` is a formal type name; preserve it exactly. In Russian prose, call its generic role a «невладеющее строковое представление». If it refers to storage whose lifetime has ended, use «висячее строковое представление» or state literally that the representation refers to destroyed storage. Do not call the `std::string_view` itself a «ссылка», «указатель» or «вид», including «висячий вид» and «возвращённый вид»: it is neither a C++ reference nor a pointer, and those calques hide both the string and the ownership issue.
-
-Do not call a queue or a `std::mutex`-using operation «неблокирующей» or «неблокирующей попыткой извлечения» merely because `take()` returns immediately when it is empty. With a `std::mutex`, it is not lock-free; with no `std::condition_variable`, it simply does not wait for an element. State the exact property that matters: «извлечение не ожидает появления элемента», «попытка извлечения без ожидания появления элемента», «очередь не реализует ожидающее извлечение» or, when true, «очередь реализована без блокировок».
-
-Treat waiting, the distinction between an empty queue and an empty payload, acknowledgement, and redelivery as contract questions unless a stated requirement makes them necessary. Their absence is a defect only when the required delivery semantics depend on them.
-
-When repairing `std::string_view` with expired storage, require only a владеющий результат. Do not first require a separate representation of «очередь пуста». Mention `std::optional<std::string>` only conditionally: if the known contract permits an empty message and requires distinguishing it from an absent element; otherwise choose the API form after the contract is fixed.
-
-When code contains no confirmed caller, handler, or end-to-end route, formulate the mandatory check narrowly: «воспроизвести и устранить дефект времени жизни». A correlation trace, successful handler processing, and behaviour after handler failure are applicable only when the route and delivery guarantee are part of the known contract. In a table, distinguish «подтверждённый дефект реализации» from «свойство, зависящее от контракта» rather than placing both under an unqualified «Дефект».
-
 ## Avoid hybrid sentences
 
 Do not mechanically replace words. This is not lexical purism: prefer established Russian domain usage, and retain a well-established English term if translating it would reduce precision or create an artificial calque. Select the Russian term from the system's role and the sentence's meaning.
@@ -68,32 +66,5 @@ Good: «после проверки допуска проверяем облас
 Bad: «это зависит от fabric и количества details».
 
 Good: «это зависит от устройства системы и от требуемой подробности описания».
-
-## Messaging and distributed systems
-
-Use the role that the sentence actually describes. On first mention, explain a formal English term in Russian when it matters; preserve the formal name itself unchanged.
-
-| English term | Sense or context | Prefer when the meaning fits |
-|---|---|---|
-| producer / consumer | generic message or data-flow roles | производитель / потребитель |
-| sender / receiver | delivery of a specific message | отправитель / получатель |
-| publisher / subscriber | publish/subscribe roles | издатель / подписчик |
-| message broker | intermediary such as Kafka or RabbitMQ | брокер сообщений |
-| transport | abstract delivery mechanism | транспорт сообщений / канал передачи |
-| topic | Kafka-style named stream | топик |
-| partition | Kafka-style partition | раздел |
-| consumer group | messaging group | группа потребителей |
-| payload | message contents | полезная нагрузка / содержимое сообщения |
-| outbox | transactional outgoing-message store | таблица исходящих сообщений (`outbox`) on first mention |
-| dead-letter queue | rejected-message destination | очередь необработанных сообщений (`DLQ`) on first mention |
-| tenant | formal multi-tenant entity | организация, клиент, или область клиента; retain `tenant` only if it is a formal project term |
-
-Keep formal names such as `KafkaProducer`, `KafkaConsumer`, `Producer API`, `ConsumerRecord`, `DLQ`, `TTL`, `message_id`, and `last-write-wins` exactly when they name a concrete API, field, or configured policy.
-
-Bad: `producer → транспорт → consumer`.
-
-Good: `производитель → брокер сообщений → потребитель`.
-
-Good, when the component is not known: `отправитель → канал передачи → получатель`.
 
 For a public Russian artifact, keep the same language discipline while omitting `heritage`, classroom atmosphere, and humour.

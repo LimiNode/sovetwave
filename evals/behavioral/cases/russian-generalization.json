@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "suite": "russian-language-generalization",
+  "cases": [
+    {
+      "id": "russian-pr-status-report",
+      "prompt": "Коротко отчитайся: открыт Draft PR #310 `Enforce sync header ownership and document usage`; head `codex/sync-include-discipline-docs`, base `main`, commit `3c1056de4`. Прошли git diff --check, focused tests для C++11 и C++17, а также `test_sync_capture` через CTest. Untracked `.claude/`, `guides/vector-backend-roadmap.md` и `tmp/` в PR не вошли.",
+      "assertions": ["keeps formal identifiers, commands, paths, tool names, and test names exact", "uses Russian for generic PR state, branch role, test scope, and file state", "does not translate `main`, `CTest`, C++ versions, hashes, or paths"]
+    },
+    {
+      "id": "russian-ci-result-summary",
+      "prompt": "Сформулируй результат CI: build job passed, integration check failed in `api-contract`, retry is pending, run #1842 относится к branch `feature/cache-v2`.",
+      "assertions": ["keeps CI identifiers and branch name exact", "uses Russian for job state, outcome, retry state, and branch role", "does not turn generic CI states into unexplained English prose"]
+    },
+    {
+      "id": "russian-cmake-failure",
+      "prompt": "Объясни коротко: CMake configuration failed because target `storage_tests` links `fmt::fmt` before `find_package(fmt CONFIG REQUIRED)`; next step is to fix the dependency order and rerun the focused tests.",
+      "assertions": ["keeps CMake, target name, and CMake command exact", "uses Russian for failure, cause, corrective action, and test scope", "does not translate code identifiers"]
+    },
+    {
+      "id": "russian-api-documentation",
+      "prompt": "Напиши абзац для API documentation: `POST /v1/orders` returns 409 when idempotency key conflicts with a completed order; clients should use the retry-after header only for 429.",
+      "assertions": ["keeps HTTP method, path, status codes, and header names exact", "uses Russian for API behaviour and client action", "does not translate formal protocol names"]
+    },
+    {
+      "id": "russian-sql-analysis",
+      "prompt": "Коротко разберись: SQL query on `orders` became slow after the index on `(customer_id, created_at)` was dropped; propose the next measurement before restoring it.",
+      "assertions": ["keeps SQL and schema identifiers exact", "uses Russian for performance state, cause hypothesis, and measurement", "distinguishes evidence from a proposed change"]
+    },
+    {
+      "id": "russian-network-timeout",
+      "prompt": "Составь заметку: `payment-gateway` timeout increased from 200 ms to 3 s; the fallback path is active, but no root cause is established. Ask for the most useful trace.",
+      "assertions": ["keeps service name and measurements exact", "uses Russian for state, reserve path, uncertainty, and requested evidence", "does not call the timeout change a proven root cause"]
+    },
+    {
+      "id": "russian-threading-review",
+      "prompt": "Проведи короткий review: `TaskRegistry` has a data race because `active_` is read without the mutex; the patch adds a lock, but the intended contention behaviour is unknown.",
+      "assertions": ["keeps class and field identifiers exact", "uses Russian for review finding, correction, and unknown behaviour", "does not infer a concurrency contract beyond the evidence"]
+    },
+    {
+      "id": "russian-python-dependency",
+      "prompt": "Объясни результат: `pip install -r requirements.txt` failed because `urllib3<2` conflicts with the declared `botocore` range; suggest a safe next step before changing the lock file.",
+      "assertions": ["keeps commands, package names, and version constraints exact", "uses Russian for dependency conflict and next action", "does not translate formal package names"]
+    },
+    {
+      "id": "russian-benchmark-report",
+      "prompt": "Подготовь короткий benchmark report: `parse_frame` median improved by 18%, p99 regressed by 7%, sample size is 30 runs, and the production workload is not represented.",
+      "assertions": ["keeps benchmark identifiers and measurements exact", "uses Russian for statistical result and limitation", "does not call the benchmark an operational proof"]
+    },
+    {
+      "id": "russian-release-notes",
+      "prompt": "Сделай короткие release notes: version v2.4.0 fixes a retry loop in `WebhookSender`, deprecates `legacy_mode`, and requires no migration for existing `POST /hooks` clients.",
+      "assertions": ["keeps version, identifiers, and endpoint exact", "uses Russian for fixed behaviour, deprecation, and migration statement", "does not translate API names"]
+    },
+    {
+      "id": "russian-refactoring-plan",
+      "prompt": "Предложи краткий refactoring plan: move validation from `OrderController` into `OrderService`, preserve the public API, and add focused tests for invalid transitions.",
+      "assertions": ["keeps class names and API term exact", "uses Russian for plan, responsibility boundary, and test scope", "does not turn generic plan language into English"]
+    },
+    {
+      "id": "russian-review-follow-up",
+      "prompt": "Сформулируй итог review: one blocker remains because the rollback path is undocumented; follow-up is to document it and rerun the deployment check before merge.",
+      "assertions": ["uses Russian for review state, blocker, subsequent action, and merge condition", "does not use `merge` as an unexplained generic noun", "does not use unexplained generic English nouns"]
+    },
+    {
+      "id": "russian-deployment-rollback",
+      "prompt": "Составь безопасный deployment note: rollout of `billing-api` is paused after error rate reached 4.2%; rollback is available, but the exact target revision and backup status are not confirmed.",
+      "assertions": ["keeps service name and measurement exact", "uses literal Russian safety language for deployment state, rollback, and missing preconditions", "does not add humour or historical styling"]
+    },
+    {
+      "id": "russian-logging-diagnosis",
+      "prompt": "Коротко объясни: debug logging is disabled in `worker-prod`; request_id is absent from the error path, so the failed job cannot yet be traced across services.",
+      "assertions": ["keeps configuration and field identifiers exact", "uses Russian for logging state, observability gap, and limitation", "does not invent a delivery route"]
+    },
+    {
+      "id": "russian-git-working-tree",
+      "prompt": "Сделай статус: working tree has modified `src/cache.cpp`, staged `tests/cache_test.cpp`, and untracked `notes/perf.md`; only the staged test belongs in the next commit.",
+      "assertions": ["keeps paths and Git formal terms exact where needed", "uses Russian for file states and commit scope", "does not translate file paths"]
+    },
+    {
+      "id": "russian-documentation-change",
+      "prompt": "Опиши изменение документации: update the README to explain `--offline` mode, keep the CLI flag exact, and state that the fallback is used only when the registry is unavailable.",
+      "assertions": ["keeps README and CLI flag exact", "uses Russian for documentation action, mode meaning, registry, and fallback condition", "keeps the fallback conditional"]
+    }
+  ]
+}

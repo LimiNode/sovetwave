@@ -35,6 +35,12 @@ Run this pilot from the same PowerShell session in which Codex LB is logged in
 and `CODEX_HOME` points to that evaluation login. It does not change the
 VSCodium extension or your regular Codex configuration.
 
+Run one named case when validating a specific regression or language rule:
+
+```powershell
+py -3 scripts\run_model_evals.py --provider codex --dry-run --case-id russian-pr-status-report
+```
+
 The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. The Claude adapter uses `--bare`; its Sovetwave variant appends the repository Output Style. Neither adapter enables model tools.
 
 By default a live run stops on the first failed invocation, so an invalid login or unavailable model does not produce a full set of empty results. Use `--continue-on-error` only when failures themselves are part of the investigation.
