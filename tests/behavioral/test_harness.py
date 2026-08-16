@@ -113,9 +113,21 @@ class BehavioralHarnessTests(unittest.TestCase):
 
     def test_cpp_engineering_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
-        cpp_cases = [case for case in cases if case["id"].startswith("cpp-")]
-        self.assertGreaterEqual(len(cpp_cases), 10)
-        self.assertTrue(all(case["assertions"] for case in cpp_cases))
+        cpp_cases = {case["id"]: case for case in cases if case["id"].startswith("cpp-")}
+        required_ids = {
+            "cpp-vector-invalidation",
+            "cpp-exception-ownership",
+            "cpp-moved-from-state",
+            "cpp-behaviour-classification",
+            "cpp-optimization-clue",
+            "cpp-data-race-read",
+            "cpp-condition-variable-predicate",
+            "cpp-sanitizer-scope",
+            "cpp-odr-abi-boundary",
+            "cpp-uninitialized-state",
+        }
+        self.assertTrue(required_ids.issubset(cpp_cases))
+        self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))
 
     def test_live_run_uses_utf8_and_handles_missing_streams(self) -> None:
         completed = subprocess.CompletedProcess(args=["codex"], returncode=1, stdout=None, stderr=None)

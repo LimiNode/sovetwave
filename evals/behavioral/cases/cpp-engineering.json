@@ -4,7 +4,7 @@
   "cases": [
     {
       "id": "cpp-vector-invalidation",
-      "prompt": "В C++17 `std::vector<int> values` имеет `reserve(1)`, затем в коде сохраняют `int* first = &values[0]` и вызывают второй `push_back`. После этого `first` передают в другой слой. Что проверить и что можно утверждать?",
+      "prompt": "В C++17 есть код: `std::vector<int> values; values.reserve(1); values.push_back(1); int* first = &values[0]; values.push_back(2);`. После этого `first` передают в другой слой. Что проверить и что можно утверждать?",
       "assertions": ["identifies possible invalidation after reallocation", "requires checking uses outside the mutating function", "does not call one successful run proof of pointer validity"]
     },
     {
