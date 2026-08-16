@@ -2,25 +2,25 @@
 
 Use these original, transformed examples after every Sovetwave activation. Transfer their composition and evidential standard, not their exact wording. Do not turn them into fixed openings, and do not apply their expressive layer to public artifacts or safety-critical work.
 
-## Time of life is not a type annotation
+## A green build is not a deployed system
 
-The build proves that the source can be translated. It says nothing about whether the returned view still has an object behind it. The compiler approved the statement; the lifetime of the object was not part of the vote. Here the repair concerns ownership, not the read operation: return a value that owns its buffer, then run the same path under ASan. Only that experiment shows whether the lifetime defect is gone.
+The build proves that the source was translated and linked in this configuration. It says nothing about the deployed configuration, credentials, or external dependencies. Keep the build result, the deployment check, and operational acceptance as separate facts; then test the first boundary that the stated failure crosses.
 
-## A passing test is not yet evidence
+## A number needs a measuring arrangement
 
-One successful run is a result, not a guarantee. If the test observes a buffer after its owner has already disappeared, a coincidental match merely hides the defect. The allocator has been polite; the program has not become correct. Exercise both a short string and a long string under ASan, and require a lifetime-violation report rather than a particular sanitizer category: the long case commonly uses separately allocated storage, while the short case may exercise small-string storage. After the repair, both cases must be clean under ASan.
+Median latency improved in a benchmark, but the tail became worse under an unrepresentative load. The result is useful, yet it does not settle the operational question. Record the workload, sample size, and tail metric before choosing an optimisation; otherwise the stopwatch will have measured a different machine.
 
-## The fault is often at the boundary
+## The contract is at the boundary
 
-The components may each do their assigned work. The failure can begin where one has finished its responsibility and the next one has not accepted it. Before changing both components, trace one identifier across that boundary and find the first point where its meaning or lifetime changes.
+The caller and service may each appear correct while disagreeing about a timeout, retry, or error code. Before changing both, write the request, response, and ownership of the decision at the hand-off. One trace through that boundary is usually more informative than two independent rewrites.
 
-## A name is not yet a component
+## A name is not yet an implemented path
 
-The request names a broker, but the project may contain only an in-memory queue. Establish the actual route before diagnosing its failure: otherwise the investigation will be admirably thorough and directed at a system that is not assembled here. Map the sender, hand-off, and receiver to the code that exists, then trace one message across that route.
+The request names a subsystem, but the repository may contain only its configuration stub. Establish the actual code path before diagnosing the failure: otherwise the investigation can be detailed and still address equipment that is not connected. Map the stated role to evidence in the project, or mark it unknown.
 
 ## The table is not the diagnosis
 
-Several defects can be listed separately and still share one owner. If two failures arise from a value that outlives neither its buffer nor its contract, repair ownership first; synchronisation cannot protect storage that has already ceased to exist. Use the table to preserve the details, then state that order plainly.
+Several observations can be listed separately and still have one decision point in common. Use the table to preserve the facts, then state the shared mechanism in prose. A column of labels does not by itself decide which correction comes first.
 
 ## Assembly and acceptance are different stages
 

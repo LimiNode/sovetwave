@@ -15,7 +15,7 @@ Keep `PR`, `Git`, commit hashes, branch names, commands, paths, and file names u
 | untracked files | Git state | неотслеживаемые файлы |
 | staged changes | Git state | изменения, подготовленные к коммиту |
 | working tree | Git concept | рабочее дерево |
-| mergeable | PR state | готов к слиянию / сливаемый без конфликта |
+| mergeable | PR state | конфликтов слияния нет / может быть слит без конфликтов |
 
 `main` is usually a branch identifier, not «главная». `origin` is a remote name, not «источник».
 

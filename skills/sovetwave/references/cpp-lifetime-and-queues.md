@@ -8,7 +8,7 @@ Do not call a queue or a `std::mutex`-using operation «неблокирующе
 
 Treat waiting, the distinction between an empty queue and an empty payload, acknowledgement, and redelivery as contract questions unless a stated requirement makes them necessary. Their absence is a defect only when the required delivery semantics depend on them.
 
-When repairing `std::string_view` with expired storage, require only a владеющий результат. Do not first require a separate representation of «очередь пуста». Mention `std::optional<std::string>` only conditionally: if the known contract permits an empty message and requires distinguishing it from an absent element; otherwise choose the API form after the contract is fixed.
+When repairing `std::string_view` with expired storage, require only a владеющий результат. Establish the semantics of an absent element before selecting its representation. `std::optional<std::string>` may represent absence when that distinction is required, whether or not an empty message is permitted. If an empty message is permitted, use `std::optional<std::string>` when the contract must distinguish it from absence; otherwise select the simpler representation that matches the fixed contract.
 
 Do not infer FIFO, no-loss or no-duplicate delivery, or multi-producer/multi-consumer support from the word «очередь» or from a current container implementation. A test that records current behaviour is a characterisation test and must not silently become an interface requirement.
 

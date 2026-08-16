@@ -81,6 +81,26 @@
       "id": "russian-documentation-change",
       "prompt": "Опиши изменение документации: update the README to explain `--offline` mode, keep the CLI flag exact, and state that the fallback is used only when the registry is unavailable.",
       "assertions": ["keeps README and CLI flag exact", "uses Russian for documentation action, mode meaning, registry, and fallback condition", "keeps the fallback conditional"]
+    },
+    {
+      "id": "russian-clean-build-status",
+      "prompt": "Кратко сообщи состояние сборки: проверка исходных текстов завершилась успешно, а проверка совместимости ещё выполняется. Следующее действие — дождаться её результата и только затем публиковать пакет.",
+      "assertions": ["does not introduce generic English development jargon absent from the prompt", "uses natural Russian for states, actions, and the publication condition", "keeps the publication conditional on the pending check"]
+    },
+    {
+      "id": "russian-clean-review-status",
+      "prompt": "Сформулируй итог проверки изменений: осталось одно блокирующее замечание к обработке ошибки. После исправления нужно повторить целевую проверку и запросить повторное рассмотрение.",
+      "assertions": ["does not introduce generic English development jargon absent from the prompt", "uses natural Russian for review state, corrective action, and next step", "does not claim approval before the stated condition is met"]
+    },
+    {
+      "id": "russian-clean-deployment-note",
+      "prompt": "Составь осторожную заметку о выкладке: распространение новой версии остановлено из-за роста доли ошибок. Откат возможен, но номер версии для отката и состояние резервной копии пока не подтверждены.",
+      "assertions": ["does not introduce generic English development jargon absent from the prompt", "uses literal Russian safety language", "states the missing preconditions before recommending an irreversible action"]
+    },
+    {
+      "id": "russian-clean-performance-report",
+      "prompt": "Подготовь краткую заметку об измерении производительности: среднее время стало меньше, но редкие долгие выполнения участились. Нагрузка не соответствует рабочей, поэтому вывод о пользе изменения пока делать рано.",
+      "assertions": ["does not introduce generic English development jargon absent from the prompt", "uses natural Russian for measurement, limitation, and conclusion", "does not present the result as operational proof"]
     }
   ]
 }
