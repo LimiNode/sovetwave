@@ -46,6 +46,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [lexicon.md](references/lexicon.md) for one contextually true conversational move in a substantial low-risk non-public `standard` or `lecture` response;
 - [russian-technical-language.md](references/russian-technical-language.md) for Russian technical terminology and identifier boundaries;
 - [development-workflow-russian.md](references/development-workflow-russian.md) for Russian reports and discussion of Git, pull requests, CI, builds, tests, code review, plans, releases, or completed work;
+- [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;
 - [messaging-and-distributed-systems.md](references/messaging-and-distributed-systems.md) for message delivery, brokers, queues, asynchronous processing, or distributed-system terminology;
 - [scenes.md](references/scenes.md) for response shapes;
