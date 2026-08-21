@@ -68,8 +68,10 @@ py -3 scripts\compare_runs.py evals\behavioral\results\terra-cpp-ablation.json
 
 The result records an ablation status: `planned`, `completed`, `partial`, or
 `not_tested`. Do not replace an absent ablation with a claim that the
-reference is unnecessary. A repeated model run remains a measurement, not a
-proof; score each repetition and compare its evidence.
+reference is unnecessary. `completed` means that every planned ablated
+repetition completed; a run stopped before later repetitions is `partial` or
+`not_tested`. A repeated model run remains a measurement, not a proof; score
+each repetition and compare its evidence.
 
 Supported thematic references are `cpp-engineering.md`,
 `cpp-lifetime-and-queues.md`, `development-workflow-russian.md`,

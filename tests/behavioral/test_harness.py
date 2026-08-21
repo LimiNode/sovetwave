@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_model_evals import load_cases, make_workspace, redact_secrets, run_variant
+from run_model_evals import load_cases, make_workspace, redact_secrets, run_variant, summarize_ablation
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -137,6 +137,12 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertNotEqual(completed.returncode, 0)
         self.assertIn("must name a conditional skill reference", completed.stderr)
 
+    def test_ablation_is_partial_when_some_repetitions_never_reach_it(self) -> None:
+        results = [{"variant": "sovetwave_without_reference", "status": "completed", "repetition": 1}]
+        self.assertEqual(summarize_ablation(results, expected_ablations=3, dry_run=False), "partial")
+        self.assertEqual(summarize_ablation([], expected_ablations=3, dry_run=False), "not_tested")
+        self.assertEqual(summarize_ablation(results, expected_ablations=1, dry_run=False), "completed")
+
     def test_russian_generalization_suite_has_broad_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
         russian_cases = {case["id"]: case for case in cases if case["id"].startswith("russian-")}
@@ -208,6 +214,31 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("Styled", content)
             self.assertIn("Ablation: **не проверялось**", content)
             self.assertIn("Техническая правильность", content)
+
+    def test_comparison_sheet_marks_missing_ablation_variants(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory) / "incomplete.json"
+            sheet = Path(directory) / "comparison.md"
+            run.write_text(json.dumps({
+                "repetitions": 3,
+                "case_ids": ["sample"],
+                "ablation": {
+                    "reference": "cpp-engineering.md",
+                    "status": "partial",
+                    "method": "test",
+                },
+                "results": [
+                    {"case_id": "sample", "repetition": 1, "variant": "baseline", "prompt": "Explain", "status": "completed", "response": "Plain", "assertions": ["a"]},
+                    {"case_id": "sample", "repetition": 1, "variant": "sovetwave", "prompt": "Explain", "status": "completed", "response": "Full", "assertions": ["a"]},
+                    {"case_id": "sample", "repetition": 1, "variant": "sovetwave_without_reference", "ablated_reference": "cpp-engineering.md", "prompt": "Explain", "status": "completed", "response": "Ablated", "assertions": ["a"]},
+                    {"case_id": "sample", "repetition": 2, "variant": "baseline", "prompt": "Explain", "status": "failed", "response": "", "assertions": ["a"]},
+                ],
+            }), encoding="utf-8")
+            subprocess.run([sys.executable, str(COMPARE), str(run), "--output", str(sheet)], cwd=ROOT, check=True)
+            content = sheet.read_text(encoding="utf-8")
+            self.assertIn("Ablation: `cpp-engineering.md` — **partial**", content)
+            self.assertEqual(content.count("#### Sovetwave without `cpp-engineering.md`"), 3)
+            self.assertIn("Не проверялось: вариант отсутствует в файле прогона", content)
 
 
 if __name__ == "__main__":

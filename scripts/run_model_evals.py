@@ -211,6 +211,22 @@ def run_variant(
         return result
 
 
+def summarize_ablation(
+    results: list[dict[str, Any]],
+    expected_ablations: int,
+    dry_run: bool,
+) -> str:
+    """State whether every planned ablated variant was actually observed."""
+    ablated = [result for result in results if result["variant"] == "sovetwave_without_reference"]
+    if dry_run:
+        return "planned"
+    if not ablated:
+        return "not_tested"
+    if len(ablated) == expected_ablations and all(result.get("status") == "completed" for result in ablated):
+        return "completed"
+    return "partial"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--provider", choices=("codex", "claude"), required=True)
@@ -299,15 +315,11 @@ def main() -> int:
             break
     ablation_status: str | None = None
     if args.ablate_reference is not None:
-        ablated = [result for result in results if result["variant"] == "sovetwave_without_reference"]
-        if args.dry_run:
-            ablation_status = "planned"
-        elif not ablated:
-            ablation_status = "not_tested"
-        elif all(result.get("status") == "completed" for result in ablated):
-            ablation_status = "completed"
-        else:
-            ablation_status = "partial"
+        ablation_status = summarize_ablation(
+            results,
+            expected_ablations=len(cases) * args.repetitions,
+            dry_run=args.dry_run,
+        )
     payload = {
         "schema_version": "1.1",
         "created_at": datetime.now(UTC).isoformat(),
@@ -315,6 +327,7 @@ def main() -> int:
         "model": args.model,
         "dry_run": args.dry_run,
         "repetitions": args.repetitions,
+        "case_ids": [case["id"] for case in cases],
         "stopped_early": stopped_early,
         "results": results,
     }

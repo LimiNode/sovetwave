@@ -18,13 +18,13 @@ def text_or_placeholder(value: str | None) -> str:
     return value if value else "_Нет ответа: вариант ещё не запускался._"
 
 
-def variant_label(variant: str, result: dict[str, Any]) -> str:
+def variant_label(variant: str, result: dict[str, Any], ablation_reference: str | None = None) -> str:
     if variant == "baseline":
         return "Baseline"
     if variant == "sovetwave":
         return "Sovetwave"
     if variant == "sovetwave_without_reference":
-        reference = result.get("ablated_reference", "thematic reference")
+        reference = result.get("ablated_reference", ablation_reference or "thematic reference")
         return f"Sovetwave without `{reference}`"
     return variant
 
@@ -53,6 +53,12 @@ def main() -> int:
         raise SystemExit("run contains no results")
 
     ablation = payload.get("ablation")
+    ablation_reference = ablation.get("reference") if isinstance(ablation, dict) else None
+    expected_variants = ["baseline", "sovetwave"]
+    if ablation is not None:
+        expected_variants.append("sovetwave_without_reference")
+    case_ids = payload.get("case_ids") or list(grouped)
+    repetitions = int(payload.get("repetitions", max((max(items) for items in grouped.values()), default=1)))
     lines = ["# Behavioral eval comparison", "", f"Run: `{args.run.name}`", ""]
     if ablation is None:
         lines.extend(["Ablation: **не проверялось** (вариант без тематической справки не запускался).", ""])
@@ -62,19 +68,28 @@ def main() -> int:
             f"Method: {ablation.get('method', 'not recorded')}",
             "",
         ])
-    for case_id, repetitions in grouped.items():
+    for case_id in case_ids:
+        case_repetitions = grouped.get(case_id, {})
+        known_prompt = next(
+            (result.get("prompt", "") for variants in case_repetitions.values() for result in variants.values()),
+            "",
+        )
         lines.extend([f"## {case_id}", ""])
-        for repetition, variants in sorted(repetitions.items()):
+        for repetition in range(1, repetitions + 1):
+            variants = case_repetitions.get(repetition, {})
             baseline = variants.get("baseline", {})
             sovetwave = variants.get("sovetwave", {})
-            ordered_variants = [variant for variant in ("baseline", "sovetwave") if variant in variants]
+            ordered_variants = list(expected_variants)
             ordered_variants.extend(sorted(variant for variant in variants if variant not in ordered_variants))
-            sample = baseline or sovetwave or next(iter(variants.values()))
-            lines.extend([f"### Repetition {repetition}", "", "#### Prompt", "", sample.get("prompt", "")])
+            sample = baseline or sovetwave or next(iter(variants.values()), {})
+            lines.extend([f"### Repetition {repetition}", "", "#### Prompt", "", sample.get("prompt", known_prompt)])
             for variant in ordered_variants:
-                result = variants[variant]
-                lines.extend(["", f"#### {variant_label(variant, result)}", "", result_text(result)])
-            headings = " | ".join(variant_label(variant, variants[variant]) for variant in ordered_variants)
+                result = variants.get(variant, {})
+                lines.extend(["", f"#### {variant_label(variant, result, ablation_reference)}", "", result_text(result)])
+            headings = " | ".join(
+                variant_label(variant, variants.get(variant, {}), ablation_reference)
+                for variant in ordered_variants
+            )
             separators = " | ".join("---:" for _ in ordered_variants)
             blanks = " | ".join(" " for _ in ordered_variants)
             lines.extend([
