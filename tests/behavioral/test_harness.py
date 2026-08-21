@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_model_evals import load_cases, redact_secrets, run_variant
+from run_model_evals import load_cases, make_workspace, redact_secrets, run_variant
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -82,6 +82,60 @@ class BehavioralHarnessTests(unittest.TestCase):
             run = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(len(run["results"]), 2)
             self.assertEqual({item["case_id"] for item in run["results"]}, {"russian-pr-status-report"})
+
+    def test_codex_ablation_dry_run_creates_repeated_third_variant(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run.json"
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(RUNNER),
+                    "--provider", "codex",
+                    "--dry-run",
+                    "--case-id", "cpp-vector-invalidation",
+                    "--ablate-reference", "cpp-engineering.md",
+                    "--repetitions", "2",
+                    "--output", str(output),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(run["ablation"]["status"], "planned")
+            self.assertEqual(len(run["results"]), 6)
+            self.assertEqual(
+                [item["variant"] for item in run["results"]],
+                ["baseline", "sovetwave", "sovetwave_without_reference"] * 2,
+            )
+            self.assertEqual({item["repetition"] for item in run["results"]}, {1, 2})
+            self.assertEqual(
+                run["results"][2]["ablated_reference"],
+                "cpp-engineering.md",
+            )
+
+    def test_ablation_removes_only_the_selected_conditional_reference(self) -> None:
+        with make_workspace(ROOT, True, "cpp-engineering.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            self.assertFalse((skill / "references" / "cpp-engineering.md").exists())
+            self.assertNotIn(
+                "[cpp-engineering.md](references/cpp-engineering.md)",
+                (skill / "SKILL.md").read_text(encoding="utf-8"),
+            )
+            self.assertTrue((skill / "references" / "voice-core.md").exists())
+
+    def test_ablation_rejects_a_non_thematic_reference(self) -> None:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--provider", "codex",
+                "--dry-run",
+                "--ablate-reference", "voice-core.md",
+                "--repetitions", "2",
+            ],
+            cwd=ROOT, text=True, capture_output=True,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("must name a conditional skill reference", completed.stderr)
 
     def test_russian_generalization_suite_has_broad_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
@@ -152,6 +206,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             content = sheet.read_text(encoding="utf-8")
             self.assertIn("Plain", content)
             self.assertIn("Styled", content)
+            self.assertIn("Ablation: **не проверялось**", content)
             self.assertIn("Техническая правильность", content)
 
 

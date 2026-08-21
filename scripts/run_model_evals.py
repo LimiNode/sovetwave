@@ -20,6 +20,14 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "behavioral" / "cases"
 DEFAULT_RESULTS = ROOT / "evals" / "behavioral" / "results"
 SECRET = re.compile(r"(?:sk-[A-Za-z0-9_-]+|Bearer\s+[A-Za-z0-9._-]+|(?:api[_ -]?key|access[_ -]?token)\s*[=:]\s*\S+)", re.IGNORECASE)
+THEMATIC_REFERENCES = frozenset({
+    "cpp-engineering.md",
+    "cpp-lifetime-and-queues.md",
+    "development-workflow-russian.md",
+    "history-and-sources.md",
+    "messaging-and-distributed-systems.md",
+    "pedagogy-and-dialogue.md",
+})
 
 
 def load_cases(case_dir: Path) -> list[dict[str, Any]]:
@@ -90,12 +98,36 @@ def codex_provider_overrides(config_path: Path) -> list[str]:
     return overrides
 
 
-def make_workspace(root: Path, styled: bool) -> tempfile.TemporaryDirectory[str]:
+def disable_reference(skill_dir: Path, reference_name: str) -> None:
+    """Remove one conditional reference from an isolated skill copy."""
+    if reference_name not in THEMATIC_REFERENCES:
+        raise ValueError(f"reference is not available for thematic ablation: {reference_name!r}")
+    reference = skill_dir / "references" / reference_name
+    if reference.name != reference_name or not reference.is_file():
+        raise ValueError(f"unknown skill reference for ablation: {reference_name!r}")
+
+    skill_file = skill_dir / "SKILL.md"
+    marker = f"[{reference_name}](references/{reference_name})"
+    lines = skill_file.read_text(encoding="utf-8").splitlines(keepends=True)
+    retained = [line for line in lines if marker not in line]
+    if len(retained) == len(lines):
+        raise ValueError(f"{reference_name!r} is not a conditional reference in {skill_file}")
+    skill_file.write_text("".join(retained), encoding="utf-8")
+    reference.unlink()
+
+
+def make_workspace(
+    root: Path,
+    styled: bool,
+    ablated_reference: str | None = None,
+) -> tempfile.TemporaryDirectory[str]:
     workspace = tempfile.TemporaryDirectory(prefix="sovetwave-eval-")
     if styled:
         destination = Path(workspace.name) / ".agents" / "skills" / "sovetwave"
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(root / "skills" / "sovetwave", destination)
+        if ablated_reference is not None:
+            disable_reference(destination, ablated_reference)
     return workspace
 
 
@@ -137,18 +169,25 @@ def run_variant(
     timeout: int,
     dry_run: bool,
     codex_overrides: list[str] | None = None,
+    ablated_reference: str | None = None,
+    repetition: int = 1,
 ) -> dict[str, Any]:
-    with make_workspace(ROOT, styled) as temp_dir:
+    if ablated_reference is not None and not styled:
+        raise ValueError("a reference can be ablated only from a Sovetwave variant")
+    with make_workspace(ROOT, styled, ablated_reference) as temp_dir:
         workspace = Path(temp_dir)
         response_path = workspace / "last-message.txt"
         command = command_for(provider, workspace, case["prompt"], styled, model, response_path, codex_overrides)
         result: dict[str, Any] = {
             "case_id": case["id"],
-            "variant": "sovetwave" if styled else "baseline",
+            "variant": "sovetwave_without_reference" if ablated_reference else ("sovetwave" if styled else "baseline"),
+            "repetition": repetition,
             "prompt": case["prompt"],
             "assertions": case.get("assertions", []),
             "command": command,
         }
+        if ablated_reference is not None:
+            result["ablated_reference"] = ablated_reference
         if dry_run:
             result["status"] = "planned"
             return result
@@ -178,6 +217,11 @@ def main() -> int:
     parser.add_argument("--model")
     parser.add_argument("--case-dir", type=Path, default=DEFAULT_CASES)
     parser.add_argument("--case-id", help="run exactly one behavioral case by id")
+    parser.add_argument(
+        "--ablate-reference",
+        help="for Codex only, remove this conditional skill reference from the ablated variant (for example cpp-engineering.md)",
+    )
+    parser.add_argument("--repetitions", type=int, default=1, help="number of independent runs per case and variant")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--timeout", type=int, default=120)
@@ -192,6 +236,22 @@ def main() -> int:
 
     if args.codex_provider_config is not None and args.provider != "codex":
         parser.error("--codex-provider-config is only valid with --provider codex")
+    if args.ablate_reference is not None and args.provider != "codex":
+        parser.error("--ablate-reference is currently supported only for provider codex")
+    if args.repetitions < 1:
+        parser.error("--repetitions must be at least 1")
+    if args.ablate_reference is not None and args.repetitions < 2:
+        parser.error("--ablate-reference requires at least 2 repetitions")
+    if args.ablate_reference is not None:
+        reference = ROOT / "skills" / "sovetwave" / "references" / args.ablate_reference
+        if (
+            args.ablate_reference not in THEMATIC_REFERENCES
+            or reference.name != args.ablate_reference
+            or not reference.is_file()
+            or f"[{args.ablate_reference}](references/{args.ablate_reference})"
+            not in (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
+        ):
+            parser.error(f"--ablate-reference must name a conditional skill reference: {args.ablate_reference!r}")
     try:
         codex_overrides = (
             codex_provider_overrides(args.codex_provider_config)
@@ -212,32 +272,58 @@ def main() -> int:
     output = args.output or DEFAULT_RESULTS / f"{timestamp}-{args.provider}.json"
     results: list[dict[str, Any]] = []
     stopped_early = False
+    variants = [(False, None), (True, None)]
+    if args.ablate_reference is not None:
+        variants.append((True, args.ablate_reference))
     for case in cases:
-        for styled in (False, True):
-            result = run_variant(
-                args.provider,
-                case,
-                styled,
-                args.model,
-                args.timeout,
-                args.dry_run,
-                codex_overrides,
-            )
-            results.append(result)
-            if result.get("status") == "failed" and not args.continue_on_error:
-                stopped_early = True
+        for repetition in range(1, args.repetitions + 1):
+            for styled, ablated_reference in variants:
+                result = run_variant(
+                    args.provider,
+                    case,
+                    styled,
+                    args.model,
+                    args.timeout,
+                    args.dry_run,
+                    codex_overrides,
+                    ablated_reference,
+                    repetition,
+                )
+                results.append(result)
+                if result.get("status") == "failed" and not args.continue_on_error:
+                    stopped_early = True
+                    break
+            if stopped_early:
                 break
         if stopped_early:
             break
+    ablation_status: str | None = None
+    if args.ablate_reference is not None:
+        ablated = [result for result in results if result["variant"] == "sovetwave_without_reference"]
+        if args.dry_run:
+            ablation_status = "planned"
+        elif not ablated:
+            ablation_status = "not_tested"
+        elif all(result.get("status") == "completed" for result in ablated):
+            ablation_status = "completed"
+        else:
+            ablation_status = "partial"
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "created_at": datetime.now(UTC).isoformat(),
         "provider": args.provider,
         "model": args.model,
         "dry_run": args.dry_run,
+        "repetitions": args.repetitions,
         "stopped_early": stopped_early,
         "results": results,
     }
+    if args.ablate_reference is not None:
+        payload["ablation"] = {
+            "reference": args.ablate_reference,
+            "status": ablation_status,
+            "method": "Removed from the isolated Codex skill copy; the core skill remains enabled.",
+        }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {len(payload['results'])} planned or completed variants to {output}")
