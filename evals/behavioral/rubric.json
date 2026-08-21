@@ -4,6 +4,7 @@
     {"id": "technical_correctness", "label": "Техническая правильность", "weight": 3},
     {"id": "causal_calibration", "label": "Причинность и границы доказанного", "weight": 2},
     {"id": "native_russian", "label": "Естественный русский технический язык", "weight": 2},
+    {"id": "english_intrusion", "label": "Отсутствие неоправданных англицизмов", "weight": 2},
     {"id": "identifier_preservation", "label": "Сохранение формальных идентификаторов", "weight": 2},
     {"id": "sovetwave_voice", "label": "Узнаваемый, но не театральный голос", "weight": 1},
     {"id": "concision", "label": "Краткость и отсутствие повторов", "weight": 1},

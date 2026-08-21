@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_model_evals import redact_secrets, run_variant
+from run_model_evals import load_cases, redact_secrets, run_variant
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -64,6 +64,52 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn('model_provider="local-lb"', command)
             self.assertIn('model_providers.local-lb.base_url="http://127.0.0.1:2455/backend-api/codex"', command)
             self.assertIn("model_providers.local-lb.requires_openai_auth=true", command)
+
+    def test_case_id_selects_one_named_case(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run.json"
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(RUNNER),
+                    "--provider", "codex",
+                    "--dry-run",
+                    "--case-id", "russian-pr-status-report",
+                    "--output", str(output),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(len(run["results"]), 2)
+            self.assertEqual({item["case_id"] for item in run["results"]}, {"russian-pr-status-report"})
+
+    def test_russian_generalization_suite_has_broad_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        russian_cases = {case["id"]: case for case in cases if case["id"].startswith("russian-")}
+        required_ids = {
+            "russian-pr-status-report",
+            "russian-ci-result-summary",
+            "russian-cmake-failure",
+            "russian-api-documentation",
+            "russian-sql-analysis",
+            "russian-network-timeout",
+            "russian-threading-review",
+            "russian-python-dependency",
+            "russian-benchmark-report",
+            "russian-release-notes",
+            "russian-refactoring-plan",
+            "russian-review-follow-up",
+            "russian-deployment-rollback",
+            "russian-logging-diagnosis",
+            "russian-git-working-tree",
+            "russian-documentation-change",
+            "russian-clean-build-status",
+            "russian-clean-review-status",
+            "russian-clean-deployment-note",
+            "russian-clean-performance-report",
+        }
+        self.assertTrue(required_ids.issubset(russian_cases))
+        self.assertTrue(all(case["assertions"] for case in russian_cases.values()))
 
     def test_live_run_uses_utf8_and_handles_missing_streams(self) -> None:
         completed = subprocess.CompletedProcess(args=["codex"], returncode=1, stdout=None, stderr=None)
