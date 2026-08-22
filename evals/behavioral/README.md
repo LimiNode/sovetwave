@@ -41,6 +41,45 @@ Run one named case when validating a specific regression or language rule:
 py -3 scripts\run_model_evals.py --provider codex --dry-run --case-id russian-pr-status-report
 ```
 
+## Thematic-reference ablation
+
+An ablation compares three variants of the same Codex case: baseline, full
+Sovetwave, and Sovetwave with one conditional reference removed from its
+temporary skill copy. The core skill stays enabled, so the result answers a
+narrow question: what the selected thematic reference contributed beyond the
+core.
+
+Use at least two repetitions; three is the normal first run. The option is
+currently available only for Codex because Claude Output Styles do not load
+the repository references independently.
+
+```powershell
+py -3 scripts\run_model_evals.py `
+  --provider codex `
+  --model gpt-5.6-terra `
+  --codex-provider-config "$env:USERPROFILE\.codex\config.toml" `
+  --case-id cpp-vector-invalidation `
+  --ablate-reference cpp-engineering.md `
+  --repetitions 3 `
+  --output evals\behavioral\results\terra-cpp-ablation.json
+
+py -3 scripts\compare_runs.py evals\behavioral\results\terra-cpp-ablation.json
+```
+
+The result records an ablation status: `planned`, `completed`, `partial`, or
+`not_tested`. Do not replace an absent ablation with a claim that the
+reference is unnecessary. `completed` means that every planned ablated
+repetition completed; a run stopped before later repetitions is `partial` or
+`not_tested`. A repeated model run remains a measurement, not a proof; score
+each repetition and compare its evidence.
+
+Supported thematic references are `cpp-engineering.md`,
+`cpp-lifetime-and-queues.md`, `development-workflow-russian.md`,
+`messaging-and-distributed-systems.md`, `pedagogy-and-dialogue.md`, and
+`history-and-sources.md`. The always-loaded voice core is deliberately not
+ablatable: removing it would compare different skills rather than isolate a
+thematic layer.
+
 The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. The Claude adapter uses `--bare`; its Sovetwave variant appends the repository Output Style. Neither adapter enables model tools.
 
 By default a live run stops on the first failed invocation, so an invalid login or unavailable model does not produce a full set of empty results. Use `--continue-on-error` only when failures themselves are part of the investigation.
