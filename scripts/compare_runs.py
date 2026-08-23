@@ -54,6 +54,14 @@ def main() -> int:
 
     ablation = payload.get("ablation")
     ablation_reference = ablation.get("reference") if isinstance(ablation, dict) else None
+    variant_orders = {
+        int(item["repetition"]): item["variants"]
+        for item in payload.get("variant_orders", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("repetition"), int)
+        and isinstance(item.get("variants"), list)
+        and all(isinstance(variant, str) for variant in item["variants"])
+    }
     expected_variants = ["baseline", "sovetwave"]
     if ablation is not None:
         expected_variants.append("sovetwave_without_reference")
@@ -82,7 +90,14 @@ def main() -> int:
             ordered_variants = list(expected_variants)
             ordered_variants.extend(sorted(variant for variant in variants if variant not in ordered_variants))
             sample = baseline or sovetwave or next(iter(variants.values()), {})
-            lines.extend([f"### Repetition {repetition}", "", "#### Prompt", "", sample.get("prompt", known_prompt)])
+            lines.extend([f"### Repetition {repetition}", ""])
+            if repetition in variant_orders:
+                execution_order = " → ".join(
+                    variant_label(variant, {}, ablation_reference)
+                    for variant in variant_orders[repetition]
+                )
+                lines.extend([f"Planned execution order: {execution_order}", ""])
+            lines.extend(["#### Prompt", "", sample.get("prompt", known_prompt)])
             for variant in ordered_variants:
                 result = variants.get(variant, {})
                 lines.extend(["", f"#### {variant_label(variant, result, ablation_reference)}", "", result_text(result)])
