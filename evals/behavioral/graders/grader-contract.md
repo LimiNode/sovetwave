@@ -6,6 +6,8 @@ Use the case assertions as observable checks, not as prose to reward mechanicall
 
 For `english_intrusion`, do not penalise a formal identifier, command, path, API or protocol name, tool name, project entity, status code, package name, or established special term. Penalise English that stands in for an equally precise ordinary Russian role, state, action, property, or description.
 
+For `semantic_economy`, judge whether every proposed branch, state, abstraction, duplicate path, and language-level promise is justified by the established requirement. Do not reward compressed or clever code merely for having fewer lines, and do not penalise explicit error handling or readable structure that carries necessary semantics.
+
 For an LLM grader, provide the prompt, both responses, the applicable rubric rows, and this contract. Require JSON with one object per axis:
 
 ```json

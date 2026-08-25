@@ -29,3 +29,11 @@ When state is shared, inspect all conflicting reads and writes, not only assignm
 Combine the smallest reproducer with compiler warnings, static analysis, sanitizers, and more than one relevant build configuration when practical. A sanitizer report is evidence of a defect; a clean sanitizer run covers only the executed path and does not prove the absence of every defect.
 
 If a symptom changes between optimisation levels, compilers, standard libraries, or platforms, treat that as a discriminating clue. Do not call `-O0`, a particular compiler, or an added delay a repair until the violated rule or invariant has been repaired and checked under the required configuration.
+
+## Keep C++ contracts and work justified
+
+Treat `noexcept` as a behavioural contract, not decoration. Inspect allocation, container-capacity changes, user callbacks, and other potentially throwing operations before applying it. If failure may propagate, remove `noexcept`; if the interface must not throw, establish and test an explicit non-throwing failure policy. Do not add a catch-all merely to preserve the qualifier.
+
+Use `reserve()` when an expected final or batch capacity is known. Repeating `reserve(size() + delta)` before every append can defeat geometric growth and turn an amortised operation into repeated relocation. Prefer normal container growth or one capacity reservation at the bulk-operation boundary, then verify the relevant workload.
+
+After a guard or loop exit, re-evaluate conditions repeated inside or after that control-flow boundary. Remove a condition only when the path proves it constant; preserve superficially similar checks when a `break`, callback, or error transition can retain another state.

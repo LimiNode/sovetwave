@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_model_evals import load_cases, make_workspace, redact_secrets, run_variant, summarize_ablation, variant_plan
+from run_model_evals import THEMATIC_REFERENCES, load_cases, make_workspace, redact_secrets, run_variant, summarize_ablation, variant_plan
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -199,6 +199,27 @@ class BehavioralHarnessTests(unittest.TestCase):
         }
         self.assertTrue(required_ids.issubset(cpp_cases))
         self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))
+
+    def test_code_economy_suite_has_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        economy_cases = {case["id"]: case for case in cases if case["id"].startswith("code-economy-")}
+        required_ids = {
+            "code-economy-reuse-existing-path",
+            "code-economy-impossible-branch",
+            "code-economy-no-speculative-framework",
+            "code-economy-noexcept-is-contract",
+            "code-economy-review-dead-residue",
+            "code-economy-exact-reserve-growth",
+            "code-economy-review-before-new-state",
+            "code-economy-residue-survives-severity",
+        }
+        self.assertTrue(required_ids.issubset(economy_cases))
+        self.assertTrue(all(case["assertions"] for case in economy_cases.values()))
+        self.assertIn("code-economy.md", THEMATIC_REFERENCES)
+        self.assertIn(
+            "[code-economy.md](references/code-economy.md)",
+            (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8"),
+        )
 
     def test_live_run_uses_utf8_and_handles_missing_streams(self) -> None:
         completed = subprocess.CompletedProcess(args=["codex"], returncode=1, stdout=None, stderr=None)

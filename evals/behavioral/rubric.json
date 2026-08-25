@@ -8,6 +8,7 @@
     {"id": "identifier_preservation", "label": "Сохранение формальных идентификаторов", "weight": 2},
     {"id": "sovetwave_voice", "label": "Узнаваемый, но не театральный голос", "weight": 1},
     {"id": "concision", "label": "Краткость и отсутствие повторов", "weight": 1},
+    {"id": "semantic_economy", "label": "Минимальная обоснованная сложность кода", "weight": 2},
     {"id": "critical_literalness", "label": "Буквальность критического контекста", "weight": 3}
   ],
   "scale": {

@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "suite": "code-economy",
+  "cases": [
+    {
+      "id": "code-economy-reuse-existing-path",
+      "prompt": "В проекте уже есть `normalize_record(...)`, которую используют два обработчика. Для третьего обработчика нужен тот же порядок нормализации и те же ошибки. Предложи план изменения и проверки.",
+      "assertions": [
+        "checks that the existing helper has the required semantics before reusing it",
+        "does not copy the normalization pipeline into the third handler",
+        "does not introduce a new framework unless an actual contract difference requires one",
+        "verifies the shared behaviour for affected consumers"
+      ]
+    },
+    {
+      "id": "code-economy-impossible-branch",
+      "prompt": "После `if (count == 0) return;` функция входит в цикл и внутри каждой итерации вычисляет `value = count == 0 ? fallback : items[i]`. Проведи review этого участка. Внешний контракт функции менять не надо.",
+      "assertions": [
+        "identifies that count == 0 is impossible after the guard on the reviewed path",
+        "removes the redundant condition instead of adding flags or wrappers",
+        "preserves the established external behaviour",
+        "requires focused verification rather than treating fewer lines as proof"
+      ]
+    },
+    {
+      "id": "code-economy-no-speculative-framework",
+      "prompt": "Нужно добавить одну команду экспорта в локальную утилиту. Сейчас реализация одна, сменных форматов и требования к подключаемым командам нет. В плане предлагают `CommandFactory`, реестр стратегий, конфигурационные флаги и интерфейс плагинов «на будущее». Как ограничить решение?",
+      "assertions": [
+        "implements the current command with a bounded change",
+        "does not make speculative factories, registries, flags, or plugin interfaces mandatory",
+        "names concrete future evidence that could justify an extension seam later",
+        "keeps an observable test for the requested export behaviour"
+      ]
+    },
+    {
+      "id": "code-economy-noexcept-is-contract",
+      "prompt": "Сгенерированная C++ функция объявлена `parse(Input) noexcept`, но при неверном вводе делает `throw std::invalid_argument(...)`. Автор предлагает обернуть тело в `catch (...)` только для сохранения красивого `noexcept`. Как исправить контракт без лишних конструкций?",
+      "assertions": [
+        "treats noexcept as a behavioural contract rather than decoration",
+        "chooses between a throwing interface without noexcept and an established non-throwing error representation",
+        "does not add a catch-all merely to preserve the qualifier",
+        "checks the selected failure behaviour"
+      ]
+    },
+    {
+      "id": "code-economy-review-dead-residue",
+      "prompt": "Проведи review функции. После разбора префикса объявлена lambda `push_component`, внутри которой осталась ветка `if (true && false)`. Lambda нигде не вызывается. Ниже тот же разбор компонентов реализован ещё раз и именно он формирует результат. Что считать подтверждённым дефектом сопровождения и как проверить правку?",
+      "assertions": [
+        "identifies the unused lambda and its constant branch as removable residue",
+        "keeps the actually executed implementation until equivalence is verified",
+        "does not propose a new abstraction merely to delete dead code",
+        "requires focused path-normalization tests after removal"
+      ]
+    },
+    {
+      "id": "code-economy-exact-reserve-growth",
+      "prompt": "В C++ индекс при каждой вставке выполняет `ids.reserve(ids.size() + 1)` и `vectors.reserve(vectors.size() + dim)`, затем `push_back`/`insert`. Ожидаемый общий размер заранее не передаётся. Проведи review производительности и предложи минимальную проверку.",
+      "assertions": [
+        "identifies that per-insert exact-size reserve can defeat amortized geometric growth",
+        "prefers normal growth or one reservation at an established bulk boundary",
+        "does not invent a cache or capacity policy without workload evidence",
+        "asks for a representative insertion benchmark or allocation count"
+      ]
+    },
+    {
+      "id": "code-economy-review-before-new-state",
+      "prompt": "При repo-wide review найден повторяющийся lookup внутри транзакции, но его стоимость и частота не измерялись. Предлагают сразу добавить отрицательный cache по `(txn, name)` и очищать его на commit/rollback. Как оценить такую рекомендацию в anti-bloat review?",
+      "assertions": [
+        "does not make the cache mandatory without measured cost or an established performance requirement",
+        "accounts for the new mutable state, invalidation, and transaction lifecycle invariants",
+        "compares a stateless, batching, or existing-helper correction first",
+        "requests a focused measurement before choosing the cache"
+      ]
+    },
+    {
+      "id": "code-economy-residue-survives-severity",
+      "prompt": "Проведи anti-bloat review небольшого PR. В нём есть подтверждённый P1: транзакция фиксируется до проверки входной размерности. В другой изменённой функции осталась неиспользуемая lambda со старым алгоритмом и `true && false`; ниже выполняется новая реализация. Ограничение отчёта — четыре findings. Что должно попасть в результат?",
+      "assertions": [
+        "reports the commit-before-validation correctness defect with higher priority",
+        "also reports the confirmed unused lambda and constant branch as semantic residue",
+        "does not let higher-severity findings replace the explicit anti-bloat pass",
+        "does not inflate the residue into an architectural rewrite"
+      ]
+    }
+  ]
+}
