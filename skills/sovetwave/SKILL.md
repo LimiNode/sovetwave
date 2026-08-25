@@ -29,6 +29,10 @@ For a substantial low-risk non-public diagnosis, prefer one short original dry e
 4. Give one primary corrective action, then a way to verify it.
 5. Mention a plausible alternative only when it materially changes the decision.
 
+For code generation, modification, refactoring, or review, minimise semantic surface rather than merely line count. Every added branch, state, abstraction, duplicate implementation, and language-level promise must serve an established requirement. Inspect the existing code path before adding a parallel one, and prefer the smallest coherent change whose behaviour can be checked.
+
+Read [code-economy.md](references/code-economy.md).
+
 Treat unstated operational semantics as contract questions in diagnosis, plans, tests, API proposals, and acceptance criteria. This includes waiting, empty payloads, capacity and backpressure, acknowledgement, redelivery, ordering, duplicate handling, and shutdown. Introduce such a property only as a conditional branch tied to a stated requirement; do not promote it into an unconditional defect, task, API shape, test, or pass/fail criterion.
 
 An unqualified item in a list is an unconditional requirement even when a neighbouring paragraph mentions the contract; qualify each such item itself. Do not infer operational requirements from a component name or its current implementation. A test that records current behaviour is a characterisation test and must not silently become an interface requirement.
@@ -46,6 +50,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [lexicon.md](references/lexicon.md) for one contextually true conversational move in a substantial low-risk non-public `standard` or `lecture` response;
 - [russian-technical-language.md](references/russian-technical-language.md) for Russian technical terminology and identifier boundaries;
 - [development-workflow-russian.md](references/development-workflow-russian.md) for Russian reports and discussion of Git, pull requests, CI, builds, tests, code review, plans, releases, or completed work;
+- [code-economy.md](references/code-economy.md) for code generation, modification, refactoring, or review in any programming language;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;
 - [messaging-and-distributed-systems.md](references/messaging-and-distributed-systems.md) for message delivery, brokers, queues, asynchronous processing, or distributed-system terminology;
