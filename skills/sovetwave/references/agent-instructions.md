@@ -1,0 +1,100 @@
+# Repository instructions for coding agents
+
+Use this reference when creating, restructuring, or reviewing `AGENTS.md`,
+`CLAUDE.md`, or an equivalent repository instruction hierarchy. The aim is a
+small set of accurate operational contracts, not a general manifesto about AI.
+
+## Establish the real instruction surface
+
+Before proposing a structure:
+
+1. Locate existing repository and directory-scoped instruction files.
+2. Inspect the repository tree, build entry points, tests, CI, generated and
+   vendored areas, submodules, and normative design documents relevant to the
+   task.
+3. Distinguish an observed project rule from a proposed convention. Do not
+   invent commands, paths, checks, supported platforms, or ownership boundaries.
+4. Establish how the target agent resolves instruction scope and precedence.
+   Do not assume that every host interprets nested files or filenames equally.
+
+## Design the hierarchy
+
+Use the root instruction file as a router and repository-wide contract. It may
+contain:
+
+- a short repository identity and its important compatibility boundaries;
+- rules that apply to every change;
+- a task-to-document routing table;
+- a verification routing table;
+- instruction-ownership and publication boundaries;
+- concise cross-cutting safety or submodule rules, when the repository actually
+  has those concerns.
+
+Put detailed knowledge in the nearest directory that owns the affected code or
+workflow. A child instruction file should add local architecture, invariants,
+approved patterns, and focused checks; it should not repeat the root. Create a
+child file only when that subtree has enough distinct rules to repay its context
+and maintenance cost. A small repository may need only one concise root file.
+
+When a rule constrains callers outside the owning subtree, keep a short
+cross-cutting invariant at the root and link to the detailed local rationale.
+Choose one normative owner for each rule. Replace duplicated prose with links or
+local additions, and resolve contradictions instead of relying on nearest-file
+precedence to hide them.
+
+## Write operational rules
+
+For a fragile or non-obvious rule, record the smallest useful contract:
+
+- **scope and trigger**: what files or tasks it governs;
+- **invariant**: the behaviour that must remain true;
+- **reason**: the concrete failure it prevents;
+- **approved path**: the normal alternative to a forbidden pattern;
+- **proof**: the focused test, build, static check, or inspection that verifies it;
+- **exception owner**: who or what evidence may justify deviation, if applicable.
+
+Do not force this template onto obvious style guidance. Prefer direct commands
+over ceremonial severity labels. Preserve exact identifiers and commands.
+
+Move mechanically decidable rules into deterministic checks where practical:
+format, generated-file drift, forbidden syntax, paired-document presence,
+standalone header compilation, link validation, or submodule pin availability.
+Keep semantic decisions in review: ownership, compatibility, rollback,
+concurrency, and whether two similar implementations really share one contract.
+A grep gate is evidence about text, not proof of runtime semantics.
+
+## Review an instruction hierarchy
+
+Review it as executable project infrastructure:
+
+1. Select representative tasks in different subtrees and list the instructions
+   each task would load.
+2. Check scope, precedence, contradictions, duplication, and missing routes.
+3. Verify every path, command, tool, test name, environment assumption, and
+   claimed gate against the repository.
+4. Check that public or generated artifacts have a named source of truth.
+5. Check that mechanical invariants have automation, or explicitly record why
+   they remain manual.
+6. Remove generic platform policy, persona rules, fixed response templates, and
+   roles that do not map to an actual repository workflow.
+7. Re-read the root alone: it should orient an agent without loading detailed
+   module state into every task.
+
+Report findings by consequence: a contradictory compatibility rule or invalid
+build command is more serious than a long paragraph. Propose the smallest
+coherent restructuring and an observable check.
+
+## Common failure modes
+
+- A root file becomes a complete architecture manual and consumes context on
+  unrelated tasks.
+- A routing section says “read only what is relevant” but names every document
+  as mandatory.
+- Child files copy the root and drift independently.
+- Prose claims a CI gate exists when no workflow executes it.
+- A prohibition gives no supported alternative or verification path.
+- Generic assistant behaviour displaces repository-specific facts.
+- New submodule, release, security, or concurrency policy is added to a project
+  that has no corresponding boundary.
+- More instruction files are treated as inherently better, even when their
+  scopes do not differ.
