@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_model_evals import load_cases, make_workspace, redact_secrets, run_variant, summarize_ablation
+from run_model_evals import load_cases, make_workspace, redact_secrets, run_variant, summarize_ablation, variant_plan
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -104,8 +104,19 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertEqual(len(run["results"]), 6)
             self.assertEqual(
                 [item["variant"] for item in run["results"]],
-                ["baseline", "sovetwave", "sovetwave_without_reference"] * 2,
+                [
+                    "baseline", "sovetwave", "sovetwave_without_reference",
+                    "baseline", "sovetwave_without_reference", "sovetwave",
+                ],
             )
+            self.assertEqual(
+                run["variant_orders"],
+                [
+                    {"repetition": 1, "variants": ["baseline", "sovetwave", "sovetwave_without_reference"]},
+                    {"repetition": 2, "variants": ["baseline", "sovetwave_without_reference", "sovetwave"]},
+                ],
+            )
+            self.assertEqual([item["sequence"] for item in run["results"]], [1, 2, 3, 1, 2, 3])
             self.assertEqual({item["repetition"] for item in run["results"]}, {1, 2})
             self.assertEqual(
                 run["results"][2]["ablated_reference"],
@@ -233,12 +244,23 @@ class BehavioralHarnessTests(unittest.TestCase):
                     {"case_id": "sample", "repetition": 1, "variant": "sovetwave_without_reference", "ablated_reference": "cpp-engineering.md", "prompt": "Explain", "status": "completed", "response": "Ablated", "assertions": ["a"]},
                     {"case_id": "sample", "repetition": 2, "variant": "baseline", "prompt": "Explain", "status": "failed", "response": "", "assertions": ["a"]},
                 ],
+                "variant_orders": [
+                    {"repetition": 1, "variants": ["baseline", "sovetwave", "sovetwave_without_reference"]},
+                    {"repetition": 2, "variants": ["baseline", "sovetwave_without_reference", "sovetwave"]},
+                    {"repetition": 3, "variants": ["baseline", "sovetwave", "sovetwave_without_reference"]},
+                ],
             }), encoding="utf-8")
             subprocess.run([sys.executable, str(COMPARE), str(run), "--output", str(sheet)], cwd=ROOT, check=True)
             content = sheet.read_text(encoding="utf-8")
             self.assertIn("Ablation: `cpp-engineering.md` — **partial**", content)
             self.assertEqual(content.count("#### Sovetwave without `cpp-engineering.md`"), 3)
             self.assertIn("Не проверялось: вариант отсутствует в файле прогона", content)
+            self.assertIn("Planned execution order: Baseline → Sovetwave without `cpp-engineering.md` → Sovetwave", content)
+
+    def test_ablation_variant_plan_alternates_only_the_thematic_variants(self) -> None:
+        self.assertEqual(variant_plan("cpp-engineering.md", 1), [(False, None), (True, None), (True, "cpp-engineering.md")])
+        self.assertEqual(variant_plan("cpp-engineering.md", 2), [(False, None), (True, "cpp-engineering.md"), (True, None)])
+        self.assertEqual(variant_plan(None, 3), [(False, None), (True, None)])
 
 
 if __name__ == "__main__":

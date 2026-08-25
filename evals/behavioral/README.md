@@ -73,6 +73,11 @@ repetition completed; a run stopped before later repetitions is `partial` or
 `not_tested`. A repeated model run remains a measurement, not a proof; score
 each repetition and compare its evidence.
 
+For an ablation, baseline runs first. Full Sovetwave and the ablated variant
+then alternate order between repetitions: full → ablated for odd repetitions,
+ablated → full for even ones. The planned `variant_orders` and the actual
+per-result `sequence` are written to JSON and shown in the comparison sheet.
+
 Supported thematic references are `cpp-engineering.md`,
 `cpp-lifetime-and-queues.md`, `development-workflow-russian.md`,
 `messaging-and-distributed-systems.md`, `pedagogy-and-dialogue.md`, and

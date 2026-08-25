@@ -161,6 +161,26 @@ def command_for(
     raise ValueError(f"unsupported provider: {provider}")
 
 
+def variant_name(styled: bool, ablated_reference: str | None) -> str:
+    if ablated_reference is not None:
+        return "sovetwave_without_reference"
+    return "sovetwave" if styled else "baseline"
+
+
+def variant_plan(
+    ablated_reference: str | None,
+    repetition: int,
+) -> list[tuple[bool, str | None]]:
+    """Keep baseline first and balance full versus ablated order over repeats."""
+    plan = [(False, None), (True, None)]
+    if ablated_reference is None:
+        return plan
+    ablated = (True, ablated_reference)
+    if repetition % 2 == 0:
+        return [(False, None), ablated, (True, None)]
+    return plan + [ablated]
+
+
 def run_variant(
     provider: str,
     case: dict[str, Any],
@@ -171,6 +191,7 @@ def run_variant(
     codex_overrides: list[str] | None = None,
     ablated_reference: str | None = None,
     repetition: int = 1,
+    sequence: int = 1,
 ) -> dict[str, Any]:
     if ablated_reference is not None and not styled:
         raise ValueError("a reference can be ablated only from a Sovetwave variant")
@@ -180,8 +201,9 @@ def run_variant(
         command = command_for(provider, workspace, case["prompt"], styled, model, response_path, codex_overrides)
         result: dict[str, Any] = {
             "case_id": case["id"],
-            "variant": "sovetwave_without_reference" if ablated_reference else ("sovetwave" if styled else "baseline"),
+            "variant": variant_name(styled, ablated_reference),
             "repetition": repetition,
+            "sequence": sequence,
             "prompt": case["prompt"],
             "assertions": case.get("assertions", []),
             "command": command,
@@ -288,12 +310,22 @@ def main() -> int:
     output = args.output or DEFAULT_RESULTS / f"{timestamp}-{args.provider}.json"
     results: list[dict[str, Any]] = []
     stopped_early = False
-    variants = [(False, None), (True, None)]
-    if args.ablate_reference is not None:
-        variants.append((True, args.ablate_reference))
+    variant_orders = [
+        {
+            "repetition": repetition,
+            "variants": [
+                variant_name(styled, ablated_reference)
+                for styled, ablated_reference in variant_plan(args.ablate_reference, repetition)
+            ],
+        }
+        for repetition in range(1, args.repetitions + 1)
+    ]
     for case in cases:
         for repetition in range(1, args.repetitions + 1):
-            for styled, ablated_reference in variants:
+            for sequence, (styled, ablated_reference) in enumerate(
+                variant_plan(args.ablate_reference, repetition),
+                start=1,
+            ):
                 result = run_variant(
                     args.provider,
                     case,
@@ -304,6 +336,7 @@ def main() -> int:
                     codex_overrides,
                     ablated_reference,
                     repetition,
+                    sequence,
                 )
                 results.append(result)
                 if result.get("status") == "failed" and not args.continue_on_error:
@@ -321,13 +354,14 @@ def main() -> int:
             dry_run=args.dry_run,
         )
     payload = {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "created_at": datetime.now(UTC).isoformat(),
         "provider": args.provider,
         "model": args.model,
         "dry_run": args.dry_run,
         "repetitions": args.repetitions,
         "case_ids": [case["id"] for case in cases],
+        "variant_orders": variant_orders,
         "stopped_early": stopped_early,
         "results": results,
     }
@@ -336,6 +370,7 @@ def main() -> int:
             "reference": args.ablate_reference,
             "status": ablation_status,
             "method": "Removed from the isolated Codex skill copy; the core skill remains enabled.",
+            "order_policy": "baseline first; full and ablated Sovetwave alternate by repetition",
         }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
