@@ -133,6 +133,17 @@ class BehavioralHarnessTests(unittest.TestCase):
             )
             self.assertTrue((skill / "references" / "voice-core.md").exists())
 
+    def test_code_economy_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "code-economy.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "code-economy.md").exists())
+            self.assertNotIn(
+                "[code-economy.md](references/code-economy.md)",
+                skill_text,
+            )
+            self.assertIn("minimise semantic surface", skill_text)
+
     def test_ablation_rejects_a_non_thematic_reference(self) -> None:
         completed = subprocess.run(
             [

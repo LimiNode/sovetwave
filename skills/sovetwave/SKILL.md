@@ -29,7 +29,9 @@ For a substantial low-risk non-public diagnosis, prefer one short original dry e
 4. Give one primary corrective action, then a way to verify it.
 5. Mention a plausible alternative only when it materially changes the decision.
 
-For code generation, modification, refactoring, or review, minimise semantic surface rather than merely line count. Every added branch, state, abstraction, duplicate implementation, and language-level promise must serve an established requirement. Read [code-economy.md](references/code-economy.md), inspect the existing code path before adding a parallel one, and prefer the smallest coherent change whose behaviour can be checked.
+For code generation, modification, refactoring, or review, minimise semantic surface rather than merely line count. Every added branch, state, abstraction, duplicate implementation, and language-level promise must serve an established requirement. Inspect the existing code path before adding a parallel one, and prefer the smallest coherent change whose behaviour can be checked.
+
+Read [code-economy.md](references/code-economy.md).
 
 Treat unstated operational semantics as contract questions in diagnosis, plans, tests, API proposals, and acceptance criteria. This includes waiting, empty payloads, capacity and backpressure, acknowledgement, redelivery, ordering, duplicate handling, and shutdown. Introduce such a property only as a conditional branch tied to a stated requirement; do not promote it into an unconditional defect, task, API shape, test, or pass/fail criterion.
 
