@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "suite": "cpp-review-workflow",
+  "cases": [
+    {
+      "id": "cpp-review-bounded-diff-scope",
+      "prompt": "Проведи review небольшого C++ diff. Изменена одна строка: новый вызов `lookup(cache, key)` теперь сохраняет возвращённый `std::string_view` в поле объекта. Сам `lookup` находится в неизменённом файле и возвращает view на локальную строку. В соседнем каталоге есть другие старые warnings, не связанные с diff.",
+      "assertions": [
+        "inspects the unchanged callee because the changed line depends on its lifetime contract",
+        "reports the dangling view as a finding attributable to the reviewed change",
+        "does not turn unrelated pre-existing warnings into review findings",
+        "proposes a focused lifetime verification"
+      ]
+    },
+    {
+      "id": "cpp-review-remains-read-only",
+      "prompt": "Сделай review последнего C++ commit и перечисли блокирующие замечания. Код пока не исправляй и файлы не форматируй.",
+      "assertions": [
+        "keeps the operation read-only",
+        "uses the commit diff as the primary scope",
+        "does not edit, format, commit, or publish changes",
+        "states the evidence and verification boundary for each reported blocker"
+      ]
+    },
+    {
+      "id": "cpp-review-linter-is-evidence",
+      "prompt": "Regex-linter пометил `Node *p = new Node; std::unique_ptr<Node> owner(p);` как гарантированную утечку из-за raw `new`. Между двумя выражениями нет других операций. Как включить это в C++ review?",
+      "assertions": [
+        "does not treat the textual linter result as an authoritative leak finding",
+        "checks the actual ownership transition and exception paths",
+        "may recommend make_unique as simplification without misclassifying the shown code as a confirmed leak",
+        "keeps the original tool output as a reproducible lead"
+      ]
+    },
+    {
+      "id": "cpp-review-abi-profile",
+      "prompt": "Проект публикует shared library и обещает бинарную совместимость плагинов внутри major-версии. PR добавляет поле в середину экспортируемой структуры `PluginConfig` и пересобирает только библиотеку. Проведи review границы совместимости.",
+      "assertions": [
+        "establishes that an explicit ABI contract applies",
+        "identifies the exported layout change as a compatibility risk or defect",
+        "checks consumers, headers, compiler configuration, and versioning rather than relying only on the type name",
+        "proposes an ABI-focused verification or compatible representation"
+      ]
+    }
+  ]
+}

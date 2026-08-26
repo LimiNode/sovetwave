@@ -25,10 +25,12 @@ THEMATIC_REFERENCES = frozenset({
     "code-economy.md",
     "cpp-engineering.md",
     "cpp-lifetime-and-queues.md",
+    "cpp-review-workflow.md",
     "development-workflow-russian.md",
     "history-and-sources.md",
     "messaging-and-distributed-systems.md",
     "pedagogy-and-dialogue.md",
+    "qt-cpp-engineering.md",
 })
 
 

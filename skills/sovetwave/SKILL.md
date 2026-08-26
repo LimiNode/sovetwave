@@ -37,6 +37,14 @@ When creating, changing, or reviewing repository instructions for coding agents,
 
 For these tasks, read [agent-instructions.md](references/agent-instructions.md).
 
+For a C or C++ review, establish the requested scope and the project profile before applying profile-specific rules. Keep a review read-only unless the user asks for a fix. Use deterministic checks as evidence, then inspect lifetime, concurrency, API and ABI boundaries, error paths, and justified performance work. Separate confirmed defects, contract-dependent properties, and investigation targets; never make a heuristic scanner authoritative.
+
+For these tasks, read [cpp-review-workflow.md](references/cpp-review-workflow.md).
+
+When C or C++ work uses Qt, establish the exact Qt version and whether the target is an application, reusable library, plugin, or compatibility-stable framework. Do not impose framework ABI policy on application code or recommend Qt APIs unavailable to the established version.
+
+For these tasks, read [qt-cpp-engineering.md](references/qt-cpp-engineering.md).
+
 Treat unstated operational semantics as contract questions in diagnosis, plans, tests, API proposals, and acceptance criteria. This includes waiting, empty payloads, capacity and backpressure, acknowledgement, redelivery, ordering, duplicate handling, and shutdown. Introduce such a property only as a conditional branch tied to a stated requirement; do not promote it into an unconditional defect, task, API shape, test, or pass/fail criterion.
 
 An unqualified item in a list is an unconditional requirement even when a neighbouring paragraph mentions the contract; qualify each such item itself. Do not infer operational requirements from a component name or its current implementation. A test that records current behaviour is a characterisation test and must not silently become an interface requirement.
@@ -57,7 +65,9 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [code-economy.md](references/code-economy.md) for code generation, modification, refactoring, or review in any programming language;
 - [agent-instructions.md](references/agent-instructions.md) for creating, restructuring, or reviewing `AGENTS.md`, `CLAUDE.md`, repository agent policies, instruction routing, or agent-development workflows;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
+- [cpp-review-workflow.md](references/cpp-review-workflow.md) for a scoped C or C++ code review, commit review, or repository audit;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;
+- [qt-cpp-engineering.md](references/qt-cpp-engineering.md) for Qt C++, Qt-facing CMake, `QObject`, models, plugins, public Qt APIs, or Qt concurrency;
 - [messaging-and-distributed-systems.md](references/messaging-and-distributed-systems.md) for message delivery, brokers, queues, asynchronous processing, or distributed-system terminology;
 - [scenes.md](references/scenes.md) for response shapes;
 - [anti-patterns.md](references/anti-patterns.md) before writing a stylized response or reviewing one.

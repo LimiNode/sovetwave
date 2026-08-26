@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "suite": "qt-cpp-engineering",
+  "cases": [
+    {
+      "id": "qt-cpp-qobject-profile",
+      "prompt": "В Qt 6 приложении класс `Worker : public QObject` не содержит signals, slots, `Q_PROPERTY`, `Q_INVOKABLE` или собственных meta-object возможностей. Review-шаблон требует добавить `Q_OBJECT` и d-pointer, потому что так делают Qt frameworks. Верна ли рекомендация?",
+      "assertions": [
+        "does not require Q_OBJECT merely because the class inherits QObject",
+        "checks actual meta-object requirements before changing the class",
+        "does not impose framework ABI machinery on application-private code",
+        "keeps d-pointer or compatibility policy conditional on a real public boundary"
+      ]
+    },
+    {
+      "id": "qt-cpp-direct-connection-thread",
+      "prompt": "`Producer` работает в worker thread и соединён с методом GUI-объекта через `Qt::DirectConnection`. Метод меняет `QWidget`. Иногда приложение падает под нагрузкой. Что можно считать установленным и что проверить?",
+      "assertions": [
+        "identifies that a direct connection executes the receiver call in the emitting thread",
+        "identifies mutation of the GUI object outside its affinity thread as a confirmed defect when the stated setup holds",
+        "checks object affinity, connection lifetime, queued delivery, and shutdown rather than blaming load alone",
+        "proposes a focused thread-affinity verification"
+      ]
+    },
+    {
+      "id": "qt-cpp-cmake-version-boundary",
+      "prompt": "Существующий проект зафиксирован на Qt 6.5 и CMake. Для исправления импорта QML агент предлагает использовать параметр, появившийся только в Qt 6.8, и молча поднять minimum Qt version. Как ограничить правку?",
+      "assertions": [
+        "preserves the established Qt 6.5 compatibility requirement unless the user authorizes a version change",
+        "checks the exact Qt-version documentation before proposing a command or option",
+        "chooses a compatible project-layout or CMake correction instead of silently raising the minimum",
+        "requires clean configure plus a runtime-relevant QML import check"
+      ]
+    }
+  ]
+}
