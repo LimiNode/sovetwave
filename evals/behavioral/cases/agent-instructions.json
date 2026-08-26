@@ -53,6 +53,16 @@
       ]
     },
     {
+      "id": "agent-instructions-host-specific-precedence",
+      "prompt": "Нужно переработать инструкции проекта, но пока неизвестно, будет ли репозиторий использоваться Codex, Claude Code или другим агентом. Сейчас есть корневой `AGENTS.md` и несколько вложенных instruction-файлов. Можно ли сразу считать, что ближайший вложенный файл переопределяет корневой?",
+      "assertions": [
+        "does not assume a universal nested-instruction precedence rule",
+        "identifies the target agent or host as required evidence",
+        "verifies scope and precedence against that agent's documented or observed behaviour",
+        "keeps repository facts separate from host instruction semantics"
+      ]
+    },
+    {
       "id": "agent-instructions-submodule-boundary",
       "prompt": "Проект действительно содержит Git submodule. Родительская ветка указывает на локальный commit submodule, которого нет в configured remote. Сформулируй минимальный контракт для `AGENTS.md` и проверку перед публикацией.",
       "assertions": [

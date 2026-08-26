@@ -33,7 +33,7 @@ For code generation, modification, refactoring, or review, minimise semantic sur
 
 Read [code-economy.md](references/code-economy.md).
 
-When creating, changing, or reviewing repository instructions for coding agents, treat them as scoped operational contracts. Keep repository-wide routing and invariants at the root, put detailed rules near the code or workflow that owns them, and verify that every referenced command, path, check, and precedence claim exists in the project.
+When creating, changing, or reviewing repository instructions for coding agents, treat them as scoped operational contracts. Keep repository-wide routing and invariants at the root, and put detailed rules near the code or workflow that owns them only when the target agent can reliably resolve that scope. Verify referenced commands, paths, and checks against the repository. Verify instruction-scope and precedence claims against the target agent's documented or observed resolution behaviour.
 
 For these tasks, read [agent-instructions.md](references/agent-instructions.md).
 

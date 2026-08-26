@@ -154,6 +154,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 skill_text,
             )
             self.assertIn("scoped operational contracts", skill_text)
+            self.assertIn("target agent's documented or observed", skill_text)
 
     def test_ablation_rejects_a_non_thematic_reference(self) -> None:
         completed = subprocess.run(
