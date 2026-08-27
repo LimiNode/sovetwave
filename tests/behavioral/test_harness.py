@@ -144,6 +144,18 @@ class BehavioralHarnessTests(unittest.TestCase):
             )
             self.assertIn("minimise semantic surface", skill_text)
 
+    def test_c_engineering_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "c-engineering.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "c-engineering.md").exists())
+            self.assertNotIn(
+                "[c-engineering.md](references/c-engineering.md)",
+                skill_text,
+            )
+            self.assertIn("establish storage duration", skill_text)
+            self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
+
     def test_agent_instruction_ablation_preserves_the_core_invariant(self) -> None:
         with make_workspace(ROOT, True, "agent-instructions.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
@@ -245,6 +257,20 @@ class BehavioralHarnessTests(unittest.TestCase):
         }
         self.assertTrue(required_ids.issubset(cpp_cases))
         self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))
+
+    def test_c_engineering_suite_has_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "c-small-fixed-temporary-buffer",
+            "c-static-buffer-reentrancy",
+            "c-untrusted-vla-stack-bound",
+            "c-allocation-size-overflow",
+            "c-partial-initialization-cleanup",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn("c-engineering.md", THEMATIC_REFERENCES)
 
     def test_cpp_review_and_qt_suites_have_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

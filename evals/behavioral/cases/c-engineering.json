@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "suite": "c-engineering",
+  "cases": [
+    {
+      "id": "c-small-fixed-temporary-buffer",
+      "prompt": "В C-функции нужен временный буфер ровно на 256 байт только до возврата. Сейчас используется `malloc`, а между выделением и `free` пять ветвей раннего выхода. Ревьюер предлагает заменить его на `static uint8_t buffer[256]`, чтобы не забывать освобождение. Какую модель хранения выбрать?",
+      "assertions": [
+        "prefers a fixed-size automatic local array when the established stack budget and call pattern make 256 bytes safe",
+        "does not call the automatic local array static storage",
+        "rejects function-local static storage as a reflex because it introduces shared persistent state and reentrancy or concurrency concerns",
+        "keeps dynamic or caller-provided storage available when the stack budget or lifetime requires it"
+      ]
+    },
+    {
+      "id": "c-static-buffer-reentrancy",
+      "prompt": "Парсер возвращает указатель на function-local `static char scratch[512]`. Его начали вызывать рекурсивно и из двух worker threads. Динамического выделения нет, поэтому автор считает реализацию безопасной. Проведи review.",
+      "assertions": [
+        "identifies the static buffer as shared program-lifetime state rather than a per-call temporary",
+        "explains the recursion and concurrent overwrite mechanisms",
+        "does not equate absence of dynamic allocation with correctness",
+        "chooses an explicit caller-owned, per-instance, or otherwise synchronized contract and a focused reentrancy test"
+      ]
+    },
+    {
+      "id": "c-untrusted-vla-stack-bound",
+      "prompt": "Сетевой обработчик читает `uint32_t count` из пакета и создаёт `Record records[count];` как VLA. Агент рекомендует это вместо heap, потому что automatic storage всегда надёжнее. Что здесь установлено и как ограничить исправление?",
+      "assertions": [
+        "rejects an attacker-controlled or insufficiently capped VLA as a stack and bounds risk",
+        "checks conversion, multiplication, protocol limit, and target stack budget before choosing storage",
+        "does not declare automatic storage universally safer than dynamic storage",
+        "proposes a bounded representation or explicit allocation failure path with a focused oversized-input test"
+      ]
+    },
+    {
+      "id": "c-allocation-size-overflow",
+      "prompt": "Код делает `items = malloc(count * sizeof *items);`, где `count` пришёл из файла и имеет тип `size_t`. Проверка только `items == NULL`. Можно ли считать размер проверенным успешным `malloc`?",
+      "assertions": [
+        "identifies that count times element size can wrap before malloc sees the value",
+        "requires a precondition such as count not exceeding SIZE_MAX divided by element size plus project limits",
+        "does not treat a non-null allocation as proof that the requested logical size was valid",
+        "checks the downstream copy or indexing boundary with a malformed-size test"
+      ]
+    },
+    {
+      "id": "c-partial-initialization-cleanup",
+      "prompt": "Функция по очереди выделяет три C-ресурса и имеет семь error-return ветвей. В некоторых ветвях освобождается только последний ресурс. Предлагают просто добавить ещё несколько `free` рядом с каждым `return`. Как исправить границу владения без лишнего разрастания?",
+      "assertions": [
+        "tracks which resources are owned after each successful step and identifies incomplete cleanup as the confirmed defect",
+        "prefers one coherent cleanup abstraction or reverse-order cleanup path over duplicated branch-specific patches",
+        "keeps allocation and release at the same abstraction level or behind paired module operations",
+        "requires fault injection or equivalent checks at each acquisition step"
+      ]
+    }
+  ]
+}

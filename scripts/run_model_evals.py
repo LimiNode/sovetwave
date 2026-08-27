@@ -22,6 +22,7 @@ DEFAULT_RESULTS = ROOT / "evals" / "behavioral" / "results"
 SECRET = re.compile(r"(?:sk-[A-Za-z0-9_-]+|Bearer\s+[A-Za-z0-9._-]+|(?:api[_ -]?key|access[_ -]?token)\s*[=:]\s*\S+)", re.IGNORECASE)
 THEMATIC_REFERENCES = frozenset({
     "agent-instructions.md",
+    "c-engineering.md",
     "code-economy.md",
     "cpp-engineering.md",
     "cpp-lifetime-and-queues.md",
