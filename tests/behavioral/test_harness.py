@@ -156,6 +156,29 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("scoped operational contracts", skill_text)
             self.assertIn("target agent's documented or observed", skill_text)
 
+    def test_cpp_review_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "cpp-review-workflow.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "cpp-review-workflow.md").exists())
+            self.assertNotIn(
+                "[cpp-review-workflow.md](references/cpp-review-workflow.md)",
+                skill_text,
+            )
+            self.assertIn("Use deterministic checks as evidence", skill_text)
+
+    def test_qt_cpp_ablation_keeps_the_generic_cpp_review_layer(self) -> None:
+        with make_workspace(ROOT, True, "qt-cpp-engineering.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "qt-cpp-engineering.md").exists())
+            self.assertNotIn(
+                "[qt-cpp-engineering.md](references/qt-cpp-engineering.md)",
+                skill_text,
+            )
+            self.assertTrue((skill / "references" / "cpp-review-workflow.md").exists())
+            self.assertIn("whether the target is an application", skill_text)
+
     def test_ablation_rejects_a_non_thematic_reference(self) -> None:
         completed = subprocess.run(
             [
@@ -222,6 +245,23 @@ class BehavioralHarnessTests(unittest.TestCase):
         }
         self.assertTrue(required_ids.issubset(cpp_cases))
         self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))
+
+    def test_cpp_review_and_qt_suites_have_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "cpp-review-bounded-diff-scope",
+            "cpp-review-remains-read-only",
+            "cpp-review-linter-is-evidence",
+            "cpp-review-abi-profile",
+            "qt-cpp-qobject-profile",
+            "qt-cpp-direct-connection-thread",
+            "qt-cpp-cmake-version-boundary",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn("cpp-review-workflow.md", THEMATIC_REFERENCES)
+        self.assertIn("qt-cpp-engineering.md", THEMATIC_REFERENCES)
 
     def test_code_economy_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

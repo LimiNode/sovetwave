@@ -79,9 +79,11 @@ ablated → full for even ones. The planned `variant_orders` and the actual
 per-result `sequence` are written to JSON and shown in the comparison sheet.
 
 Supported thematic references are `agent-instructions.md`, `code-economy.md`,
-`cpp-engineering.md`, `cpp-lifetime-and-queues.md`, `development-workflow-russian.md`,
-`messaging-and-distributed-systems.md`, `pedagogy-and-dialogue.md`, and
-`history-and-sources.md`. The always-loaded voice core is deliberately not
+`cpp-engineering.md`, `cpp-lifetime-and-queues.md`, `cpp-review-workflow.md`,
+`development-workflow-russian.md`,
+`messaging-and-distributed-systems.md`, `pedagogy-and-dialogue.md`,
+`qt-cpp-engineering.md`, and `history-and-sources.md`. The always-loaded voice
+core is deliberately not
 ablatable: removing it would compare different skills rather than isolate a
 thematic layer.
 
