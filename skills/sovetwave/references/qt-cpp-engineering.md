@@ -23,10 +23,13 @@ machinery merely because a framework would need it.
 
 ## Respect the meta-object and ownership contracts
 
-Do not require `Q_OBJECT` for every `QObject` subclass. Establish whether the
-class declares signals, properties, invokable methods, or other meta-object
-features that require its own generated meta-object. Conversely, do not remove
-`Q_OBJECT` without checking those features and generated-code use.
+Qt strongly recommends `Q_OBJECT` in every `QObject` subclass, but its absence
+alone does not establish a correctness defect in the shown class. Establish
+whether the class declares signals, properties, invokable methods, or other
+features that require its own generated meta-object. Check project policy and
+uses such as `qobject_cast`, generated code, QML, and direct meta-object access
+before accepting the omission or changing the class. Conversely, do not remove
+`Q_OBJECT` merely because no signal declaration is visible locally.
 
 For every `QObject`, establish its lifecycle from a parent, an owning C++ type,
 an explicit deletion path, or an external owner. A raw pointer may be a valid
@@ -48,7 +51,13 @@ connection type, argument lifetime, and shutdown behaviour. A direct connection
 runs in the emitting thread; a queued connection defers work to the receiver's
 event loop. Do not call either universally correct.
 
-Do not mutate GUI objects or `QAbstractItemModel` state from a worker thread.
+Do not mutate GUI objects outside the GUI thread. Call `QAbstractItemModel` API
+only from the model object's affinity thread unless a documented API provides a
+stronger guarantee. A model connected to a view normally belongs to the GUI
+thread; background workers may prepare data and queue the corresponding model
+update to that thread. A model that legitimately lives and is used in a worker
+thread is not defective merely because the thread is not the GUI thread.
+
 For models, verify structural begin/end pairs on every path, index ranges,
 `setData()` and `dataChanged` consistency, and whether the changed-role list is
 intentionally broad or precise. An empty roles list means all roles changed; it

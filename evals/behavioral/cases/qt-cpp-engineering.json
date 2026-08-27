@@ -7,9 +7,20 @@
       "prompt": "В Qt 6 приложении класс `Worker : public QObject` не содержит signals, slots, `Q_PROPERTY`, `Q_INVOKABLE` или собственных meta-object возможностей. Review-шаблон требует добавить `Q_OBJECT` и d-pointer, потому что так делают Qt frameworks. Верна ли рекомендация?",
       "assertions": [
         "does not require Q_OBJECT merely because the class inherits QObject",
-        "checks actual meta-object requirements before changing the class",
+        "acknowledges Qt's general Q_OBJECT recommendation without turning the omission alone into a confirmed correctness defect",
+        "checks actual meta-object requirements including qobject_cast or other generated meta-object uses before changing the class",
         "does not impose framework ABI machinery on application-private code",
         "keeps d-pointer or compatibility policy conditional on a real public boundary"
+      ]
+    },
+    {
+      "id": "qt-cpp-model-affinity-not-worker-name",
+      "prompt": "Экземпляр подкласса `QAbstractItemModel` создан в worker thread, остаётся в нём и не подключён к GUI view. Все вызовы его API доставляются в affinity thread через queued invocation. Ревьюер объявляет это подтверждённым дефектом, потому что модель якобы всегда запрещено менять из worker thread. Верно ли это? Сравни со случаем модели, подключённой к view.",
+      "assertions": [
+        "rejects a blanket prohibition based only on the thread being called a worker",
+        "uses the model object's thread affinity as the API-call boundary",
+        "requires a model connected to a GUI view to be updated in the GUI thread",
+        "allows background preparation while queuing the corresponding model update to the model's affinity thread"
       ]
     },
     {

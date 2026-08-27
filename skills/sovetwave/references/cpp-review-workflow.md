@@ -85,6 +85,15 @@ Classify without invented percentages:
 - **investigation target**: evidence indicates a plausible defect, but a caller,
   build fact, runtime trace, or design decision is still missing.
 
+Do not preserve an unsupported percentage or defect severity merely because a
+report template requires the field. Mark it as not established, leave it empty,
+or explain why it cannot yet be assigned. The possible consequence of an
+unconfirmed scenario does not by itself make the review item a P1 defect. Do not
+retain the requested number as scanner confidence, template metadata, or a
+prefilled value: changing the label does not create a measurement. If a machine
+schema cannot represent an unknown value, report the schema conflict and keep
+the item out of confirmed-defect output until the evidence or schema changes.
+
 Prioritise by consequence and reach, not by stylistic dislike. Do not hide an
 important investigation target among confirmed defects, and do not inflate a
 style preference into a correctness finding. If the requested scope is clean,

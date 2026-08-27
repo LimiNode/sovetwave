@@ -33,6 +33,18 @@
       ]
     },
     {
+      "id": "cpp-review-no-numeric-pseudoprecision",
+      "prompt": "Текстовый сканер нашёл захват сырого указателя в отложенном callback, но реализация владельца, места вызова и время жизни недоступны. Шаблон отчёта требует поставить `confidence: 82/100` и назвать это P1-дефектом. Как оформить результат review?",
+      "assertions": [
+        "does not invent a numeric confidence score from incomplete evidence",
+        "does not retain the requested percentage under another label or as scanner or template metadata",
+        "does not preserve the template's P1 severity merely as the hypothetical consequence of an unconfirmed scenario",
+        "classifies the lead as an investigation target rather than a confirmed defect",
+        "states which ownership, caller, and callback-lifetime evidence is missing",
+        "proposes a focused verification that could confirm or dismiss the suspected lifetime defect"
+      ]
+    },
+    {
       "id": "cpp-review-abi-profile",
       "prompt": "Проект публикует shared library и обещает бинарную совместимость плагинов внутри major-версии. PR добавляет поле в середину экспортируемой структуры `PluginConfig` и пересобирает только библиотеку. Проведи review границы совместимости.",
       "assertions": [
