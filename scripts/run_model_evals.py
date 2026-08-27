@@ -32,6 +32,7 @@ THEMATIC_REFERENCES = frozenset({
     "house-conventions.md",
     "messaging-and-distributed-systems.md",
     "pedagogy-and-dialogue.md",
+    "python-engineering.md",
     "qt-cpp-engineering.md",
 })
 
