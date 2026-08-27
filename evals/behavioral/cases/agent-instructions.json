@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "suite": "agent-instructions",
+  "cases": [
+    {
+      "id": "agent-instructions-root-router",
+      "prompt": "Корневой `AGENTS.md` вырос до 320 строк. В нём смешаны общие правила поведения ИИ, команды сборки, устройство трёх модулей, правила документации и детали одного конкурентного алгоритма. В репозитории есть `src/`, `tests/`, `docs/` и `.github/`. Предложи план реструктуризации, не выдумывая отсутствующие команды и файлы.",
+      "assertions": [
+        "keeps only repository-wide routing and invariants in the root file",
+        "places detailed rules near the subtree or workflow that owns them",
+        "requires inspecting the actual repository before naming commands, paths, or checks",
+        "removes generic assistant policy that does not encode a project contract"
+      ]
+    },
+    {
+      "id": "agent-instructions-small-repository",
+      "prompt": "В небольшом репозитории один пакет, восемь исходных файлов и один способ сборки. Предлагают сразу создать корневой `AGENTS.md` и ещё шесть вложенных файлов «как в большом проекте». Как организовать инструкции без лишней инфраструктуры?",
+      "assertions": [
+        "does not treat more instruction files as inherently better",
+        "starts with one concise root contract when scopes do not materially differ",
+        "creates a child instruction file only after distinct local rules justify it",
+        "keeps a path for later decomposition without designing speculative hierarchy"
+      ]
+    },
+    {
+      "id": "agent-instructions-conflict-and-ownership",
+      "prompt": "Корневой `AGENTS.md` требует C++17 для всего проекта, а `legacy/AGENTS.md` требует сохранять C++11. Правило совместимости ещё дважды пересказано в guides с разными исключениями. Проведи review и предложи порядок исправления.",
+      "assertions": [
+        "identifies the compatibility contradiction and establishes the intended scope before editing",
+        "chooses one normative owner instead of preserving duplicated competing rules",
+        "uses root summary plus local detail when callers outside the subtree need the boundary",
+        "requires verification in the affected language modes rather than relying on precedence alone"
+      ]
+    },
+    {
+      "id": "agent-instructions-mechanical-gates",
+      "prompt": "В `AGENTS.md` записаны запрет default lambda captures, обязательная пара EN/RU документов и правило самостоятельной компиляции публичных headers. Эти требования регулярно нарушаются. Что переносить в автоматические проверки, а что оставить человеку?",
+      "assertions": [
+        "moves mechanically decidable syntax, file-pair, and compilation invariants into deterministic checks",
+        "keeps semantic judgement and justified exceptions in review",
+        "does not call a grep match proof of runtime behaviour",
+        "requires confirming that CI or the documented test entry point actually runs the gates"
+      ]
+    },
+    {
+      "id": "agent-instructions-rule-quality",
+      "prompt": "В локальном `AGENTS.md` есть только строка `Never call save directly`. Из кода неясно, где разрешённый путь, какую гонку предотвращает запрет и чем проверить изменение. Как переписать правило, не превращая документ в трактат?",
+      "assertions": [
+        "records the governed scope and concrete invariant",
+        "names the failure mechanism and the approved alternative",
+        "links a focused verification or regression gate",
+        "keeps the root summary short if the detailed contract belongs to a local subtree"
+      ]
+    },
+    {
+      "id": "agent-instructions-host-specific-precedence",
+      "prompt": "Нужно переработать инструкции проекта, но пока неизвестно, будет ли репозиторий использоваться Codex, Claude Code или другим агентом. Сейчас есть корневой `AGENTS.md` и несколько вложенных instruction-файлов. Можно ли сразу считать, что ближайший вложенный файл переопределяет корневой?",
+      "assertions": [
+        "does not assume a universal nested-instruction precedence rule",
+        "identifies the target agent or host as required evidence",
+        "verifies scope and precedence against that agent's documented or observed behaviour",
+        "keeps repository facts separate from host instruction semantics"
+      ]
+    },
+    {
+      "id": "agent-instructions-submodule-boundary",
+      "prompt": "Проект действительно содержит Git submodule. Родительская ветка указывает на локальный commit submodule, которого нет в configured remote. Сформулируй минимальный контракт для `AGENTS.md` и проверку перед публикацией.",
+      "assertions": [
+        "requires the pinned submodule commit to exist on the configured remote before publishing the parent",
+        "keeps submodule changes conditional on the requested task scope",
+        "uses repository evidence rather than a generic submodule ritual",
+        "does not recommend rolling back a parent pointer when the correct fix is to publish the required submodule commit"
+      ]
+    }
+  ]
+}

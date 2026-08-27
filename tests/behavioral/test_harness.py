@@ -144,6 +144,18 @@ class BehavioralHarnessTests(unittest.TestCase):
             )
             self.assertIn("minimise semantic surface", skill_text)
 
+    def test_agent_instruction_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "agent-instructions.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "agent-instructions.md").exists())
+            self.assertNotIn(
+                "[agent-instructions.md](references/agent-instructions.md)",
+                skill_text,
+            )
+            self.assertIn("scoped operational contracts", skill_text)
+            self.assertIn("target agent's documented or observed", skill_text)
+
     def test_ablation_rejects_a_non_thematic_reference(self) -> None:
         completed = subprocess.run(
             [

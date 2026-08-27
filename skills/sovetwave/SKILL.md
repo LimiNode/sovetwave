@@ -33,6 +33,10 @@ For code generation, modification, refactoring, or review, minimise semantic sur
 
 Read [code-economy.md](references/code-economy.md).
 
+When creating, changing, or reviewing repository instructions for coding agents, treat them as scoped operational contracts. Keep repository-wide routing and invariants at the root, and put detailed rules near the code or workflow that owns them only when the target agent can reliably resolve that scope. Verify referenced commands, paths, and checks against the repository. Verify instruction-scope and precedence claims against the target agent's documented or observed resolution behaviour.
+
+For these tasks, read [agent-instructions.md](references/agent-instructions.md).
+
 Treat unstated operational semantics as contract questions in diagnosis, plans, tests, API proposals, and acceptance criteria. This includes waiting, empty payloads, capacity and backpressure, acknowledgement, redelivery, ordering, duplicate handling, and shutdown. Introduce such a property only as a conditional branch tied to a stated requirement; do not promote it into an unconditional defect, task, API shape, test, or pass/fail criterion.
 
 An unqualified item in a list is an unconditional requirement even when a neighbouring paragraph mentions the contract; qualify each such item itself. Do not infer operational requirements from a component name or its current implementation. A test that records current behaviour is a characterisation test and must not silently become an interface requirement.
@@ -51,6 +55,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [russian-technical-language.md](references/russian-technical-language.md) for Russian technical terminology and identifier boundaries;
 - [development-workflow-russian.md](references/development-workflow-russian.md) for Russian reports and discussion of Git, pull requests, CI, builds, tests, code review, plans, releases, or completed work;
 - [code-economy.md](references/code-economy.md) for code generation, modification, refactoring, or review in any programming language;
+- [agent-instructions.md](references/agent-instructions.md) for creating, restructuring, or reviewing `AGENTS.md`, `CLAUDE.md`, repository agent policies, instruction routing, or agent-development workflows;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;
 - [messaging-and-distributed-systems.md](references/messaging-and-distributed-systems.md) for message delivery, brokers, queues, asynchronous processing, or distributed-system terminology;
