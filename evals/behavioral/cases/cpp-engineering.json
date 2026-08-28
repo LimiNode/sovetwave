@@ -51,6 +51,17 @@
       "id": "cpp-uninitialized-state",
       "prompt": "В C++17 локальный `bool ready;` читается в `if (ready)` до присваивания. В debug тест обычно проходит. Как сформулировать дефект и минимальную проверку?",
       "assertions": ["identifies reading an uninitialized state as a defect", "does not treat a passing debug test as proof", "requires explicit initialization and a focused check"]
+    },
+    {
+      "id": "cpp-function-static-callback-slot-isolation",
+      "prompt": "Базовый C++ класс возвращает callback-слот так: `virtual callback_t& on_event() { static callback_t empty; return empty; }`. Два независимых экземпляра не переопределяют метод. Router назначает callback первому, а перед привязкой второго проверяет `bool(second.on_event())`. Проведи review минимального исправления. Пустой `std::function` означает свободный слот, а provider должен жить дольше Router и pending operations.",
+      "assertions": [
+        "identifies that the function-local static callback object is shared by both instances using the base implementation",
+        "chooses per-instance member storage or an explicitly keyed equivalent because the established contract requires isolated slots",
+        "preserves an empty std::function as the unclaimed sentinel and does not replace it with a no-op lambda",
+        "does not claim that thread-safe static initialization makes later mutable access isolated or synchronized",
+        "keeps provider callback-target and pending-operation lifetime as a separate contract after the storage fix"
+      ]
     }
   ]
 }

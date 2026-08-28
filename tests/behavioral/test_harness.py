@@ -279,6 +279,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             "cpp-sanitizer-scope",
             "cpp-odr-abi-boundary",
             "cpp-uninitialized-state",
+            "cpp-function-static-callback-slot-isolation",
         }
         self.assertTrue(required_ids.issubset(cpp_cases))
         self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))
