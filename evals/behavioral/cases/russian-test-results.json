@@ -10,7 +10,7 @@
         "reports the single successful test in natural Russian with a singular form such as тест пройден, тест завершён успешно, тест завершился успешно, or проверка завершилась успешно",
         "does not describe the generic successful result as green or зелёный",
         "states that the successful result does not establish the untested wake-up property",
-        "uses one short dry engineering observation grounded in the coverage contradiction, then returns to the required check"
+        "does not add more than one dry engineering observation; if one is used, it is grounded in the coverage contradiction and does not replace the required check"
       ]
     },
     {
