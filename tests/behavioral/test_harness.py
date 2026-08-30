@@ -223,6 +223,30 @@ class BehavioralHarnessTests(unittest.TestCase):
             )
             self.assertIn("minimise semantic surface", skill_text)
 
+    def test_engineering_workflow_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "engineering-workflow.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "engineering-workflow.md").exists())
+            self.assertNotIn(
+                "[engineering-workflow.md](references/engineering-workflow.md)",
+                skill_text,
+            )
+            self.assertIn("scale the engineering procedure", skill_text)
+            self.assertIn("Treat commit, push, issue, and pull-request creation as publication steps", skill_text)
+
+    def test_architecture_decision_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "architecture-decisions.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "architecture-decisions.md").exists())
+            self.assertNotIn(
+                "[architecture-decisions.md](references/architecture-decisions.md)",
+                skill_text,
+            )
+            self.assertIn("inherit an established brownfield structure", skill_text)
+            self.assertIn("bounded spike with a decision criterion", skill_text)
+
     def test_c_engineering_ablation_preserves_the_core_invariant(self) -> None:
         with make_workspace(ROOT, True, "c-engineering.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
@@ -396,6 +420,27 @@ class BehavioralHarnessTests(unittest.TestCase):
         }
         self.assertTrue(required_ids.issubset(cpp_cases))
         self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))
+
+    def test_workflow_and_architecture_suites_have_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "workflow-small-local-fix",
+            "workflow-bounded-vertical-slice",
+            "workflow-real-validation-command",
+            "workflow-review-finding-triage",
+            "workflow-publication-boundary",
+            "architecture-small-utility-no-framework",
+            "architecture-brownfield-inherits",
+            "architecture-cheap-reversible-choice",
+            "architecture-moderate-recommendation",
+            "architecture-expensive-public-decision",
+            "architecture-unknown-needs-spike",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn("engineering-workflow.md", THEMATIC_REFERENCES)
+        self.assertIn("architecture-decisions.md", THEMATIC_REFERENCES)
 
     def test_c_engineering_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

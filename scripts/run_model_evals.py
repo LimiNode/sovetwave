@@ -33,12 +33,14 @@ SENSITIVE_PROVIDER_KEYS = frozenset({
 FAILED_STATUSES = frozenset({"failed", "invalid_empty_response", "timeout"})
 THEMATIC_REFERENCES = frozenset({
     "agent-instructions.md",
+    "architecture-decisions.md",
     "c-engineering.md",
     "code-economy.md",
     "cpp-engineering.md",
     "cpp-lifetime-and-queues.md",
     "cpp-review-workflow.md",
     "development-workflow-russian.md",
+    "engineering-workflow.md",
     "history-and-sources.md",
     "house-conventions.md",
     "messaging-and-distributed-systems.md",
