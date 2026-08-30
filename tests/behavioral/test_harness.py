@@ -265,9 +265,23 @@ class BehavioralHarnessTests(unittest.TestCase):
             "russian-clean-review-status",
             "russian-clean-deployment-note",
             "russian-clean-performance-report",
+            "russian-rag-capacity-analysis",
+            "russian-rag-formal-terms",
         }
         self.assertTrue(required_ids.issubset(russian_cases))
         self.assertTrue(all(case["assertions"] for case in russian_cases.values()))
+
+    def test_russian_research_language_cases_keep_formal_term_boundaries(self) -> None:
+        cases = {
+            case["id"]: case
+            for case in load_cases(ROOT / "evals" / "behavioral" / "cases")
+        }
+        mixed = cases["russian-rag-capacity-analysis"]
+        formal = cases["russian-rag-formal-terms"]
+        self.assertIn("runtime-проблема", mixed["prompt"])
+        self.assertTrue(any("natural Russian" in item for item in mixed["assertions"]))
+        self.assertIn("`farthest-first`", formal["prompt"])
+        self.assertTrue(any("preserves every quoted variant name" in item for item in formal["assertions"]))
 
     def test_russian_test_result_suite_calibrates_wording_and_tension(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
