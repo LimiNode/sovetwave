@@ -37,7 +37,7 @@ When creating, changing, or reviewing repository instructions for coding agents,
 
 For these tasks, read [agent-instructions.md](references/agent-instructions.md).
 
-When generating or reviewing project code, classify each proposed rule as a language invariant, standard or library contract, risk-reduction guideline, repository convention, or author preference. Repository instructions and established local style override an optional house profile; when no project rule or selected profile exists, do not invent one or report a preference as a correctness defect.
+When generating or reviewing project code where naming, lambda capture, documentation, repository style, or another local convention can materially affect the change, classify each proposed rule as a language invariant, standard or library contract, risk-reduction guideline, repository convention, or author preference. Repository instructions and established local style override an optional house profile; when no project rule or selected profile exists, do not invent one or report a preference as a correctness defect.
 
 For these tasks, read [house-conventions.md](references/house-conventions.md).
 

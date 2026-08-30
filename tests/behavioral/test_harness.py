@@ -177,6 +177,10 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[house-conventions.md](references/house-conventions.md)",
                 skill_text,
             )
+            self.assertIn(
+                "where naming, lambda capture, documentation, repository style",
+                skill_text,
+            )
             self.assertIn("Repository instructions and established local style override", skill_text)
             self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
             self.assertTrue((skill / "references" / "c-engineering.md").exists())
@@ -321,6 +325,18 @@ class BehavioralHarnessTests(unittest.TestCase):
         indexed = {case["id"]: case for case in cases}
         self.assertTrue(required_ids.issubset(indexed))
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn(
+            "Автор в личных проектах обычно предпочитает camelCase",
+            indexed["house-repository-overrides-method-style"]["prompt"],
+        )
+        self.assertTrue(any(
+            "does not invent an encoding unit or semantic role" in assertion
+            for assertion in indexed["house-semantic-scope-prefixes"]["assertions"]
+        ))
+        self.assertTrue(any(
+            "implicitly captured this object" in assertion
+            for assertion in indexed["house-default-capture-selected-profile"]["assertions"]
+        ))
         self.assertIn("house-conventions.md", THEMATIC_REFERENCES)
 
     def test_code_economy_suite_has_thematic_coverage(self) -> None:
