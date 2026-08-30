@@ -19,7 +19,8 @@
         "identifies the static buffer as shared program-lifetime state rather than a per-call temporary",
         "explains the recursion and concurrent overwrite mechanisms",
         "does not equate absence of dynamic allocation with correctness",
-        "chooses an explicit caller-owned, per-instance, or otherwise synchronized contract and a focused reentrancy test"
+        "prefers caller-owned per-call or per-instance storage; accepts shared synchronized scratch only if synchronization covers the caller's whole borrowing lifetime and recursion",
+        "proposes a focused two-caller and recursive-use check that continues after parse returns"
       ]
     },
     {
@@ -50,6 +51,76 @@
         "prefers one coherent cleanup abstraction or reverse-order cleanup path over duplicated branch-specific patches",
         "keeps allocation and release at the same abstraction level or behind paired module operations",
         "requires fault injection or equivalent checks at each acquisition step"
+      ]
+    },
+    {
+      "id": "c-small-temporary-stack-insufficient",
+      "prompt": "C-функции нужен временный буфер на 256 байт только до возврата. Функция не рекурсивна, но на целевом контроллере подтверждённый остаток stack budget в этой точке — 128 байт. Доступны caller workspace и явное динамическое выделение. Выбери модель хранения и объясни, какой факт изменил решение.",
+      "assertions": [
+        "rejects a 256-byte automatic object because the established remaining stack budget is smaller",
+        "chooses caller-provided context-owned arena pool or explicit dynamic storage according to the available lifetime and failure contract",
+        "does not replace the temporary with mutable function-local static storage as a reflex",
+        "attributes the changed recommendation to the stack budget rather than treating 256 as universally large"
+      ]
+    },
+    {
+      "id": "c-small-temporary-recursive-depth",
+      "prompt": "Рекурсивному C-парсеру нужен локальный временный буфер на 256 байт. Глубина входа может достигать 32, а stack budget задачи равен 6 KiB и должен вместить остальные frames. Оцени automatic storage и предложи проверяемую границу хранения.",
+      "assertions": [
+        "accounts for the temporary buffer multiplied by recursive depth together with the remaining frame cost",
+        "does not accept the automatic buffer merely because one 256-byte instance is small",
+        "recommends a bounded caller context arena pool explicit allocation or a justified recursion limit from the established resource model",
+        "proposes a maximum-depth or constrained-stack check tied to the selected contract"
+      ]
+    },
+    {
+      "id": "c-small-temporary-invariance",
+      "prompt": "Нерекурсивной C-функции нужен временный буфер ровно на 192 байта до возврата. Подтверждённого stack budget достаточно, функция имеет две ветви раннего выхода, а буфер не покидает вызов. Сейчас он выделяется через malloc/free. Какую модель хранения выбрать?",
+      "assertions": [
+        "prefers a fixed automatic local object under the established lifetime call pattern and adequate stack budget",
+        "does not introduce mutable function-local static storage",
+        "does not change the ownership decision merely because the buffer is 192 rather than 256 bytes or because there are two rather than five exits",
+        "keeps another storage model conditional on a changed lifetime recursion or resource constraint"
+      ]
+    },
+    {
+      "id": "c-static-immutable-table",
+      "prompt": "C-модуль содержит `static const uint16_t decode_table[256]`, инициализированную константами. Все вызовы только читают таблицу; сброс, рекурсия и отдельное состояние экземпляров не требуются. Проведи review выбранной продолжительности хранения.",
+      "assertions": [
+        "accepts static-duration immutable shared storage as matching the established module-wide contract",
+        "does not infer a reentrancy or data-race defect from concurrent reads alone",
+        "does not move the table to per-call automatic or dynamic storage merely to avoid the static keyword",
+        "keeps target placement or initialization concerns conditional on evidence that they matter"
+      ]
+    },
+    {
+      "id": "c-bounded-vla-profile",
+      "prompt": "В C-функции `count` проверяется как `1 <= count && count <= 16`, затем создаётся `Record records[count]`. Целевой стандарт и компилятор поддерживают VLA, профиль проекта их разрешает, функция не рекурсивна, а stack budget подтверждён. Оцени выбор хранения.",
+      "assertions": [
+        "recognizes that the VLA bound support profile call pattern and stack budget are established in this case",
+        "does not require heap allocation merely because the object is a VLA",
+        "allows the bounded VLA while noting that a fixed maximum array may be simpler if using the exact bound has no value",
+        "does not generalize this acceptance to untrusted uncapped bounds or unsupported C profiles"
+      ]
+    },
+    {
+      "id": "c-allocation-size-guarded",
+      "prompt": "Перед `malloc(count * sizeof *items)` код проверяет `count <= SIZE_MAX / sizeof *items` и `count <= PROJECT_ITEM_LIMIT`; downstream loops и copy используют тот же проверенный `count`. Что здесь ещё является дефектом размера, а что уже доказано?",
+      "assertions": [
+        "recognizes that the explicit SIZE_MAX division guard prevents unsigned multiplication wrap for the allocation size",
+        "recognizes the separate project limit and consistent downstream count boundary",
+        "does not report the original unchecked-allocation defect after its preconditions are established",
+        "recommends boundary tests around both limits without treating ordinary UBSan as proof of defined unsigned-wrap safety"
+      ]
+    },
+    {
+      "id": "c-simple-cleanup-no-label",
+      "prompt": "C-функция получает один ресурс, после успешного получения выполняет одну операцию и имеет два выхода: ошибка операции и успех. В обеих ветвях ресурс освобождается явно рядом с выходом. Нужен ли общий `goto cleanup`?",
+      "assertions": [
+        "does not require a cleanup label when the two explicit paths are complete clear and preserve the same ownership contract",
+        "checks that release occurs exactly once on both success and failure",
+        "does not introduce an ownership abstraction or goto solely as a universal style rule",
+        "names growing resource count partial initialization or duplicated branches as conditions that could justify centralized cleanup later"
       ]
     }
   ]
