@@ -90,10 +90,14 @@ and bound the wait when the application requires a deadline.
 
 Choose `asyncio` for cooperative asynchronous I/O only when dependencies expose
 compatible non-blocking operations. Move a blocking call away from the event
-loop deliberately. Use threads for suitable blocking work and processes or
-native code for measured CPU-bound work when their serialization, startup, and
-deployment costs fit. Do not introduce an async framework, worker pool, or task
-queue without an established workload and lifecycle.
+loop deliberately. For CPU-bound parallelism, first establish the Python
+implementation and version, whether the runtime has an enabled GIL, and whether
+native extensions support the selected mode. In GIL-enabled CPython, processes
+or native code that releases the GIL often fit measured CPU-bound work; in a
+free-threaded CPython build, threads may also execute Python code in parallel.
+Choose from measured workload, shared-state safety, data-transfer cost, startup,
+and deployment constraints. Do not introduce an async framework, worker pool,
+or task queue without an established workload and lifecycle.
 
 ## Verify the actual boundary
 

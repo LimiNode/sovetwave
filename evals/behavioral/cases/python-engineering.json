@@ -68,8 +68,19 @@
       "assertions": [
         "separates blocking I/O from CPU-bound work and asks for measured workload and latency or throughput goals",
         "does not claim asyncio makes blocking SDK calls or CPU work non-blocking",
-        "chooses the smallest compatible mechanism such as threads for suitable blocking calls and processes or native code for established CPU work",
+        "establishes the Python implementation version GIL or free-threaded mode and extension compatibility before choosing CPU parallelism",
+        "keeps threads processes and native code conditional on the measured workload shared-state safety and transfer or deployment cost",
         "rejects an unrequired async framework or task queue and includes focused measurement and shutdown checks"
+      ]
+    },
+    {
+      "id": "python-free-threaded-cpu-parallelism",
+      "prompt": "Сервис работает на CPython 3.14 в free-threaded сборке; проверено, что GIL отключён и используемые расширения его не включают. Независимые CPU-bound задания дорого передавать между процессами. Ревьюер утверждает, что Python threads в принципе не могут исполнять такой код параллельно, и требует multiprocessing. Верна ли рекомендация?",
+      "assertions": [
+        "rejects the blanket claim because the established free-threaded CPython runtime can execute Python threads in parallel",
+        "keeps thread safety and extension compatibility as separate requirements rather than treating absence of the GIL as automatic correctness",
+        "compares threads with processes or native code using measured throughput shared-state risk and transfer startup or deployment cost",
+        "does not require multiprocessing or an async framework solely from the CPU-bound label"
       ]
     }
   ]
