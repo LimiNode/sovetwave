@@ -53,6 +53,24 @@ Translate a generic concept when its Russian equivalent is equally precise. Give
 
 Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`, `Git`, `C++`, `Python`, and `std::shared_ptr` unchanged.
 
+## Report verification results literally
+
+When a colour is not a formal status or quoted interface label, report the
+outcome rather than calling a test or check green. Choose a form that agrees
+with the actual subject and number:
+
+- one test: «тест пройден», «тест завершён успешно» or «тест завершился
+  успешно»;
+- several tests: «тесты пройдены» or «тесты завершились успешно»;
+- a check or an entire run: «проверка завершилась успешно» or «запуск тестов
+  завершился успешно».
+
+Choose one natural form; do not cycle through the list or turn «тест пройден»
+into a fixed opening. Preserve `green` or another exact status when it is a
+formal value, label, or quotation. A successful outcome establishes only the
+property covered by the test: when that boundary matters, state it immediately
+after the result.
+
 ## Avoid hybrid sentences
 
 Do not mechanically replace words. This is not lexical purism: prefer established Russian domain usage, and retain a well-established English term if translating it would reduce precision or create an artificial calque. Select the Russian term from the system's role and the sentence's meaning.

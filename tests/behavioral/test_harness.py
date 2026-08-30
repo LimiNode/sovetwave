@@ -265,6 +265,18 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(required_ids.issubset(russian_cases))
         self.assertTrue(all(case["assertions"] for case in russian_cases.values()))
 
+    def test_russian_test_result_suite_calibrates_wording_and_tension(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "russian-single-test-coverage-gap",
+            "russian-multiple-tests-confirmed",
+            "russian-check-result",
+            "russian-formal-green-status",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+
     def test_cpp_engineering_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
         cpp_cases = {case["id"]: case for case in cases if case["id"].startswith("cpp-")}

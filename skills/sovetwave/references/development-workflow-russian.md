@@ -30,7 +30,7 @@ Keep tool and target names such as `CMake`, `CTest`, `CI`, `ASan`, `test_sync_ca
 | CI job | CI unit of work | задание CI |
 | check | validation result | проверка |
 | run | CI or test execution | запуск |
-| passed / failed | outcome | завершился успешно / завершился ошибкой |
+| passed / failed | outcome | пройден / не пройден; завершился успешно / завершился ошибкой — согласовать форму и число с подлежащим |
 | build failure | outcome | ошибка сборки |
 
 ## Review, planning, and delivery
