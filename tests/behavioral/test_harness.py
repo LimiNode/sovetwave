@@ -304,6 +304,13 @@ class BehavioralHarnessTests(unittest.TestCase):
             "c-untrusted-vla-stack-bound",
             "c-allocation-size-overflow",
             "c-partial-initialization-cleanup",
+            "c-small-temporary-stack-insufficient",
+            "c-small-temporary-recursive-depth",
+            "c-small-temporary-invariance",
+            "c-static-immutable-table",
+            "c-bounded-vla-profile",
+            "c-allocation-size-guarded",
+            "c-simple-cleanup-no-label",
         }
         indexed = {case["id"]: case for case in cases}
         self.assertTrue(required_ids.issubset(indexed))
