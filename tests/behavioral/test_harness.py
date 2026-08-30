@@ -168,6 +168,23 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("scoped operational contracts", skill_text)
             self.assertIn("target agent's documented or observed", skill_text)
 
+    def test_house_conventions_ablation_preserves_precedence_and_cpp_layers(self) -> None:
+        with make_workspace(ROOT, True, "house-conventions.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "house-conventions.md").exists())
+            self.assertNotIn(
+                "[house-conventions.md](references/house-conventions.md)",
+                skill_text,
+            )
+            self.assertIn(
+                "where naming, lambda capture, documentation, repository style",
+                skill_text,
+            )
+            self.assertIn("Repository instructions and established local style override", skill_text)
+            self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
+            self.assertTrue((skill / "references" / "c-engineering.md").exists())
+
     def test_cpp_review_ablation_preserves_the_core_invariant(self) -> None:
         with make_workspace(ROOT, True, "cpp-review-workflow.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
@@ -295,6 +312,32 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
         self.assertIn("cpp-review-workflow.md", THEMATIC_REFERENCES)
         self.assertIn("qt-cpp-engineering.md", THEMATIC_REFERENCES)
+
+    def test_house_conventions_suite_has_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "house-default-capture-selected-profile",
+            "house-default-capture-no-profile",
+            "house-repository-overrides-method-style",
+            "house-semantic-scope-prefixes",
+            "house-convention-not-correctness-defect",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn(
+            "Автор в личных проектах обычно предпочитает camelCase",
+            indexed["house-repository-overrides-method-style"]["prompt"],
+        )
+        self.assertTrue(any(
+            "does not invent an encoding unit or semantic role" in assertion
+            for assertion in indexed["house-semantic-scope-prefixes"]["assertions"]
+        ))
+        self.assertTrue(any(
+            "implicitly captured this object" in assertion
+            for assertion in indexed["house-default-capture-selected-profile"]["assertions"]
+        ))
+        self.assertIn("house-conventions.md", THEMATIC_REFERENCES)
 
     def test_code_economy_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

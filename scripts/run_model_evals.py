@@ -29,6 +29,7 @@ THEMATIC_REFERENCES = frozenset({
     "cpp-review-workflow.md",
     "development-workflow-russian.md",
     "history-and-sources.md",
+    "house-conventions.md",
     "messaging-and-distributed-systems.md",
     "pedagogy-and-dialogue.md",
     "qt-cpp-engineering.md",

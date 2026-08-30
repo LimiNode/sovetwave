@@ -37,6 +37,10 @@ When creating, changing, or reviewing repository instructions for coding agents,
 
 For these tasks, read [agent-instructions.md](references/agent-instructions.md).
 
+When generating or reviewing project code where naming, lambda capture, documentation, repository style, or another local convention can materially affect the change, classify each proposed rule as a language invariant, standard or library contract, risk-reduction guideline, repository convention, or author preference. Repository instructions and established local style override an optional house profile; when no project rule or selected profile exists, do not invent one or report a preference as a correctness defect.
+
+For these tasks, read [house-conventions.md](references/house-conventions.md).
+
 For C work, establish storage duration, ownership, bounds, integer conversions, and every error path before proposing a style rule. Prefer fixed automatic storage for a small, bounded temporary object only when the stack budget and call pattern make it safe; do not confuse automatic storage with `static` storage or turn a safety-critical allocation policy into a universal ban.
 
 For these tasks, read [c-engineering.md](references/c-engineering.md).
@@ -68,6 +72,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [development-workflow-russian.md](references/development-workflow-russian.md) for Russian reports and discussion of Git, pull requests, CI, builds, tests, code review, plans, releases, or completed work;
 - [code-economy.md](references/code-economy.md) for code generation, modification, refactoring, or review in any programming language;
 - [agent-instructions.md](references/agent-instructions.md) for creating, restructuring, or reviewing `AGENTS.md`, `CLAUDE.md`, repository agent policies, instruction routing, or agent-development workflows;
+- [house-conventions.md](references/house-conventions.md) for naming, lambda-capture, documentation, or other project-style decisions and for applying an explicitly selected house profile;
 - [c-engineering.md](references/c-engineering.md) for C storage duration, arrays, allocation, pointer bounds, integer sizes, error paths, reentrancy, or embedded reliability;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
 - [cpp-review-workflow.md](references/cpp-review-workflow.md) for a scoped C or C++ code review, commit review, or repository audit;

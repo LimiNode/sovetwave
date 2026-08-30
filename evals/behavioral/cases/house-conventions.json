@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "suite": "house-conventions",
+  "cases": [
+    {
+      "id": "house-default-capture-selected-profile",
+      "prompt": "В проекте явно выбран house-profile Советвейва. В новом C++ callback написано `[&] { publish(m_state); }`, а callback сохраняется и вызывается позже. Проведи review и предложи минимальное исправление.",
+      "assertions": [
+        "enforces an explicit capture list because the selected house profile forbids default captures",
+        "separately investigates the lifetime of the implicitly captured this object and of references actually introduced by the corrected capture list without inventing dangling locals absent from the prompt",
+        "does not call the project convention a C++ language rule",
+        "proposes the smallest contract-aware correction and a focused delayed-callback check"
+      ]
+    },
+    {
+      "id": "house-default-capture-no-profile",
+      "prompt": "В небольшом C++ проекте нет AGENTS.md, style guide или выбранного house-profile. Локальная не escaping lambda использует `[&]` и вызывается сразу. Ревьюер пишет: «default capture — безусловный дефект C++». Оцени замечание.",
+      "assertions": [
+        "rejects the claim that a default capture is inherently a C++ correctness defect",
+        "checks lifetime mutation and local style before recommending a change",
+        "does not silently activate the optional house profile",
+        "labels explicit capture as a risk-reduction or readability choice when no semantic defect is established"
+      ]
+    },
+    {
+      "id": "house-repository-overrides-method-style",
+      "prompt": "Корневой AGENTS.md проекта требует snake_case для методов. Рядом весь модуль использует `load_config()`. Автор в личных проектах обычно предпочитает camelCase. Как назвать новый метод и что написать в review?",
+      "assertions": [
+        "chooses snake_case because the repository contract and established local style outrank the author's personal preference",
+        "does not mix styles or invent a compromise spelling",
+        "does not present camelCase as a language or library requirement",
+        "keeps any broader naming migration outside the requested change"
+      ]
+    },
+    {
+      "id": "house-semantic-scope-prefixes",
+      "prompt": "Для новых private members предлагают `m_str_title`, `m_n_size`, `m_b_ready`. House-profile выбран. Известно только, что `title` — название, `size` — некоторый размер, а `ready` — булев признак; encoding, unit и более точная роль не установлены. Перепиши имена и объясни, какие части правила обязательны именно в этом профиле.",
+      "assertions": [
+        "uses m_title m_size and m_is_ready under the selected private-member and predicate conventions",
+        "does not invent an encoding unit or semantic role that the prompt does not establish",
+        "recommends a more semantic title or size name only conditionally when that information is known",
+        "treats str_ as optional and repository-specific rather than universally useful",
+        "classifies the naming decision as a project convention rather than a correctness invariant"
+      ]
+    },
+    {
+      "id": "house-convention-not-correctness-defect",
+      "prompt": "В чужом C++ репозитории все private members оканчиваются `_`, тесты зелёные, локальный style guide это требует. Автор review хочет поставить P1 за отсутствие `m_`, потому что в его обычном профиле принято `m_`. Как оформить вывод?",
+      "assertions": [
+        "rejects the P1 and follows the target repository's established underscore convention",
+        "separates author preference from project policy and semantic correctness",
+        "does not recommend a repository-wide rename without an explicit scoped migration goal",
+        "reports no defect when no violated target rule or behavioral consequence is established"
+      ]
+    }
+  ]
+}
