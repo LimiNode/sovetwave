@@ -27,7 +27,7 @@
       "id": "c-untrusted-vla-stack-bound",
       "prompt": "Сетевой обработчик читает `uint32_t count` из пакета и создаёт `Record records[count];` как VLA. Агент рекомендует это вместо heap, потому что automatic storage всегда надёжнее. Что здесь установлено и как ограничить исправление?",
       "assertions": [
-        "rejects an attacker-controlled or insufficiently capped VLA as a stack and bounds risk",
+        "treats an attacker-controlled or insufficiently capped VLA as a resource and bounds risk without assuming that automatic VLA storage must use a physical stack",
         "checks conversion, multiplication, protocol limit, and target stack budget before choosing storage",
         "does not declare automatic storage universally safer than dynamic storage",
         "proposes a bounded representation or explicit allocation failure path with a focused oversized-input test"
@@ -58,7 +58,7 @@
       "prompt": "C-функции нужен временный буфер на 256 байт только до возврата. Функция не рекурсивна, но на целевом контроллере подтверждённый остаток stack budget в этой точке — 128 байт. Доступны caller workspace и явное динамическое выделение. Выбери модель хранения и объясни, какой факт изменил решение.",
       "assertions": [
         "rejects a 256-byte automatic object because the established remaining stack budget is smaller",
-        "chooses caller-provided context-owned arena pool or explicit dynamic storage according to the available lifetime and failure contract",
+        "chooses the established caller workspace or explicit dynamic storage according to the required lifetime and failure contract, and introduces another storage model only conditionally",
         "does not replace the temporary with mutable function-local static storage as a reflex",
         "attributes the changed recommendation to the stack budget rather than treating 256 as universally large"
       ]
