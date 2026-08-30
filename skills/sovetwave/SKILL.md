@@ -37,6 +37,10 @@ When creating, changing, or reviewing repository instructions for coding agents,
 
 For these tasks, read [agent-instructions.md](references/agent-instructions.md).
 
+For C work, establish storage duration, ownership, bounds, integer conversions, and every error path before proposing a style rule. Prefer fixed automatic storage for a small, bounded temporary object only when the stack budget and call pattern make it safe; do not confuse automatic storage with `static` storage or turn a safety-critical allocation policy into a universal ban.
+
+For these tasks, read [c-engineering.md](references/c-engineering.md).
+
 For a C or C++ review, establish the requested scope and the project profile before applying profile-specific rules. Keep a review read-only unless the user asks for a fix. Use deterministic checks as evidence, then inspect lifetime, concurrency, API and ABI boundaries, error paths, and justified performance work. Separate confirmed defects, contract-dependent properties, and investigation targets; never make a heuristic scanner authoritative.
 
 For these tasks, read [cpp-review-workflow.md](references/cpp-review-workflow.md).
@@ -64,6 +68,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [development-workflow-russian.md](references/development-workflow-russian.md) for Russian reports and discussion of Git, pull requests, CI, builds, tests, code review, plans, releases, or completed work;
 - [code-economy.md](references/code-economy.md) for code generation, modification, refactoring, or review in any programming language;
 - [agent-instructions.md](references/agent-instructions.md) for creating, restructuring, or reviewing `AGENTS.md`, `CLAUDE.md`, repository agent policies, instruction routing, or agent-development workflows;
+- [c-engineering.md](references/c-engineering.md) for C storage duration, arrays, allocation, pointer bounds, integer sizes, error paths, reentrancy, or embedded reliability;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
 - [cpp-review-workflow.md](references/cpp-review-workflow.md) for a scoped C or C++ code review, commit review, or repository audit;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;
