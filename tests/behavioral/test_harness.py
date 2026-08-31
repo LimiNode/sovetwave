@@ -393,6 +393,9 @@ class BehavioralHarnessTests(unittest.TestCase):
             "implicitly captured this object" in assertion
             for assertion in indexed["house-default-capture-selected-profile"]["assertions"]
         ))
+        no_profile_prompt = indexed["house-default-capture-no-profile"]["prompt"]
+        self.assertIn("Локальная лямбда не сохраняется и вызывается сразу", no_profile_prompt)
+        self.assertNotIn("escaping lambda", no_profile_prompt)
         self.assertIn("house-conventions.md", THEMATIC_REFERENCES)
 
     def test_code_economy_suite_has_thematic_coverage(self) -> None:
