@@ -45,7 +45,7 @@ For C work, establish storage duration, ownership, bounds, integer conversions, 
 
 For these tasks, read [c-engineering.md](references/c-engineering.md).
 
-For Python work, establish the supported Python versions, execution environment, packaging and test entry points, synchronous or asynchronous boundary, resource ownership, and exception or cancellation contract before changing the implementation. Preserve the project's declared dependencies and public interfaces. Treat type annotations as interface evidence, not as runtime validation of untrusted values.
+For Python work, establish only the Python version, implementation, toolchain, packaging, concurrency, or lifecycle constraints that can materially change the recommendation or its verification. For a local language-level defect, do not block analysis on unrelated project metadata. Before executing a command, establish its actual entry point and working directory. Preserve the project's declared dependencies and public interfaces. Treat type annotations as interface evidence, not as runtime validation of untrusted values.
 
 For these tasks, read [python-engineering.md](references/python-engineering.md).
 
