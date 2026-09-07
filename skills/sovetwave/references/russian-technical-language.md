@@ -72,9 +72,9 @@ Translate a generic concept when its Russian equivalent is equally precise. Give
 | dot-product work | computation | объём вычислений скалярных произведений |
 | stacked PRs | dependent changes | последовательные PR |
 | baseline | experiment | исходный / контрольный вариант |
-| objective | optimisation | критерий |
+| objective | optimisation | целевая функция / критерий оптимизации |
 | marginal gain | optimisation | предельный прирост |
-| sealed evaluation | experiment | закрытая контрольная выборка |
+| sealed evaluation | experiment | закрытое контрольное оценивание / оценка на закрытой контрольной выборке |
 
 Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`,
 `Git`, `C++`, `Python`, `RAG`, `nDCG`, `FP16`, `INT8`, `PQ/ADC`, and
@@ -96,6 +96,12 @@ Do not manufacture historical-sounding replacements for established terms.
 The goal is precise Russian prose, not lexical theatre. Preserve the
 distinction between an exact name and the concept it denotes, and explain the
 name in Russian when that removes ambiguity.
+
+Keep the object of measurement intact: an `objective` may be a «целевая
+функция» or a «критерий оптимизации», while an `evaluation` is the procedure
+or result of оценивания. Call a dataset a «выборка» only when the source
+actually means the data; for a held-out procedure say «оценка на закрытой
+контрольной выборке».
 
 ## Report verification results literally
 

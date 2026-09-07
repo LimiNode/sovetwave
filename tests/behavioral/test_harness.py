@@ -282,6 +282,10 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(any("natural Russian" in item for item in mixed["assertions"]))
         self.assertIn("`farthest-first`", formal["prompt"])
         self.assertTrue(any("preserves every quoted variant name" in item for item in formal["assertions"]))
+        reference = (ROOT / "skills" / "sovetwave" / "references" / "russian-technical-language.md").read_text(encoding="utf-8")
+        self.assertIn("целевая функция / критерий оптимизации", reference)
+        self.assertIn("закрытое контрольное оценивание / оценка на закрытой контрольной выборке", reference)
+        self.assertNotIn("objective | optimisation | критерий |", reference)
 
     def test_russian_test_result_suite_calibrates_wording_and_tension(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
