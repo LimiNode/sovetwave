@@ -1,11 +1,13 @@
 # Python engineering
 
 Read this reference for Python code, reviews, diagnostics, packaging, or
-concurrency. First establish the supported Python versions, interpreter and
-execution environment, dependency and packaging tool, test entry point, and
-whether the target is an application, library, command-line tool, service, or
-plugin. Preserve repository evidence instead of replacing its toolchain with a
-preferred framework.
+concurrency. Establish only the Python version, implementation, toolchain,
+packaging, concurrency, lifecycle, or execution facts that can materially
+change the recommendation or its verification. For a local language-level
+defect, do not block analysis on unrelated project metadata. Before executing
+a command, establish its actual entry point and working directory. Preserve
+repository evidence instead of replacing its toolchain with a preferred
+framework.
 
 ## Keep ownership visible
 

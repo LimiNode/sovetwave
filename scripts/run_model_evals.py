@@ -14,12 +14,23 @@ import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "behavioral" / "cases"
 DEFAULT_RESULTS = ROOT / "evals" / "behavioral" / "results"
 SECRET = re.compile(r"(?:sk-[A-Za-z0-9_-]+|Bearer\s+[A-Za-z0-9._-]+|(?:api[_ -]?key|access[_ -]?token)\s*[=:]\s*\S+)", re.IGNORECASE)
+URL_CREDENTIAL = re.compile(r"(https?://)([^/@\s]+@)", re.IGNORECASE)
+SAFE_PROVIDER_KEYS = frozenset({"name", "base_url", "wire_api", "requires_openai_auth", "env_key"})
+SENSITIVE_PROVIDER_KEYS = frozenset({
+    "experimental_bearer_token",
+    "http_headers",
+    "env_http_headers",
+    "query_params",
+    "auth",
+})
+FAILED_STATUSES = frozenset({"failed", "invalid_empty_response", "timeout"})
 THEMATIC_REFERENCES = frozenset({
     "agent-instructions.md",
     "c-engineering.md",
@@ -61,7 +72,12 @@ def load_cases(case_dir: Path) -> list[dict[str, Any]]:
 
 
 def redact_secrets(text: str) -> str:
-    return SECRET.sub("[redacted credential]", text)
+    return URL_CREDENTIAL.sub(r"\1[redacted]@", SECRET.sub("[redacted credential]", text))
+
+
+def redact_command(command: list[str]) -> list[str]:
+    """Return a safe-to-store representation of an executable command."""
+    return [redact_secrets(argument) for argument in command]
 
 
 def toml_scalar(value: Any) -> str:
@@ -101,6 +117,18 @@ def codex_provider_overrides(config_path: Path) -> list[str]:
     for key, value in providers[provider].items():
         if not isinstance(key, str):
             raise ValueError(f"{config_path}: provider keys must be strings")
+        if key not in SAFE_PROVIDER_KEYS:
+            if key in SENSITIVE_PROVIDER_KEYS:
+                raise ValueError(
+                    f"{config_path}: provider key {key!r} is sensitive; use env_key instead of copying credentials"
+                )
+            raise ValueError(f"{config_path}: unsupported provider key {key!r}; refusing to copy it")
+        if key == "base_url":
+            if not isinstance(value, str) or not value:
+                raise ValueError(f"{config_path}: base_url must be a non-empty string")
+            parsed = urlsplit(value)
+            if parsed.username or parsed.password:
+                raise ValueError(f"{config_path}: base_url must not contain URL credentials")
         overrides.extend(["--config", f"model_providers.{provider}.{key}={toml_scalar(value)}"])
     return overrides
 
@@ -211,30 +239,54 @@ def run_variant(
             "variant": variant_name(styled, ablated_reference),
             "repetition": repetition,
             "sequence": sequence,
-            "prompt": case["prompt"],
+            "prompt": redact_secrets(case["prompt"]),
             "assertions": case.get("assertions", []),
-            "command": command,
+            "command": redact_command(command),
         }
         if ablated_reference is not None:
             result["ablated_reference"] = ablated_reference
         if dry_run:
             result["status"] = "planned"
             return result
-        completed = subprocess.run(
-            command,
-            cwd=workspace,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            capture_output=True,
-            timeout=timeout,
-            check=False,
-        )
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=workspace,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                capture_output=True,
+                timeout=timeout,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as error:
+            result.update({
+                "status": "timeout",
+                "returncode": None,
+                "response": "",
+                "stderr": redact_secrets(str(error)),
+            })
+            return result
+        except OSError as error:
+            result.update({
+                "status": "failed",
+                "returncode": None,
+                "response": "",
+                "stderr": redact_secrets(str(error)),
+            })
+            return result
         response = response_path.read_text(encoding="utf-8") if response_path.exists() else (completed.stdout or "")
+        response = response.strip()
+        if completed.returncode != 0:
+            status = "failed"
+        elif not response:
+            status = "invalid_empty_response"
+        else:
+            status = "completed"
         result.update({
-            "status": "completed" if completed.returncode == 0 else "failed",
+            "status": status,
             "returncode": completed.returncode,
-            "response": response.strip(),
+            "response": response,
             "stderr": redact_secrets((completed.stderr or "").strip()),
         })
         return result
@@ -308,6 +360,8 @@ def main() -> int:
 
     cases = load_cases(args.case_dir)
     if args.case_id is not None:
+        if args.limit is not None:
+            parser.error("--limit cannot be combined with explicit --case-id selection")
         cases = [case for case in cases if case["id"] == args.case_id]
         if not cases:
             parser.error(f"no behavioral case with id {args.case_id!r}")
@@ -346,7 +400,7 @@ def main() -> int:
                     sequence,
                 )
                 results.append(result)
-                if result.get("status") == "failed" and not args.continue_on_error:
+                if result.get("status") in FAILED_STATUSES and not args.continue_on_error:
                     stopped_early = True
                     break
             if stopped_early:
@@ -381,8 +435,8 @@ def main() -> int:
         }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(payload['results'])} planned or completed variants to {output}")
-    return 0
+    print(f"Wrote {len(payload['results'])} variants to {output}")
+    return 2 if any(result.get("status") in FAILED_STATUSES for result in results) else 0
 
 
 if __name__ == "__main__":

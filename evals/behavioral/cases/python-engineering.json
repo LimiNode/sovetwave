@@ -82,6 +82,16 @@
         "compares threads with processes or native code using measured throughput shared-state risk and transfer startup or deployment cost",
         "does not require multiprocessing or an async framework solely from the CPU-bound label"
       ]
+    },
+    {
+      "id": "python-local-defect-no-toolchain-ritual",
+      "prompt": "Проведи короткий review локального дефекта: `def collect(item, bucket=[]): bucket.append(item); return bucket`. Неизвестны pyproject.toml, менеджер окружения и способ запуска полного набора тестов; показан focused test с двумя вызовами функции.",
+      "assertions": [
+        "identifies the mutable default as a language-level shared-state defect from the shown code",
+        "does not begin by demanding unrelated Python version, packaging, deployment, or full-suite metadata",
+        "proposes the smallest correction and a focused two-call verification",
+        "states which broader toolchain facts remain not established instead of inventing them"
+      ]
     }
   ]
 }
