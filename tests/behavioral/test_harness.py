@@ -319,6 +319,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             "python-declared-dependency-boundary",
             "python-concurrency-from-workload",
             "python-free-threaded-cpu-parallelism",
+            "python-local-defect-no-toolchain-ritual",
         }
         indexed = {case["id"]: case for case in cases}
         self.assertTrue(required_ids.issubset(indexed))
