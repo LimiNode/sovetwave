@@ -14,7 +14,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_model_evals import THEMATIC_REFERENCES, load_cases, make_workspace, redact_secrets, run_variant, summarize_ablation, variant_plan
+from run_model_evals import (
+    THEMATIC_REFERENCES,
+    codex_provider_overrides,
+    load_cases,
+    make_workspace,
+    redact_command,
+    redact_secrets,
+    run_variant,
+    summarize_ablation,
+    variant_plan,
+)
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -25,6 +35,31 @@ class BehavioralHarnessTests(unittest.TestCase):
     def test_stderr_redacts_credentials(self) -> None:
         self.assertEqual(redact_secrets("Bearer abc.def_123"), "[redacted credential]")
         self.assertEqual(redact_secrets("api_key=sk-example-secret"), "[redacted credential]")
+        self.assertEqual(
+            redact_command(["codex", "--config", "experimental_bearer_token=sk-secret"])[-1],
+            "experimental_bearer_token=[redacted credential]",
+        )
+
+    def test_codex_provider_config_rejects_sensitive_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "config.toml"
+            config.write_text(
+                """model_provider = \"local-lb\"\n\n[model_providers.local-lb]\nname = \"openai\"\nbase_url = \"http://127.0.0.1:2455/backend-api/codex\"\nexperimental_bearer_token = \"sk-secret\"\n""",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "sensitive") as raised:
+                codex_provider_overrides(config)
+            self.assertNotIn("sk-secret", str(raised.exception))
+
+    def test_codex_provider_config_rejects_url_credentials(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "config.toml"
+            config.write_text(
+                """model_provider = \"local-lb\"\n\n[model_providers.local-lb]\nbase_url = \"https://user:secret@example.test/codex\"\n""",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "URL credentials"):
+                codex_provider_overrides(config)
 
     def test_codex_dry_run_creates_pairs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -33,7 +68,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 [sys.executable, str(RUNNER), "--provider", "codex", "--dry-run", "--limit", "2", "--output", str(output)],
                 cwd=ROOT, text=True, capture_output=True, check=True,
             )
-            self.assertIn("4 planned", completed.stdout)
+            self.assertIn("4 variants", completed.stdout)
             run = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual([item["variant"] for item in run["results"]], ["baseline", "sovetwave", "baseline", "sovetwave"])
             self.assertTrue(run["results"][1]["command"][-1].startswith("$sovetwave\n"))
@@ -82,6 +117,50 @@ class BehavioralHarnessTests(unittest.TestCase):
             run = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(len(run["results"]), 2)
             self.assertEqual({item["case_id"] for item in run["results"]}, {"russian-pr-status-report"})
+
+    def test_case_id_cannot_be_truncated_by_limit(self) -> None:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--provider", "codex",
+                "--dry-run",
+                "--case-id", "russian-pr-status-report",
+                "--limit", "1",
+            ],
+            cwd=ROOT, text=True, capture_output=True,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("cannot be combined", completed.stderr)
+
+    def test_timeout_is_recorded_as_a_distinct_status(self) -> None:
+        case = {"id": "timeout-case", "prompt": "Run the check.", "assertions": ["reports timeout"]}
+        with patch("run_model_evals.subprocess.run", side_effect=subprocess.TimeoutExpired(["codex"], 1)):
+            result = run_variant("codex", case, False, None, 1, False)
+        self.assertEqual(result["status"], "timeout")
+        self.assertIsNone(result["returncode"])
+        self.assertEqual(result["response"], "")
+
+    def test_empty_success_is_invalid_not_completed(self) -> None:
+        case = {"id": "empty-case", "prompt": "Run the check.", "assertions": ["rejects empty output"]}
+        completed = subprocess.CompletedProcess(["codex"], 0, stdout="", stderr=None)
+        with patch("run_model_evals.subprocess.run", return_value=completed):
+            result = run_variant("codex", case, False, None, 1, False)
+        self.assertEqual(result["status"], "invalid_empty_response")
+
+    def test_live_failure_returns_nonzero_exit_status(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run.json"
+            failed = {"status": "failed", "variant": "baseline"}
+            with patch("run_model_evals.run_variant", return_value=failed):
+                with patch.object(
+                    sys,
+                    "argv",
+                    [str(RUNNER), "--provider", "codex", "--case-id", "russian-pr-status-report", "--output", str(output)],
+                ):
+                    from run_model_evals import main
+
+                    self.assertEqual(main(), 2)
 
     def test_codex_ablation_dry_run_creates_repeated_third_variant(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
