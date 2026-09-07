@@ -34,7 +34,7 @@
     },
     {
       "id": "architecture-moderate-recommendation",
-      "prompt": "Сервису нужны фоновые задания. Можно выполнять их в текущем процессе или вынести в отдельный worker; нагрузка умеренная, но задания иногда живут пять минут. Дай инженерную рекомендацию.",
+      "prompt": "Сервису нужны фоновые задания. Можно выполнять их в текущем процессе или вынести в отдельный worker. Задания не должны переживать перезапуск, потеря незавершённой работы допустима, а graceful shutdown ограничен 30 секундами. Дай инженерную рекомендацию.",
       "assertions": [
         "recommends one direction from the stated lifecycle and deployment constraints",
         "names a materially different alternative and the condition that would make it preferable",
@@ -44,11 +44,11 @@
     },
     {
       "id": "architecture-expensive-public-decision",
-      "prompt": "Мы выбираем публичный plugin ABI и формат файлов, которые должны читаться много лет. Можно сразу выбрать за меня и начать реализацию?",
+      "prompt": "Мы выбираем публичный plugin ABI и формат файлов, которые должны читаться много лет. Я явно делегирую тебе выбор: назови предпосылки и последствия, выбери вариант и начни реализацию.",
       "assertions": [
         "identifies ABI and persistent format as expensive hard-to-reverse compatibility decisions",
-        "provides a recommendation and consequences but obtains the user's decision before implementation commits to them",
-        "does not silently choose a compatibility promise",
+        "recognizes the explicit delegation, states assumptions and consequences, chooses one compatibility direction, and proceeds only within that delegated scope",
+        "does not silently choose a compatibility promise without naming the decision and its assumptions",
         "separates the architecture decision from the later file-level implementation plan"
       ]
     },

@@ -441,6 +441,11 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
         self.assertIn("engineering-workflow.md", THEMATIC_REFERENCES)
         self.assertIn("architecture-decisions.md", THEMATIC_REFERENCES)
+        delegated = indexed["architecture-expensive-public-decision"]
+        self.assertIn("явно делегирую тебе выбор", delegated["prompt"])
+        self.assertTrue(any("explicit delegation" in item for item in delegated["assertions"]))
+        architecture = (ROOT / "skills" / "sovetwave" / "references" / "architecture-decisions.md").read_text(encoding="utf-8")
+        self.assertIn("explicitly delegated this choice", architecture)
 
     def test_c_engineering_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

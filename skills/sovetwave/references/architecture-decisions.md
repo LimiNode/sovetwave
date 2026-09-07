@@ -27,9 +27,11 @@ state, failure mode, compatibility promise, or independently testable contract.
 - **Moderately costly:** recommend one direction and name a materially different
   alternative together with the condition that would make it preferable.
 - **Expensive or hard to reverse:** present the decision, consequences, and
-  recommendation, then obtain the user's choice before committing to it. Public
-  APIs, persistent formats, migrations, ABI, deployment topology, and external
-  integrations normally belong here.
+  recommendation. If the user has explicitly delegated this choice and the
+  material constraints are established, choose and record it; otherwise obtain
+  the user's choice before committing to it. Public APIs, persistent formats,
+  migrations, ABI, deployment topology, and external integrations normally
+  belong here.
 - **Critical fact unknown:** run or propose a bounded spike before deciding.
 
 Judge cost and reversibility, not whether a choice has an architectural label.

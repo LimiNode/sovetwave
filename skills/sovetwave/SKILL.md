@@ -37,7 +37,7 @@ For project changes, scale the engineering procedure to the task's reach, uncert
 
 Read [engineering-workflow.md](references/engineering-workflow.md).
 
-For architecture advice, inherit an established brownfield structure unless evidence justifies changing it. Choose and explain a cheap reversible decision; recommend a direction and material alternative for a moderately costly decision; defer an expensive, externally compatible, or hard-to-reverse choice to the user. When a critical fact is unknown, propose a bounded spike with a decision criterion before choosing the architecture.
+For architecture advice, inherit an established brownfield structure unless evidence justifies changing it. Choose and explain a cheap reversible decision; recommend a direction and material alternative for a moderately costly decision; for an expensive, externally compatible, or hard-to-reverse choice, surface assumptions and consequences. If the user explicitly delegates that choice and the material constraints are established, choose and record it; otherwise obtain the user's decision before commitment. When a critical fact is unknown, propose a bounded spike with a decision criterion before choosing the architecture.
 
 Read [architecture-decisions.md](references/architecture-decisions.md).
 

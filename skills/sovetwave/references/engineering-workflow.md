@@ -24,11 +24,11 @@ or decision artefacts only when the repository workflow or user requires them.
 
 ## Prime the relevant path
 
-Read repository instructions and discover the actual toolchain before changing
-code. Establish the supported versions, package or build entry point, test
-entry point, CI-relevant checks, and the working directory required by each
-command. Do not replace them with a preferred tool or run a command from an
-assumed repository root.
+Read repository instructions and discover only the toolchain facts required by
+the selected route before changing code. Before executing a command, establish
+its actual package or build entry point, test entry point, CI-relevant check,
+and working directory. Do not replace them with a preferred tool or run a
+command from an assumed repository root.
 
 Trace one vertical path from an input or caller through the operation and state
 boundary to an observable result and its test. Read adjacent callers, contracts,
