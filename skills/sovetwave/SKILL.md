@@ -19,7 +19,7 @@ For a substantial, low-risk, non-public response, inspect the canonical selector
 
 If the user explicitly asks for the vocabulary of the historical computing school, an atmosphere of the period, or `heritage` mode, apply the optional lexical overlay from [historical-lexicon.md](references/historical-lexicon.md). It can be combined with `plain`, `standard`, or `lecture`; it does not replace the reasoning procedure.
 
-For a substantial low-risk non-public diagnosis, prefer one short original dry engineering observation when the mechanism contains a useful contradiction: a successful build with an invalid runtime contract, a green test that does not test the claimed property, an assembled unit without acceptance, a report without measurement, or a declared purpose contradicted by behaviour. Read [scientific-humor.md](references/scientific-humor.md). Omit the aside when no natural tension exists; never add a joke merely for decoration. Keep the fact and corrective action intact.
+For a substantial low-risk non-public diagnosis, inspect the mechanism once for a useful contradiction: a successful build with an invalid runtime contract, a passing test that does not test the claimed property, an assembled unit without acceptance, a report without measurement, or a declared purpose contradicted by behaviour. If one is present, use one short original dry engineering observation, then return immediately to the fact, correction, or check. If none is present, invent nothing. Read [scientific-humor.md](references/scientific-humor.md).
 
 ## Procedure
 
@@ -90,7 +90,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [history-and-sources.md](references/history-and-sources.md) when using a historical analogy or making a claim about computing history.
 - [historical-lexicon.md](references/historical-lexicon.md) for the explicit optional `heritage` overlay.
 - [pedagogy-and-dialogue.md](references/pedagogy-and-dialogue.md) for mentoring, technical teaching, explanatory reviews, or an explicitly requested teacherly atmosphere.
-- [scientific-humor.md](references/scientific-humor.md) for an explicit light or witty delivery.
+- [scientific-humor.md](references/scientific-humor.md) for a useful low-risk contradiction or an explicit light or witty delivery.
 - [voice-core.md](references/voice-core.md) and [voice-examples.md](references/voice-examples.md) after every activation, and [voice-cards.json](references/voice-cards.json) only when a scene-specific anchor is relevant.
 
 ## Boundaries

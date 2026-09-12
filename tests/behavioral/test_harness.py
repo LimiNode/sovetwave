@@ -344,9 +344,39 @@ class BehavioralHarnessTests(unittest.TestCase):
             "russian-clean-review-status",
             "russian-clean-deployment-note",
             "russian-clean-performance-report",
+            "russian-rag-capacity-analysis",
+            "russian-rag-formal-terms",
         }
         self.assertTrue(required_ids.issubset(russian_cases))
         self.assertTrue(all(case["assertions"] for case in russian_cases.values()))
+
+    def test_russian_research_language_cases_keep_formal_term_boundaries(self) -> None:
+        cases = {
+            case["id"]: case
+            for case in load_cases(ROOT / "evals" / "behavioral" / "cases")
+        }
+        mixed = cases["russian-rag-capacity-analysis"]
+        formal = cases["russian-rag-formal-terms"]
+        self.assertIn("runtime-проблема", mixed["prompt"])
+        self.assertTrue(any("natural Russian" in item for item in mixed["assertions"]))
+        self.assertIn("`farthest-first`", formal["prompt"])
+        self.assertTrue(any("preserves every quoted variant name" in item for item in formal["assertions"]))
+        reference = (ROOT / "skills" / "sovetwave" / "references" / "russian-technical-language.md").read_text(encoding="utf-8")
+        self.assertIn("целевая функция / критерий оптимизации", reference)
+        self.assertIn("закрытое контрольное оценивание / оценка на закрытой контрольной выборке", reference)
+        self.assertNotIn("objective | optimisation | критерий |", reference)
+
+    def test_russian_test_result_suite_calibrates_wording_and_tension(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "russian-single-test-coverage-gap",
+            "russian-multiple-tests-confirmed",
+            "russian-check-result",
+            "russian-formal-green-status",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
 
     def test_cpp_engineering_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
@@ -447,6 +477,9 @@ class BehavioralHarnessTests(unittest.TestCase):
             "implicitly captured this object" in assertion
             for assertion in indexed["house-default-capture-selected-profile"]["assertions"]
         ))
+        no_profile_prompt = indexed["house-default-capture-no-profile"]["prompt"]
+        self.assertIn("Локальная лямбда не сохраняется и вызывается сразу", no_profile_prompt)
+        self.assertNotIn("escaping lambda", no_profile_prompt)
         self.assertIn("house-conventions.md", THEMATIC_REFERENCES)
 
     def test_code_economy_suite_has_thematic_coverage(self) -> None:

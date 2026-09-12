@@ -14,7 +14,7 @@
     },
     {
       "id": "house-default-capture-no-profile",
-      "prompt": "В небольшом C++ проекте нет AGENTS.md, style guide или выбранного house-profile. Локальная не escaping lambda использует `[&]` и вызывается сразу. Ревьюер пишет: «default capture — безусловный дефект C++». Оцени замечание.",
+      "prompt": "В небольшом C++ проекте нет AGENTS.md, style guide или выбранного house-profile. Локальная лямбда не сохраняется и вызывается сразу. Она использует `[&]`. Ревьюер пишет: «default capture — безусловный дефект C++». Оцени замечание.",
       "assertions": [
         "rejects the claim that a default capture is inherently a C++ correctness defect",
         "checks lifetime mutation and local style before recommending a change",

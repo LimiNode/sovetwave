@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "suite": "russian-test-result-language",
+  "cases": [
+    {
+      "id": "russian-single-test-coverage-gap",
+      "prompt": "Коротко сообщи результат: тест test_shutdown завершился с кодом 0. Он проверяет создание очереди, но не пробуждение ожидающего потока, которое исправлялось.",
+      "assertions": [
+        "preserves test_shutdown exactly and retains the fact that the process exited with code 0",
+        "reports the single successful test in natural Russian with a singular form such as тест пройден, тест завершён успешно, тест завершился успешно, or проверка завершилась успешно",
+        "does not describe the generic successful result as green or зелёный",
+        "states that the successful result does not establish the untested wake-up property",
+        "does not add more than one dry engineering observation; if one is used, it is grounded in the coverage contradiction and does not replace the required check"
+      ]
+    },
+    {
+      "id": "russian-multiple-tests-confirmed",
+      "prompt": "Коротко сообщи результат: test_push, test_take и test_shutdown завершились с кодом 0; каждый тест проверяет исправленное им свойство, дополнительных ограничений в этом отчёте нет.",
+      "assertions": [
+        "preserves all three test identifiers exactly and retains the fact that they exited with code 0",
+        "reports the plural result in natural Russian with a form such as тесты пройдены, тесты завершились успешно, or запуск тестов завершился успешно",
+        "does not describe the generic successful results as green or зелёные",
+        "does not invent a coverage gap, uncertainty, joke, or technical contradiction absent from the prompt",
+        "does not force the singular catchphrase тест пройден"
+      ]
+    },
+    {
+      "id": "russian-check-result",
+      "prompt": "Сформулируй одну строку отчёта: проверка совместимости C++17 завершилась с кодом 0, а проверка C++20 ещё выполняется.",
+      "assertions": [
+        "preserves C++17 and C++20 exactly and retains the successful code-0 result",
+        "reports the completed check in natural Russian with a form such as проверка завершилась успешно",
+        "states that the C++20 check is still running and does not claim that the whole run passed",
+        "does not use a green-colour metaphor or a stock catchphrase"
+      ]
+    },
+    {
+      "id": "russian-formal-green-status",
+      "prompt": "Панель CI присвоила заданию validate формальный статус `green`. Передай этот результат по-русски, сохранив точное значение статуса и имя задания.",
+      "assertions": [
+        "preserves validate and the exact formal status `green`",
+        "explains the successful outcome in natural Russian",
+        "does not translate or alter the quoted formal status",
+        "does not generalise the formal label into a green-colour metaphor for unrelated tests"
+      ]
+    }
+  ]
+}

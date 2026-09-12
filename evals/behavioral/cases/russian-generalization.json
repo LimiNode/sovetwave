@@ -101,6 +101,27 @@
       "id": "russian-clean-performance-report",
       "prompt": "Подготовь краткую заметку об измерении производительности: среднее время стало меньше, но редкие долгие выполнения участились. Нагрузка не соответствует рабочей, поэтому вывод о пользе изменения пока делать рано.",
       "assertions": ["does not introduce generic English development jargon absent from the prompt", "uses natural Russian for measurement, limitation, and conclusion", "does not present the result as operational proof"]
+    },
+    {
+      "id": "russian-rag-capacity-analysis",
+      "prompt": "Перепиши технический вывод по-русски, сохранив факты и обозначения. K32 max в #240 — это R0 плюс max-cosine feature внутри matched learned scorer, а не полностью training-free router. Capacity curve должна сохранить обучение и менять только K; raw max-cosine diagnostic является отдельным control. Privileged density — oracle для actionable address ordering, но не для финального nDCG: .6507 > .6492 показывает качество top-10, но не доказывает globally ideal ranking. В #239 materialized 876–899 тысяч representatives; K32 занимает 1.35–1.38 GB FP32, 0.68 GB FP16 или 0.34 GB INT8. Главная runtime-проблема — random fetch и dot-product work. Следующие два stacked PR должны отдельно измерить coverage saturation и teacher-guided set coverage.",
+      "assertions": [
+        "preserves K32 max, #240, R0, nDCG, both scores, #239, the representative count, storage measurements, FP32, FP16, and INT8 exactly",
+        "uses natural Russian for generic component roles, experiment controls, ranking claims, stored data, execution costs, memory access, computation, and dependent pull requests instead of repeating incidental English jargon",
+        "retains the epistemic distinction that privileged density orders actionable addresses but does not prove globally ideal final ranking",
+        "does not translate or distort formal metrics, representation formats, issue numbers, variant labels, or numerical evidence",
+        "does not invent archaic vocabulary merely to avoid English terms"
+      ]
+    },
+    {
+      "id": "russian-rag-formal-terms",
+      "prompt": "Составь по-русски краткий план эксперимента. Формальные имена вариантов: `raw max-cosine`, `Teacher-Guided Coverage` и `K32 max`; алгоритм в статье назван `farthest-first`; итоговая метрика — `nDCG@10`; форматы хранения — FP16 и PQ/ADC. Критерий относится к классу facility location. Все имена и обозначения должны остаться пригодными для поиска в коде и статье.",
+      "assertions": [
+        "preserves every quoted variant name, `farthest-first`, `nDCG@10`, FP16, and PQ/ADC exactly",
+        "writes the surrounding plan in natural Russian and explains facility location in Russian while retaining the established source term once",
+        "does not decline, transliterate, or replace formal names with invented Russian identifiers",
+        "does not use the preservation rule as a reason to leave generic actions, roles, or experiment structure in English"
+      ]
     }
   ]
 }

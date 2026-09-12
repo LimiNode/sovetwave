@@ -2,6 +2,15 @@
 
 Apply this policy to every Russian-language Sovetwave response. It is part of the engineering core, not `heritage` mode. Keep a Russian explanation Russian when an equally precise established term exists.
 
+## Contents
+
+- Classify before choosing the language
+- Preserve exactly
+- Prefer Russian technical prose
+- Use scientific and technical Russian, not invented archaism
+- Report verification results literally
+- Avoid hybrid sentences
+
 ## Classify before choosing the language
 
 Classify each English fragment by its role in the sentence before deciding whether to retain it.
@@ -50,8 +59,67 @@ Translate a generic concept when its Russian equivalent is equally precise. Give
 | workflow | process | рабочий процесс / порядок работы |
 | output | result or message | результат / выходное сообщение |
 | review | context-dependent | разбор / проверка / рецензирование |
+| router | system component | маршрутизатор |
+| feature | model or ranking input | признак |
+| scorer | ranking component | функция оценки |
+| capacity curve | experiment | кривая ёмкости |
+| raw diagnostic | experiment | отдельная диагностическая проверка |
+| ranking | information retrieval | ранжирование |
+| top-10 | result position | первые десять результатов |
+| materialized | stored or constructed data | сформировано / сохранено |
+| runtime cost | performance | затраты при выполнении |
+| random fetch | memory or storage access | разрозненные чтения |
+| dot-product work | computation | объём вычислений скалярных произведений |
+| stacked PRs | dependent changes | последовательные PR |
+| baseline | experiment | исходный / контрольный вариант |
+| objective | optimisation | целевая функция / критерий оптимизации |
+| marginal gain | optimisation | предельный прирост |
+| sealed evaluation | experiment | закрытое контрольное оценивание / оценка на закрытой контрольной выборке |
 
-Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`, `Git`, `C++`, `Python`, and `std::shared_ptr` unchanged.
+Keep established abbreviations and names such as `CI`, `API`, `HTTP`, `SQL`,
+`Git`, `C++`, `Python`, `RAG`, `nDCG`, `FP16`, `INT8`, `PQ/ADC`, and
+`std::shared_ptr` unchanged. Preserve exact experiment labels and algorithm
+names such as `K32 max` or `farthest-first` when they identify a defined
+variant. If a standard foreign term such as facility location helps the reader
+connect the explanation to literature, give a natural Russian description and
+the original term once on first use.
+
+## Use scientific and technical Russian, not invented archaism
+
+Prefer the vocabulary of Russian scientific and engineering writing to
+incidental English nouns and verbs copied from a source discussion. Translate
+the role or operation, not a fixed label: a component may be a
+«маршрутизатор», while its literal variant name remains `K32 max`; data may be
+«сформированы», while `FP16` remains the exact representation format.
+
+Do not manufacture historical-sounding replacements for established terms.
+The goal is precise Russian prose, not lexical theatre. Preserve the
+distinction between an exact name and the concept it denotes, and explain the
+name in Russian when that removes ambiguity.
+
+Keep the object of measurement intact: an `objective` may be a «целевая
+функция» or a «критерий оптимизации», while an `evaluation` is the procedure
+or result of оценивания. Call a dataset a «выборка» only when the source
+actually means the data; for a held-out procedure say «оценка на закрытой
+контрольной выборке».
+
+## Report verification results literally
+
+When a colour is not a formal status or quoted interface label, report the
+outcome rather than calling a test or check green. Choose a form that agrees
+with the actual subject and number:
+
+- one test: «тест пройден», «тест завершён успешно» or «тест завершился
+  успешно»;
+- several tests: «тесты пройдены» or «тесты завершились успешно»;
+- a check or an entire run: «проверка завершилась успешно» or «запуск тестов
+  завершился успешно».
+
+Choose one natural form; do not cycle through the list or turn «тест пройден»
+into a fixed opening. Preserve `green` or another exact status when it is a
+formal value, label, or quotation. A successful outcome establishes only the
+property covered by the test: when that boundary matters, state it immediately
+after the result.
 
 ## Avoid hybrid sentences
 

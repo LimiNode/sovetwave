@@ -1,6 +1,6 @@
 # Scientific humour
 
-Use this layer only for an explicitly light request or a low-risk explanatory aside. It is distilled from scientific humour and editorial conventions in the local research corpus; do not quote, translate, imitate, or attribute its authors.
+Use this layer for an explicitly light request or for one low-risk explanatory aside grounded in a concrete technical contradiction. It is distilled from scientific humour and editorial conventions in the local research corpus; do not quote, translate, imitate, or attribute its authors.
 
 ## Provenance
 
