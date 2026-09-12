@@ -491,6 +491,114 @@ def parse_claude_stream_metadata(stream: str) -> tuple[str, list[str], list[str]
     return response, list(dict.fromkeys(tool_names)), list(dict.fromkeys(model_names))
 
 
+def parse_codex_json_stream(stream: str) -> dict[str, Any]:
+    """Extract structured usage and tool telemetry from Codex ``--json`` events.
+
+    Codex event schemas evolve, so unknown events are ignored and numeric usage
+    fields are copied only when present. The final answer still comes from
+    ``--output-last-message``; this parser is telemetry-only.
+    """
+    usage: dict[str, int] = {}
+    usage_events = 0
+    duplicate_usage_events = 0
+    event_types: list[str] = []
+    items_by_id: dict[str, str] = {}
+    anonymous_items = 0
+    reference_reads: list[str] = []
+
+    def safe_reference_path(value: Any) -> str | None:
+        if not isinstance(value, str):
+            return None
+        normalized = value.replace("\\", "/")
+        marker = "skills/sovetwave/"
+        if marker not in normalized:
+            return None
+        return normalized[normalized.index(marker):]
+    for line in (stream or "").splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        event_type = event.get("type")
+        if isinstance(event_type, str) and event_type not in event_types:
+            event_types.append(event_type)
+        # Codex reports aggregate turn usage on turn.completed. Do not sum
+        # arbitrary nested usage objects from progress events.
+        if event_type == "turn.completed":
+            if usage_events:
+                duplicate_usage_events += 1
+            usage_events += 1
+            candidate_usage = event.get("usage")
+            allowed_usage = {
+                "input_tokens", "cached_input_tokens", "cache_write_input_tokens",
+                "output_tokens", "reasoning_output_tokens",
+            }
+            if isinstance(candidate_usage, dict):
+                for key in allowed_usage:
+                    value = candidate_usage.get(key)
+                    if isinstance(value, int) and not isinstance(value, bool):
+                        # Keep each aggregate snapshot separate.  A second
+                        # ``turn.completed`` is ambiguous and must never
+                        # silently double the turn-level usage.
+                        if usage_events == 1:
+                            usage[key] = value
+        item = event.get("item")
+        if isinstance(item, dict):
+            item_type = item.get("type", "")
+            item_id = item.get("id")
+            if isinstance(item_type, str) and isinstance(item_id, str) and item_id:
+                items_by_id[item_id] = item_type
+            elif isinstance(item_type, str) and ("tool" in item_type or "command" in item_type):
+                # Without item.id this is an anonymous lifecycle event, not a
+                # deduplicated tool-call count; retain it only as defensive
+                # telemetry for malformed/older streams.
+                anonymous_items += 1
+            path = item.get("path") or item.get("file")
+            explicit_read = isinstance(item_type, str) and item_type.lower() in {
+                "file_read", "file_read_result", "read_file", "file_read_request",
+            }
+            safe_path = safe_reference_path(path)
+            if explicit_read and safe_path and safe_path not in reference_reads:
+                reference_reads.append(safe_path)
+        if event_type in {"file_read", "file_read_result", "read_file"}:
+            path = event.get("path") or event.get("file")
+            safe_path = safe_reference_path(path)
+            if safe_path and safe_path not in reference_reads:
+                reference_reads.append(safe_path)
+    item_counts: dict[str, int] = {}
+    for item_type in items_by_id.values():
+        item_counts[item_type] = item_counts.get(item_type, 0) + 1
+    # A tool call is one unique item.id whose type is an explicitly known
+    # tool item.  Lifecycle events for the same id are therefore counted once.
+    tool_types = {
+        "command_execution", "mcp_tool_call", "collab_tool_call",
+        "web_search", "file_change",
+    }
+    unique_tool_calls = sum(count for item_type, count in item_counts.items() if item_type in tool_types)
+    if usage_events == 0:
+        usage_status = "not_available"
+    elif usage_events > 1:
+        usage = {}
+        usage_status = "ambiguous_duplicate_turn_completed"
+    elif usage:
+        usage_status = "valid"
+    else:
+        usage_status = "missing"
+    return {
+        "usage": usage or None,
+        "usage_status": usage_status,
+        "usage_events": usage_events,
+        "duplicate_usage_events": duplicate_usage_events,
+        "event_types": event_types,
+        "tool_calls": unique_tool_calls if items_by_id else None,
+        "anonymous_tool_items": anonymous_items,
+        "item_counts_by_type": item_counts,
+        "reference_files_read": reference_reads,
+    }
+
+
 def prepare_claude_settings(source: Path | None, workspace: Path) -> Path | None:
     """Create an ephemeral settings file containing only proxy-safe settings.
 
@@ -604,6 +712,7 @@ def command_for(
         command = [
             "codex", "exec", "--skip-git-repo-check", "--ephemeral", "--ignore-user-config",
             "--sandbox", "read-only", "-C", str(workspace),
+            "--json",
             "--output-last-message", str(output_path),
         ]
         if codex_overrides:
@@ -784,6 +893,19 @@ def run_variant(
             })
             return result
         response = response_path.read_text(encoding="utf-8") if response_path.exists() else (completed.stdout or "")
+        if provider == "codex":
+            codex_telemetry = parse_codex_json_stream(completed.stdout or "")
+            result["codex_usage"] = codex_telemetry["usage"]
+            result["codex_usage_status"] = codex_telemetry["usage_status"]
+            result["codex_usage_events"] = codex_telemetry["usage_events"]
+            result["codex_duplicate_usage_events"] = codex_telemetry["duplicate_usage_events"]
+            result["codex_event_types"] = codex_telemetry["event_types"]
+            result["codex_tool_calls"] = codex_telemetry["tool_calls"]
+            result["codex_anonymous_tool_items"] = codex_telemetry["anonymous_tool_items"]
+            result["codex_item_counts_by_type"] = codex_telemetry["item_counts_by_type"]
+            if codex_telemetry["reference_files_read"]:
+                result["reference_files_read"] = codex_telemetry["reference_files_read"]
+                result["reference_trace_status"] = "observed"
         if provider == "claude":
             response, tool_trace, resolved_models = parse_claude_stream_metadata(response)
             result["tool_trace"] = tool_trace

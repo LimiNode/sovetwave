@@ -30,6 +30,7 @@ from run_model_evals import (
     reported_tokens_from_stderr,
     run_variant,
     parse_claude_stream,
+    parse_codex_json_stream,
     prepare_claude_settings,
     summarize_ablation,
     variant_plan,
@@ -1261,6 +1262,67 @@ class BehavioralHarnessTests(unittest.TestCase):
             json.dumps({"type": "result", "result": "Ответ"}),
         ])
         self.assertEqual(parse_claude_stream(stream), ("Ответ", ["Skill"]))
+
+    def test_codex_json_stream_extracts_usage_without_schema_assumptions(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "turn.started"}),
+            json.dumps({"type": "item.started", "item": {"id": "item-1", "type": "command_execution"}}),
+            json.dumps({"type": "item.updated", "item": {"id": "item-1", "type": "command_execution"}}),
+            json.dumps({"type": "item.completed", "item": {"id": "item-1", "type": "command_execution"}}),
+            json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1200, "cached_input_tokens": 300, "output_tokens": 80, "reasoning_output_tokens": 20}}),
+        ])
+        parsed = parse_codex_json_stream(stream)
+        self.assertEqual(parsed["usage"]["input_tokens"], 1200)
+        self.assertEqual(parsed["usage"]["reasoning_output_tokens"], 20)
+        self.assertEqual(parsed["tool_calls"], 1)
+        self.assertEqual(parsed["reference_files_read"], [])
+        self.assertEqual(parsed["usage_status"], "valid")
+
+    def test_codex_duplicate_turn_usage_is_ambiguous_not_summed(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "turn.completed", "usage": {"input_tokens": 30}}),
+            json.dumps({"type": "turn.completed", "usage": {"input_tokens": 30}}),
+        ])
+        parsed = parse_codex_json_stream(stream)
+        self.assertIsNone(parsed["usage"])
+        self.assertEqual(parsed["usage_events"], 2)
+        self.assertEqual(parsed["duplicate_usage_events"], 1)
+        self.assertEqual(parsed["usage_status"], "ambiguous_duplicate_turn_completed")
+
+    def test_codex_unknown_usage_field_is_ignored(self) -> None:
+        stream = json.dumps({
+            "type": "turn.completed",
+            "usage": {"input_tokens": 10, "future_tokens": 999},
+        })
+        parsed = parse_codex_json_stream(stream)
+        self.assertEqual(parsed["usage"], {"input_tokens": 10})
+
+    def test_codex_collab_tool_call_is_counted(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "item.started", "item": {"id": "collab-1", "type": "collab_tool_call"}}),
+            json.dumps({"type": "item.completed", "item": {"id": "collab-1", "type": "collab_tool_call"}}),
+        ])
+        parsed = parse_codex_json_stream(stream)
+        self.assertEqual(parsed["tool_calls"], 1)
+
+    def test_codex_reference_trace_requires_explicit_file_read(self) -> None:
+        observed = parse_codex_json_stream(json.dumps({
+            "type": "item.completed",
+            "item": {"id": "read-1", "type": "file_read", "path": "C:\\work\\skills\\sovetwave\\references\\cpp-engineering.md"},
+        }))
+        self.assertEqual(observed["reference_files_read"], ["skills/sovetwave/references/cpp-engineering.md"])
+        command = parse_codex_json_stream(json.dumps({
+            "type": "item.completed",
+            "item": {"id": "cmd-1", "type": "command_execution", "path": "C:\\work\\skills\\sovetwave\\references\\cpp-engineering.md"},
+        }))
+        self.assertEqual(command["reference_files_read"], [])
+
+    def test_codex_reference_trace_redacts_absolute_paths(self) -> None:
+        parsed = parse_codex_json_stream(json.dumps({
+            "type": "file_read",
+            "path": "D:\\tmp\\skills\\sovetwave\\references\\python-engineering.md",
+        }))
+        self.assertEqual(parsed["reference_files_read"], ["skills/sovetwave/references/python-engineering.md"])
 
     def test_claude_structured_model_populates_singular_field(self) -> None:
         case = {"id": "sample", "prompt": "Explain."}
