@@ -51,11 +51,58 @@ THEMATIC_REFERENCES = frozenset({
     "python-backend-architecture.md",
     "qt-cpp-engineering.md",
 })
+CASE_RELATION_KINDS = frozenset({"contrast", "directional", "invariance"})
+
+
+def validate_case_relations(
+    cases: list[dict[str, Any]],
+    case_sources: dict[str, Path],
+) -> None:
+    """Validate optional within-suite relationships between behavioral cases."""
+    indexed = {case["id"]: case for case in cases}
+    relations: dict[str, dict[str, str]] = {}
+    for case in cases:
+        case_id = case["id"]
+        relation = case.get("relation")
+        if relation is None:
+            continue
+        if not isinstance(relation, dict) or not set(relation).issubset({"kind", "base_case", "expect"}) or not {"kind", "base_case"}.issubset(relation):
+            raise ValueError(f"{case_sources[case_id]}: relation for {case_id!r} needs kind, base_case, and optional expect")
+        kind = relation.get("kind")
+        base_case = relation.get("base_case")
+        if kind not in CASE_RELATION_KINDS:
+            raise ValueError(f"{case_sources[case_id]}: unsupported relation kind for {case_id!r}: {kind!r}")
+        if not isinstance(base_case, str) or not base_case:
+            raise ValueError(f"{case_sources[case_id]}: relation base_case for {case_id!r} must be a string")
+        expect = relation.get("expect")
+        if expect is not None and (not isinstance(expect, str) or not expect.strip()):
+            raise ValueError(f"{case_sources[case_id]}: relation expect for {case_id!r} must be a non-empty string")
+        if base_case == case_id:
+            raise ValueError(f"{case_sources[case_id]}: case {case_id!r} cannot relate to itself")
+        if base_case not in indexed:
+            raise ValueError(f"{case_sources[case_id]}: unknown relation base_case {base_case!r} for {case_id!r}")
+        if case_sources[base_case] != case_sources[case_id]:
+            raise ValueError(f"{case_sources[case_id]}: relation for {case_id!r} must stay within one suite")
+        normalized = {"kind": kind, "base_case": base_case}
+        if expect is not None:
+            normalized["expect"] = expect
+        relations[case_id] = normalized
+
+    for case_id in relations:
+        path: list[str] = []
+        current = case_id
+        while current in relations:
+            if current in path:
+                cycle = " -> ".join(path[path.index(current):] + [current])
+                raise ValueError(f"case relation cycle: {cycle}")
+            path.append(current)
+            current = relations[current]["base_case"]
 
 
 def load_cases(case_dir: Path) -> list[dict[str, Any]]:
     cases: list[dict[str, Any]] = []
     seen: set[str] = set()
+    case_sources: dict[str, Path] = {}
     for path in sorted(case_dir.glob("*.json")):
         suite = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(suite.get("cases"), list):
@@ -70,9 +117,11 @@ def load_cases(case_dir: Path) -> list[dict[str, Any]]:
             if case["id"] in seen:
                 raise ValueError(f"duplicate behavioral case id: {case['id']}")
             seen.add(case["id"])
+            case_sources[case["id"]] = path
             cases.append(case)
     if not cases:
         raise ValueError(f"no behavioral cases in {case_dir}")
+    validate_case_relations(cases, case_sources)
     return cases
 
 
@@ -318,7 +367,11 @@ def main() -> int:
     parser.add_argument("--provider", choices=("codex", "claude"), required=True)
     parser.add_argument("--model")
     parser.add_argument("--case-dir", type=Path, default=DEFAULT_CASES)
-    parser.add_argument("--case-id", help="run exactly one behavioral case by id")
+    parser.add_argument(
+        "--case-id",
+        action="append",
+        help="run a behavioral case by id; repeat the option to run a related pair",
+    )
     parser.add_argument(
         "--ablate-reference",
         help="for Codex only, remove this conditional skill reference from the ablated variant (for example cpp-engineering.md)",
@@ -365,11 +418,15 @@ def main() -> int:
 
     cases = load_cases(args.case_dir)
     if args.case_id is not None:
+        if len(set(args.case_id)) != len(args.case_id):
+            parser.error("--case-id values must be unique")
+        indexed_cases = {case["id"]: case for case in cases}
+        missing = [case_id for case_id in args.case_id if case_id not in indexed_cases]
+        if missing:
+            parser.error(f"no behavioral case with id {missing[0]!r}")
+        cases = [indexed_cases[case_id] for case_id in args.case_id]
         if args.limit is not None:
             parser.error("--limit cannot be combined with explicit --case-id selection")
-        cases = [case for case in cases if case["id"] == args.case_id]
-        if not cases:
-            parser.error(f"no behavioral case with id {args.case_id!r}")
     if args.limit is not None:
         cases = cases[:args.limit]
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
@@ -420,13 +477,18 @@ def main() -> int:
             dry_run=args.dry_run,
         )
     payload = {
-        "schema_version": "1.2",
+        "schema_version": "1.3",
         "created_at": datetime.now(UTC).isoformat(),
         "provider": args.provider,
         "model": args.model,
         "dry_run": args.dry_run,
         "repetitions": args.repetitions,
         "case_ids": [case["id"] for case in cases],
+        "case_relations": {
+            case["id"]: case["relation"]
+            for case in cases
+            if "relation" in case
+        },
         "variant_orders": variant_orders,
         "stopped_early": stopped_early,
         "results": results,

@@ -115,6 +115,11 @@
     },
     {
       "id": "russian-rag-formal-terms",
+      "relation": {
+        "kind": "contrast",
+        "base_case": "russian-rag-capacity-analysis",
+        "expect": "formal names remain exact while incidental generic jargon is translated"
+      },
       "prompt": "Составь по-русски краткий план эксперимента. Формальные имена вариантов: `raw max-cosine`, `Teacher-Guided Coverage` и `K32 max`; алгоритм в статье назван `farthest-first`; итоговая метрика — `nDCG@10`; форматы хранения — FP16 и PQ/ADC. Критерий относится к классу facility location. Все имена и обозначения должны остаться пригодными для поиска в коде и статье.",
       "assertions": [
         "preserves every quoted variant name, `farthest-first`, `nDCG@10`, FP16, and PQ/ADC exactly",

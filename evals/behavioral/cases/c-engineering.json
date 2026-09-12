@@ -55,6 +55,10 @@
     },
     {
       "id": "c-small-temporary-stack-insufficient",
+      "relation": {
+        "kind": "directional",
+        "base_case": "c-small-fixed-temporary-buffer"
+      },
       "prompt": "C-функции нужен временный буфер на 256 байт только до возврата. Функция не рекурсивна, но на целевом контроллере подтверждённый остаток stack budget в этой точке — 128 байт. Доступны caller workspace и явное динамическое выделение. Выбери модель хранения и объясни, какой факт изменил решение.",
       "assertions": [
         "rejects a 256-byte automatic object because the established remaining stack budget is smaller",
@@ -65,16 +69,24 @@
     },
     {
       "id": "c-small-temporary-recursive-depth",
+      "relation": {
+        "kind": "directional",
+        "base_case": "c-small-fixed-temporary-buffer"
+      },
       "prompt": "Рекурсивному C-парсеру нужен локальный временный буфер на 256 байт. Глубина входа может достигать 32, а stack budget задачи равен 6 KiB и должен вместить остальные frames. Оцени automatic storage и предложи проверяемую границу хранения.",
       "assertions": [
         "accounts for the temporary buffer multiplied by recursive depth together with the remaining frame cost",
         "does not accept the automatic buffer merely because one 256-byte instance is small",
-        "recommends a bounded caller context arena pool explicit allocation or a justified recursion limit from the established resource model",
+        "recommends a bounded storage or recursion contract and keeps caller context arena pool or explicit allocation conditional on availability lifetime and failure requirements",
         "proposes a maximum-depth or constrained-stack check tied to the selected contract"
       ]
     },
     {
       "id": "c-small-temporary-invariance",
+      "relation": {
+        "kind": "invariance",
+        "base_case": "c-small-fixed-temporary-buffer"
+      },
       "prompt": "Нерекурсивной C-функции нужен временный буфер ровно на 192 байта до возврата. Подтверждённого stack budget достаточно, функция имеет две ветви раннего выхода, а буфер не покидает вызов. Сейчас он выделяется через malloc/free. Какую модель хранения выбрать?",
       "assertions": [
         "prefers a fixed automatic local object under the established lifetime call pattern and adequate stack budget",
@@ -85,6 +97,10 @@
     },
     {
       "id": "c-static-immutable-table",
+      "relation": {
+        "kind": "contrast",
+        "base_case": "c-static-buffer-reentrancy"
+      },
       "prompt": "C-модуль содержит `static const uint16_t decode_table[256]`, инициализированную константами. Все вызовы только читают таблицу; сброс, рекурсия и отдельное состояние экземпляров не требуются. Проведи review выбранной продолжительности хранения.",
       "assertions": [
         "accepts static-duration immutable shared storage as matching the established module-wide contract",
@@ -95,6 +111,10 @@
     },
     {
       "id": "c-bounded-vla-profile",
+      "relation": {
+        "kind": "contrast",
+        "base_case": "c-untrusted-vla-stack-bound"
+      },
       "prompt": "В C-функции `count` проверяется как `1 <= count && count <= 16`, затем создаётся `Record records[count]`. Целевой стандарт и компилятор поддерживают VLA, профиль проекта их разрешает, функция не рекурсивна, а stack budget подтверждён. Оцени выбор хранения.",
       "assertions": [
         "recognizes that the VLA bound support profile call pattern and stack budget are established in this case",
@@ -105,6 +125,10 @@
     },
     {
       "id": "c-allocation-size-guarded",
+      "relation": {
+        "kind": "contrast",
+        "base_case": "c-allocation-size-overflow"
+      },
       "prompt": "Перед `malloc(count * sizeof *items)` код проверяет `count <= SIZE_MAX / sizeof *items` и `count <= PROJECT_ITEM_LIMIT`; downstream loops и copy используют тот же проверенный `count`. Что здесь ещё является дефектом размера, а что уже доказано?",
       "assertions": [
         "recognizes that the explicit SIZE_MAX division guard prevents unsigned multiplication wrap for the allocation size",
@@ -115,6 +139,10 @@
     },
     {
       "id": "c-simple-cleanup-no-label",
+      "relation": {
+        "kind": "contrast",
+        "base_case": "c-partial-initialization-cleanup"
+      },
       "prompt": "C-функция получает один ресурс, после успешного получения выполняет одну операцию и имеет два выхода: ошибка операции и успех. В обеих ветвях ресурс освобождается явно рядом с выходом. Нужен ли общий `goto cleanup`?",
       "assertions": [
         "does not require a cleanup label when the two explicit paths are complete clear and preserve the same ownership contract",
