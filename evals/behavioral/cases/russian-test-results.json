@@ -1,6 +1,7 @@
 {
   "version": "1.0",
   "suite": "russian-test-result-language",
+  "applicable_axes": ["technical_correctness", "causal_calibration", "native_russian", "english_intrusion", "identifier_preservation", "sovetwave_voice", "concision", "critical_literalness"],
   "cases": [
     {
       "id": "russian-single-test-coverage-gap",

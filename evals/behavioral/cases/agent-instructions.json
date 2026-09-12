@@ -1,10 +1,13 @@
 {
   "version": "1.0",
   "suite": "agent-instructions",
+  "execution_mode": "prompt_only",
   "cases": [
     {
       "id": "agent-instructions-root-router",
-      "prompt": "Корневой `AGENTS.md` вырос до 320 строк. В нём смешаны общие правила поведения ИИ, команды сборки, устройство трёх модулей, правила документации и детали одного конкурентного алгоритма. В репозитории есть `src/`, `tests/`, `docs/` и `.github/`. Предложи план реструктуризации, не выдумывая отсутствующие команды и файлы.",
+      "execution_mode": "repository_grounded",
+      "fixture": "agent-instructions-root-router",
+      "prompt": "Корневой `AGENTS.md` разросся и смешивает общие правила поведения ИИ, команды сборки, устройство трёх модулей, правила документации и детали одного конкурентного алгоритма. В репозитории есть `src/`, `tests/`, `docs/` и `.github/`. Изучи фактическое содержимое и предложи план реструктуризации, не выдумывая отсутствующие команды и файлы.",
       "assertions": [
         "keeps only repository-wide routing and invariants in the root file",
         "places detailed rules near the subtree or workflow that owns them",
