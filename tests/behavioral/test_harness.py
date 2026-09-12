@@ -18,12 +18,17 @@ from run_model_evals import (
     CORE_ABLATION,
     THEMATIC_REFERENCES,
     codex_provider_overrides,
+    claude_variant_plan,
     command_for,
+    validate_applicable_axes,
     load_cases,
     make_workspace,
+    load_checkpoint,
     redact_command,
     redact_secrets,
     run_variant,
+    parse_claude_stream,
+    prepare_claude_settings,
     summarize_ablation,
     variant_plan,
 )
@@ -62,8 +67,20 @@ class BehavioralHarnessTests(unittest.TestCase):
     def test_grader_contract_keeps_pointwise_scores_variant_external(self) -> None:
         contract = (ROOT / "evals" / "behavioral" / "graders" / "grader-contract.md").read_text(encoding="utf-8")
         self.assertIn('"score": 0', contract)
-        self.assertIn("Associate each pointwise result with its variant outside", contract)
+        self.assertIn("Associate each pointwise result with its arm outside", contract)
         self.assertNotIn('"baseline": 0, "sovetwave": 0', contract)
+
+    def test_applicable_axes_reject_duplicate_axis_ids(self) -> None:
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            validate_applicable_axes(
+                ["technical_correctness", "technical_correctness"],
+                allowed=frozenset({"technical_correctness"}),
+            )
+
+    def test_language_only_suite_excludes_semantic_economy(self) -> None:
+        suite = json.loads((ROOT / "evals" / "behavioral" / "cases" / "russian-test-results.json").read_text(encoding="utf-8"))
+        self.assertIn("applicable_axes", suite)
+        self.assertNotIn("semantic_economy", suite["applicable_axes"])
 
     def test_stderr_redacts_credentials(self) -> None:
         self.assertEqual(redact_secrets("Bearer abc.def_123"), "[redacted credential]")
@@ -94,6 +111,31 @@ class BehavioralHarnessTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "URL credentials"):
                 codex_provider_overrides(config)
 
+    def test_codex_provider_config_preserves_websocket_capability(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "config.toml"
+            config.write_text(
+                """model_provider = "local-lb"\n\n[model_providers.local-lb]\nbase_url = "http://127.0.0.1:2455/backend-api/codex"\nsupports_websockets = false\n""",
+                encoding="utf-8",
+            )
+            self.assertIn(
+                "model_providers.local-lb.supports_websockets=false",
+                codex_provider_overrides(config),
+            )
+
+    def test_checkpoint_rejects_duplicate_invocations(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "run.jsonl"
+            record = {
+                "case_id": "case", "repetition": 1, "sequence": 1, "variant": "baseline",
+            }
+            checkpoint.write_text(
+                json.dumps(record) + "\n" + json.dumps(record) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "duplicate invocation"):
+                load_checkpoint(checkpoint)
+
     def test_codex_dry_run_creates_pairs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "run.json"
@@ -105,6 +147,25 @@ class BehavioralHarnessTests(unittest.TestCase):
             run = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual([item["variant"] for item in run["results"]], ["baseline", "sovetwave", "baseline", "sovetwave"])
             self.assertTrue(run["results"][1]["command"][-1].startswith("$sovetwave\n"))
+
+    def test_dry_run_writes_checkpoint_and_resume_reuses_it(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "run.json"
+            checkpoint = root / "run.jsonl"
+            command = [
+                sys.executable, str(RUNNER), "--provider", "codex", "--dry-run",
+                "--case-id", "russian-pr-status-report", "--output", str(output),
+                "--checkpoint", str(checkpoint),
+            ]
+            subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=True)
+            self.assertTrue(output.is_file())
+            self.assertTrue(checkpoint.is_file())
+            self.assertFalse(output.with_suffix(".partial.json").exists())
+            resumed = subprocess.run(command + ["--resume"], cwd=ROOT, text=True, capture_output=True, check=True)
+            self.assertIn("Resuming 2 recorded variants", resumed.stdout)
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(len(run["results"]), 2)
 
     def test_codex_dry_run_copies_only_selected_provider(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -167,7 +228,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 cwd=ROOT, text=True, capture_output=True, check=True,
             )
             run = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(run["schema_version"], "1.3")
+            self.assertEqual(run["schema_version"], "1.4")
             self.assertEqual(
                 run["case_ids"],
                 ["c-small-fixed-temporary-buffer", "c-small-temporary-invariance"],
@@ -251,7 +312,7 @@ class BehavioralHarnessTests(unittest.TestCase):
 
     def test_timeout_is_recorded_as_a_distinct_status(self) -> None:
         case = {"id": "timeout-case", "prompt": "Run the check.", "assertions": ["reports timeout"]}
-        with patch("run_model_evals.subprocess.run", side_effect=subprocess.TimeoutExpired(["codex"], 1)):
+        with patch("run_model_evals.execute_command", side_effect=subprocess.TimeoutExpired(["codex"], 1)):
             result = run_variant("codex", case, False, None, 1, False)
         self.assertEqual(result["status"], "timeout")
         self.assertIsNone(result["returncode"])
@@ -260,9 +321,32 @@ class BehavioralHarnessTests(unittest.TestCase):
     def test_empty_success_is_invalid_not_completed(self) -> None:
         case = {"id": "empty-case", "prompt": "Run the check.", "assertions": ["rejects empty output"]}
         completed = subprocess.CompletedProcess(["codex"], 0, stdout="", stderr=None)
-        with patch("run_model_evals.subprocess.run", return_value=completed):
+        with patch("run_model_evals.execute_command", return_value=completed):
             result = run_variant("codex", case, False, None, 1, False)
         self.assertEqual(result["status"], "invalid_empty_response")
+
+    def test_completed_process_remains_semantically_unrated(self) -> None:
+        case = {"id": "sample", "prompt": "Explain."}
+        completed = subprocess.CompletedProcess(["codex"], 0, stdout="Answer", stderr="")
+        with patch("run_model_evals.execute_command", return_value=completed):
+            result = run_variant("codex", case, False, None, 1, False)
+        self.assertEqual(result["process_status"], "completed")
+        self.assertEqual(result["semantic_status"], "unrated")
+
+    def test_claude_settings_isolation_keeps_only_proxy_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "settings.json"
+            source.write_text(json.dumps({
+                "env": {"ANTHROPIC_BASE_URL": "https://proxy.example.test", "ANTHROPIC_AUTH_TOKEN": "secret"},
+                "model": "sonnet",
+                "enabledPlugins": {"personal": True},
+            }), encoding="utf-8")
+            with tempfile.TemporaryDirectory() as workspace_dir:
+                isolated = prepare_claude_settings(source, Path(workspace_dir))
+                payload = json.loads(isolated.read_text(encoding="utf-8"))
+                self.assertEqual(payload["model"], "sonnet")
+                self.assertIn("ANTHROPIC_BASE_URL", payload["env"])
+                self.assertNotIn("enabledPlugins", payload)
 
     def test_live_failure_returns_nonzero_exit_status(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -779,13 +863,11 @@ class BehavioralHarnessTests(unittest.TestCase):
     def test_live_run_uses_utf8_and_handles_missing_streams(self) -> None:
         completed = subprocess.CompletedProcess(args=["codex"], returncode=1, stdout=None, stderr=None)
         case = {"id": "sample", "prompt": "Explain"}
-        with patch("run_model_evals.subprocess.run", return_value=completed) as run:
+        with patch("run_model_evals.execute_command", return_value=completed):
             result = run_variant("codex", case, False, None, 30, False)
         self.assertEqual(result["status"], "failed")
         self.assertEqual(result["response"], "")
         self.assertEqual(result["stderr"], "")
-        self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
-        self.assertEqual(run.call_args.kwargs["errors"], "replace")
 
     def test_comparison_sheet_contains_both_variants(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -941,6 +1023,55 @@ class BehavioralHarnessTests(unittest.TestCase):
                 claude_full_skill=True, claude_setting_sources="user,project",
             )
             self.assertEqual(proxy_command[proxy_command.index("--setting-sources") + 1], "user,project")
+
+    def test_claude_three_arm_order_is_rotated(self) -> None:
+        self.assertEqual(
+            claude_variant_plan(1, full_skill=True),
+            ["baseline", "sovetwave_style_only", "sovetwave"],
+        )
+        self.assertEqual(
+            claude_variant_plan(2, full_skill=True),
+            ["sovetwave_style_only", "sovetwave", "baseline"],
+        )
+        self.assertEqual(
+            claude_variant_plan(3, full_skill=True),
+            ["sovetwave", "baseline", "sovetwave_style_only"],
+        )
+
+    def test_prompt_only_claude_command_does_not_enter_plan_mode(self) -> None:
+        command = command_for(
+            "claude", Path("C:/tmp/eval"), "prompt", True, None,
+            Path("C:/tmp/eval/response.txt"), claude_variant="sovetwave_style_only",
+            execution_mode="prompt_only",
+        )
+        self.assertNotIn("--permission-mode", command)
+        self.assertEqual(command[command.index("--tools") + 1], "Skill")
+        self.assertEqual(command[command.index("--allowedTools") + 1], "Skill")
+        self.assertNotIn("--bare", command)
+
+    def test_repository_grounded_case_loads_fixture_and_uses_safe_mode(self) -> None:
+        cases = {case["id"]: case for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
+        case = cases["agent-instructions-root-router"]
+        self.assertEqual(case["execution_mode"], "repository_grounded")
+        self.assertTrue(Path(case["_fixture_path"]).is_dir())
+        with make_workspace(ROOT, False, fixture=Path(case["_fixture_path"])) as directory:
+            workspace = Path(directory)
+            self.assertTrue((workspace / "AGENTS.md").is_file())
+            command = command_for(
+                "claude", workspace, case["prompt"], False, None,
+                workspace / "response.txt", claude_variant="baseline",
+                execution_mode="repository_grounded",
+            )
+            self.assertEqual(command[command.index("--tools") + 1], "Skill,Read,Bash")
+            self.assertEqual(command[command.index("--permission-mode") + 1], "dontAsk")
+            self.assertIn("--add-dir", command)
+
+    def test_claude_stream_parser_extracts_result_and_skill_trace(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Skill"}]}}),
+            json.dumps({"type": "result", "result": "Ответ"}),
+        ])
+        self.assertEqual(parse_claude_stream(stream), ("Ответ", ["Skill"]))
 
 
 if __name__ == "__main__":

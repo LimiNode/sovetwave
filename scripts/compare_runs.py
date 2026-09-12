@@ -23,6 +23,8 @@ def variant_label(variant: str, result: dict[str, Any], ablation_reference: str 
         return "Baseline"
     if variant == "sovetwave":
         return "Sovetwave"
+    if variant == "sovetwave_style_only":
+        return "Sovetwave (voice only)"
     if variant == "sovetwave_without_reference":
         reference = result.get("ablated_reference", ablation_reference or "thematic reference")
         return f"Sovetwave without `{reference}`"
@@ -64,7 +66,13 @@ def main() -> int:
         and isinstance(item.get("variants"), list)
         and all(isinstance(variant, str) for variant in item["variants"])
     }
-    expected_variants = ["baseline", "sovetwave"]
+    variant_set = payload.get("variant_set")
+    observed_variants = {result.get("variant") for result in payload.get("results", [])}
+    expected_variants = ["baseline"]
+    if variant_set == "claude_three_arm" or "sovetwave_style_only" in observed_variants:
+        expected_variants.extend(["sovetwave_style_only", "sovetwave"])
+    else:
+        expected_variants.append("sovetwave")
     if ablation is not None:
         expected_variants.append(
             "sovetwave_without_core"
@@ -112,7 +120,10 @@ def main() -> int:
             (result.get("prompt", "") for variants in case_repetitions.values() for result in variants.values()),
             "",
         )
+        mode = payload.get("case_execution_modes", {}).get(case_id)
         lines.extend([f"## {case_id}", ""])
+        if mode:
+            lines.extend([f"Execution mode: `{mode}`.", ""])
         relation = case_relations.get(case_id)
         if relation is not None:
             lines.extend([
@@ -138,7 +149,14 @@ def main() -> int:
             lines.extend(["#### Prompt", "", sample.get("prompt", known_prompt)])
             for variant in ordered_variants:
                 result = variants.get(variant, {})
-                lines.extend(["", f"#### {variant_label(variant, result, ablation_reference)}", "", result_text(result)])
+                lines.extend(["", f"#### {variant_label(variant, result, ablation_reference)}", ""])
+                if result:
+                    status = result.get("process_status", result.get("status", "unknown"))
+                    semantic = result.get("semantic_status", "not_recorded")
+                    trace = ", ".join(result.get("tool_trace", [])) if isinstance(result.get("tool_trace"), list) else ""
+                    lines.append(f"Process: `{status}`; semantic: `{semantic}`; tools observed: `{trace or 'not recorded'}`.")
+                    lines.append("")
+                lines.append(result_text(result))
             headings = " | ".join(
                 variant_label(variant, variants.get(variant, {}), ablation_reference)
                 for variant in ordered_variants
@@ -150,7 +168,10 @@ def main() -> int:
                 f"| Axis | Weight | {headings} | Notes |",
                 f"|---|---:|{separators}|---|",
             ])
+            applicable_axes = sample.get("applicable_axes")
             for axis in rubric["axes"]:
+                if isinstance(applicable_axes, list) and axis["id"] not in applicable_axes:
+                    continue
                 lines.append(f"| {axis['label']} | {axis['weight']} | {blanks} |  |")
             lines.extend(["", "Assertions:"])
             lines.extend(f"- {assertion}" for assertion in sample.get("assertions", []))

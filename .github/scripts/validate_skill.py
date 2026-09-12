@@ -28,21 +28,20 @@ def main() -> int:
             print(f"Missing referenced skill resource: {relative}", file=sys.stderr)
             errors += 1
 
-    if release_check:
-        # Release metadata is an explicit gate. Ordinary skill validation must
-        # remain usable while a release is being prepared on a stacked branch.
-        repository = skill_dir.parents[1]
-        plugin = repository / ".claude-plugin" / "plugin.json"
-        changelog = repository / "CHANGELOG.md"
-        if plugin.is_file() and changelog.is_file():
-            try:
-                plugin_version = json.loads(plugin.read_text(encoding="utf-8")).get("version")
-            except (OSError, json.JSONDecodeError):
-                plugin_version = None
-            heading = re.search(r"^## v(\d+\.\d+\.\d+)\b", changelog.read_text(encoding="utf-8"), re.MULTILINE)
-            if not isinstance(plugin_version, str) or heading is None or plugin_version != heading.group(1):
-                print("Plugin version must match the newest CHANGELOG.md release heading", file=sys.stderr)
-                errors += 1
+    # Release metadata is checked only by an explicitly requested release
+    # validation; intermediate stacked PRs may legitimately precede the bump.
+    repository = skill_dir.parents[1]
+    plugin = repository / ".claude-plugin" / "plugin.json"
+    changelog = repository / "CHANGELOG.md"
+    if release_check and plugin.is_file() and changelog.is_file():
+        try:
+            plugin_version = json.loads(plugin.read_text(encoding="utf-8")).get("version")
+        except (OSError, json.JSONDecodeError):
+            plugin_version = None
+        heading = re.search(r"^## v(\d+\.\d+\.\d+)\b", changelog.read_text(encoding="utf-8"), re.MULTILINE)
+        if not isinstance(plugin_version, str) or heading is None or plugin_version != heading.group(1):
+            print("Plugin version must match the newest CHANGELOG.md release heading", file=sys.stderr)
+            errors += 1
     if errors:
         return 1
     print("Skill metadata is valid.")

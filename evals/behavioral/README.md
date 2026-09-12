@@ -1,33 +1,43 @@
 # Behavioral evals
 
-This harness compares the same cases without Sovetwave and with it enabled. It is deliberately separate from fixture validation: a green CI job proves that the cases are well formed, not that a particular model followed them.
+This harness compares the same cases under controlled agent environments. It is deliberately separate from fixture validation: a green CI job proves that the cases are well formed, not that a particular model followed them.
 
-Run a non-billing plan first:
+Cases declare an `execution_mode`:
+
+* `prompt_only` (the default) asks a self-contained technical question. Claude is not put into Plan mode, and every arm receives the same minimal `Skill` tool surface.
+* `repository_grounded` supplies a real fixture repository. Every arm receives `Skill,Read,Bash`, the fixture is mounted with `--add-dir`, and Claude uses `dontAsk` so permissions do not turn the answer into a plan-only reply.
+
+Run a non-billing dry-run first:
 
 ```powershell
 py -3 scripts\run_model_evals.py --provider codex --dry-run
 py -3 scripts\run_model_evals.py --provider claude --dry-run
 ```
 
-For a standalone Claude installation, use `--claude-full-skill` to measure the
-complete project skill together with the output style. The harness places the
-skill in the temporary project's `.claude/skills/sovetwave` directory and
-passes that project to Claude; without this option a Claude run measures only
-the output style layer.
+For a standalone Claude installation, use `--claude-full-skill` to run three
+Claude arms: vanilla baseline, output-style-only, and full skill plus output
+style. Without this option, Claude runs the two-arm vanilla vs output-style
+comparison. The project skill is placed in the temporary project's
+`.claude/skills/sovetwave` directory only for the full-skill arm. Use three
+repetitions for a complete three-arm Latin-square cycle; use at least four
+repetitions for the two-arm comparison when you want equal first positions.
 
 ```powershell
 py -3 scripts\run_model_evals.py `
   --provider claude `
   --model <model> `
   --claude-full-skill `
+  --repetitions 3 `
   --case-id russian-pr-status-report `
   --dry-run
 ```
 
 Если Claude Code получает proxy endpoint и credentials из пользовательского
-`~/.claude/settings.json`, добавьте `--claude-setting-sources user,project`.
-По умолчанию используется только `project`, чтобы не смешивать eval с личными
-настройками и skills.
+`~/.claude/settings.json`, передайте этот файл через `--claude-settings`.
+Раннер скопирует только поля `env` и `model` во временный project settings,
+сохранив proxy и исключив личные skills и плагины. Если файл не передан,
+можно использовать `--claude-setting-sources user,project`, но такой режим
+не изолирует пользовательские skills.
 
 Run a live comparison only after selecting the model, account, and spending limit:
 
@@ -145,6 +155,13 @@ JSON and shown in the comparison sheet.
 Runs shorter than a complete order cycle are recorded as `order_balance:
 partial`; they are valid measurements but not fully counterbalanced.
 
+Every live invocation is also appended to a JSONL checkpoint (by default next
+to the requested output) and a readable `.partial.json` snapshot is refreshed
+after each variant. The console prints the case, repetition, arm, process
+status, and semantic status. If a run is interrupted, repeat the command with
+`--resume` to skip the invocations already present in the checkpoint. The
+checkpoint is retained as an audit trail after a successful run.
+
 Supported thematic references are `agent-instructions.md`,
 `architecture-decisions.md`, `c-engineering.md`, `code-economy.md`,
 `cpp-application-architecture.md`, `cpp-callback-async-lifetime.md`, `cpp-engineering.md`,
@@ -163,7 +180,13 @@ For a whole-layer control, use `--ablate-core`. This removes the complete
 the installed skill, not as evidence that any individual reference is
 unnecessary.
 
-The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. The Claude output-style-only adapter uses `--bare` and enables no model tools. With `--claude-full-skill`, both baseline and Sovetwave use project skill discovery and the same `Skill,Read,Bash` tool and permission surface; only the Sovetwave workspace contains the skill.
+The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. Claude's three-arm mode uses the same tool surface for vanilla, voice-only, and full-skill arms; only the full-skill workspace contains the project skill. Prompt-only cases omit `--permission-mode`; repository-grounded cases use `dontAsk` with an isolated fixture.
+
+Every Claude invocation uses `--output-format stream-json --verbose`. The run
+JSON records observed tool names, whether the project skill was available, and
+whether a `Skill` tool call occurred. `status`/`process_status` describe the
+CLI process; `semantic_status` is `unrated` until a human or LLM grader checks
+the assertions.
 
 By default a live run stops on the first failed, timed-out, or empty invocation,
 so an invalid login or unavailable model does not produce a full set of empty

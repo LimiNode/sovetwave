@@ -8,11 +8,15 @@ import json
 import re
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from eval_schema import rubric_axis_ids, validate_applicable_axes
 
 
 REQUIRED_SUITE_FIELDS = {"version": str, "suite": str, "cases": list}
 REQUIRED_CASE_FIELDS = {"id": str, "prompt": str, "assertions": list}
 CASE_ID = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+EXECUTION_MODES = {"prompt_only", "repository_grounded"}
+RUBRIC_AXES = rubric_axis_ids()
 
 
 def fail(message: str) -> None:
@@ -35,6 +39,15 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
     if not isinstance(suite.get("cases"), list) or not suite.get("cases"):
         fail(f"{path}: cases must contain at least one case")
         return errors + 1
+    try:
+        validate_applicable_axes(suite.get("applicable_axes"), allowed=RUBRIC_AXES)
+    except ValueError as error:
+        fail(f"{path}: {error}")
+        errors += 1
+    suite_mode = suite.get("execution_mode", "prompt_only")
+    if suite_mode not in EXECUTION_MODES:
+        fail(f"{path}: unsupported execution_mode {suite_mode!r}")
+        errors += 1
 
     for case in suite["cases"]:
         if not isinstance(case, dict):
@@ -57,6 +70,28 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
         assertions = case.get("assertions")
         if isinstance(assertions, list) and not all(isinstance(item, str) and item.strip() for item in assertions):
             fail(f"{path}: assertions for {case_id!r} must be non-empty strings")
+            errors += 1
+        mode = case.get("execution_mode", suite_mode)
+        if mode not in EXECUTION_MODES:
+            fail(f"{path}: unsupported execution_mode for {case_id!r}: {mode!r}")
+            errors += 1
+        fixture = case.get("fixture", suite.get("fixture"))
+        if fixture is not None:
+            fixture_path = Path(fixture) if isinstance(fixture, str) else None
+            if fixture_path is None or not fixture or fixture_path.is_absolute() or ".." in fixture_path.parts:
+                fail(f"{path}: fixture for {case_id!r} must be a relative path without '..'")
+                errors += 1
+            else:
+                resolved = (path.parent.parent / "fixtures" / fixture).resolve()
+                fixture_root = (path.parent.parent / "fixtures").resolve()
+                if fixture_root not in resolved.parents or not resolved.is_dir():
+                    fail(f"{path}: fixture directory does not exist for {case_id!r}: {resolved}")
+                    errors += 1
+        applicable_axes = case.get("applicable_axes", suite.get("applicable_axes"))
+        try:
+            validate_applicable_axes(applicable_axes, allowed=RUBRIC_AXES)
+        except ValueError as error:
+            fail(f"{path}: {error}")
             errors += 1
         checks = case.get("checks", {})
         if not isinstance(checks, dict):
