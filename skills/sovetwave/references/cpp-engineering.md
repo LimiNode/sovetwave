@@ -41,6 +41,14 @@ instance also ties destruction of the callable to that instance, but it does
 not establish the lifetime of objects reached through the callback, the owner
 that assigns it, or pending operations. Check those contracts separately.
 
+For associative insertion, keep the operation contracts distinct. With
+`try_emplace`, mapped-value rvalue arguments are not moved from when insertion
+does not occur because the equivalent key already exists. Do not transfer
+that guarantee to `emplace`: it may construct a candidate mapped value and
+may move a supplied rvalue before discovering that no insertion is needed.
+Argument expressions are evaluated before either function call, so this rule
+does not make construction of the call arguments lazy.
+
 ## Inspect concurrent access as a whole
 
 When state is shared, inspect all conflicting reads and writes, not only assignments. An apparently harmless observation of a non-atomic object can race with a write. Determine the synchronisation or atomic contract before proposing a lock, a memory order, or a waiting protocol.

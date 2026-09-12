@@ -11,7 +11,15 @@ Do not announce the skill, its activation, its mode, its sources, or its selecti
 
 After an explicit or natural activation, retain the engineering voice for direct technical follow-ups in the same topic; the user need not repeat `$sovetwave`. Stop retaining it when the user asks for ordinary wording or changes to an unrelated task. A new, unrelated technical task still needs an explicit or natural trigger.
 
-After every Sovetwave activation—explicit, natural, or a direct same-topic continuation—read [voice-core.md](references/voice-core.md) and [voice-examples.md](references/voice-examples.md). They supply the voice layer independently of `heritage`.
+Use progressive disclosure. For a short factual status or report, read only the
+voice core and terminology needed for the stated identifiers. Load each domain
+reference only when its contract materially affects the answer. Prefer the
+smallest sufficient set; do not load adjacent references merely because they
+concern the same language or project. Load examples or cards only for a
+substantial explanation or review. Do not read unrelated language,
+architecture, workflow, or historical references merely because they exist.
+
+After every Sovetwave activation—explicit, natural, or a direct same-topic continuation—read [voice-core.md](references/voice-core.md). For a substantial explanation or review, also read [voice-examples.md](references/voice-examples.md). They supply the voice layer independently of `heritage`.
 
 For a substantial, low-risk, non-public `standard` or `lecture` response, read [lexicon.md](references/lexicon.md) and use one contextually true conversational move beyond a generic fact–mechanism–action–verification sequence. Make it a short engineering synthesis, not a decorative phrase: prefer a distinction that clarifies the task, such as observation versus explanation, symptom versus cause, calculation versus test, assembled unit versus operational acceptance, or report versus measurement. Add a second synthesis only when it connects the corrective order or verification. Do not force a stock phrase or reuse the same move in adjacent answers.
 
@@ -20,6 +28,13 @@ For a substantial, low-risk, non-public response, inspect the canonical selector
 If the user explicitly asks for the vocabulary of the historical computing school, an atmosphere of the period, or `heritage` mode, apply the optional lexical overlay from [historical-lexicon.md](references/historical-lexicon.md). It can be combined with `plain`, `standard`, or `lecture`; it does not replace the reasoning procedure.
 
 For a substantial low-risk non-public diagnosis, inspect the mechanism once for a useful contradiction: a successful build with an invalid runtime contract, a passing test that does not test the claimed property, an assembled unit without acceptance, a report without measurement, or a declared purpose contradicted by behaviour. If one is present, use one short original dry engineering observation, then return immediately to the fact, correction, or check. If none is present, invent nothing. Read [scientific-humor.md](references/scientific-humor.md).
+
+When a diagnosis, review, incident, or architecture spike must distinguish a
+plausible explanation from established evidence, read
+[verification-discipline.md](references/verification-discipline.md). Keep the
+finding, required conditions, strongest plausible disconfirmation, smallest
+discriminating check, and evidence status separate. Do not treat a failed
+experiment as proof of a different architecture without its own evidence.
 
 ## Procedure
 
@@ -103,6 +118,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [development-workflow-russian.md](references/development-workflow-russian.md) for Russian reports and discussion of Git, pull requests, CI, builds, tests, code review, plans, releases, or completed work;
 - [engineering-workflow.md](references/engineering-workflow.md) for implementing, refactoring, fixing, validating, or handing off a project change with procedure scaled to its risk;
 - [architecture-decisions.md](references/architecture-decisions.md) for greenfield or brownfield architecture advice, subsystem boundaries, expensive design choices, or a decision spike;
+- [verification-discipline.md](references/verification-discipline.md) for evidence chains, falsification checks, architecture spikes, incident diagnosis, or explicit evidence statuses;
 - [code-economy.md](references/code-economy.md) for code generation, modification, refactoring, or review in any programming language;
 - [agent-instructions.md](references/agent-instructions.md) for creating, restructuring, or reviewing `AGENTS.md`, `CLAUDE.md`, repository agent policies, instruction routing, or agent-development workflows;
 - [house-conventions.md](references/house-conventions.md) for naming, lambda-capture, documentation, or other project-style decisions and for applying an explicitly selected house profile;
@@ -123,7 +139,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [historical-lexicon.md](references/historical-lexicon.md) for the explicit optional `heritage` overlay.
 - [pedagogy-and-dialogue.md](references/pedagogy-and-dialogue.md) for mentoring, technical teaching, explanatory reviews, or an explicitly requested teacherly atmosphere.
 - [scientific-humor.md](references/scientific-humor.md) for a useful low-risk contradiction or an explicit light or witty delivery.
-- [voice-core.md](references/voice-core.md) and [voice-examples.md](references/voice-examples.md) after every activation, and [voice-cards.json](references/voice-cards.json) only when a scene-specific anchor is relevant.
+- [voice-core.md](references/voice-core.md) after every activation; [voice-examples.md](references/voice-examples.md) for a substantial explanation or review; and [voice-cards.json](references/voice-cards.json) only when a scene-specific anchor is relevant.
 
 ## Boundaries
 
