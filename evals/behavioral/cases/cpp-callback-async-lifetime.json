@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "suite": "cpp-callback-async-lifetime",
+  "cases": [
+    {
+      "id": "cpp-callback-under-lock-reentrancy",
+      "prompt": "C++ worker под `std::mutex` обновляет состояние и синхронно вызывает `listener->on_data(data)`. Контракт listener разрешает из callback вызвать `worker.stop()`, а `stop()` берёт тот же mutex. Проведи review и предложи минимальную проверку.",
+      "assertions": [
+        "identifies synchronous callback reentrancy and the same-thread lock attempt as a self-deadlock or invalid mutex-use path",
+        "recommends completing or snapshotting protected state and calling the listener after releasing the lock",
+        "does not present recursive_mutex or a thread-id exception as the primary repair",
+        "checks the explicit on_data to stop reentrant path"
+      ]
+    },
+    {
+      "id": "cpp-async-self-ownership-cancellation",
+      "prompt": "`Session` запускает долгую цепочку Asio operations; каждый handler захватывает `shared_from_this()` и при успехе запускает следующий. Manager считает `session.reset()` командой остановки, но после reset соединение и таймеры продолжают работать. Как классифицировать проблему и исправить контракт?",
+      "assertions": [
+        "distinguishes delayed release or a lifetime and cancellation mismatch from an automatically proven memory leak",
+        "explains that pending handlers with strong self-references own the Session after external reset",
+        "requires explicit stop or cancellation semantics and a point where handlers stop propagating strong ownership",
+        "tracks pending callbacks and resources through cancellation or late completion"
+      ]
+    },
+    {
+      "id": "cpp-shared-from-this-valid-lifetime",
+      "prompt": "`Lookup` выполняет одну конечную async operation. Pending handler захватывает `shared_from_this()`, потому что объект и его buffer должны жить до completion. После handler новые операции не запускаются; внешнего контракта отмены нет. Проведи review владения.",
+      "assertions": [
+        "accepts strong self-ownership as a valid way to preserve the stated finite operation and buffer lifetime",
+        "does not label shared_from_this as a Zombie anti-pattern or memory leak merely because it extends lifetime",
+        "verifies that completion ends the chain and releases the final operation-held ownership",
+        "does not invent an external cancellation requirement absent from the stated contract"
+      ]
+    },
+    {
+      "id": "cpp-self-join-from-callback",
+      "prompt": "Worker handler удерживает последнюю `shared_ptr<Service>`. После завершения handler ссылка освобождается, `Service::~Service()` выполняется на worker thread и безусловно вызывает `thread.join()`. Что здесь проверить и как задать завершение?",
+      "assertions": [
+        "identifies that destruction on the owned worker makes join target the current thread",
+        "does not praise destructor RAII without accounting for the callback execution context",
+        "does not recommend detach or a thread-id bypass as an automatic general fix",
+        "assigns stop and join coordination to a context that can complete two-phase shutdown safely"
+      ]
+    },
+    {
+      "id": "cpp-wait-under-lock-worker-needs-lock",
+      "prompt": "`Controller::stop()` берёт `state_mutex`, выставляет `stopping = true`, отправляет worker сигнал и, не отпуская mutex, вызывает `worker.join()`. Для выхода worker должен взять `state_mutex` и прочитать `stopping`. Разбери liveness и минимальное исправление.",
+      "assertions": [
+        "identifies the circular wait between join under state_mutex and the worker needing that mutex to exit",
+        "recommends updating shutdown state under the lock then releasing it before signalling or joining as required by the established protocol",
+        "keeps state transition visibility and shutdown ordering explicit rather than merely deleting synchronization",
+        "verifies that the worker can observe stop and complete before join returns"
+      ]
+    }
+  ]
+}

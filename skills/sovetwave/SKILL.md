@@ -69,6 +69,10 @@ For C++ application architecture, establish the target profile, ownership and nu
 
 For these tasks, read [cpp-application-architecture.md](references/cpp-application-architecture.md).
 
+For C++ callbacks or asynchronous work, treat call-out, reentrancy, operation ownership, cancellation, and callback execution context as separate contracts. Normally update or snapshot state under a lock, release the lock, and only then call unknown code; do not use `recursive_mutex` as the default repair. Trace object, operation, and buffer lifetime independently. A strong self-reference may validly preserve lifetime, but it does not implement cancellation. Never join the current thread or wait while holding a lock required by the work being awaited.
+
+For these tasks, read [cpp-callback-async-lifetime.md](references/cpp-callback-async-lifetime.md).
+
 When C or C++ work uses Qt, establish the exact Qt version and whether the target is an application, reusable library, plugin, or compatibility-stable framework. Do not impose framework ABI policy on application code or recommend Qt APIs unavailable to the established version.
 
 For these tasks, read [qt-cpp-engineering.md](references/qt-cpp-engineering.md).
@@ -100,6 +104,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [python-backend-architecture.md](references/python-backend-architecture.md) for Python application or backend architecture, inbound interfaces, persistence, transactions, migrations, background work, external services, or deployment boundaries;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
 - [cpp-application-architecture.md](references/cpp-application-architecture.md) for C++ application, library, plugin, event-driven, service, embedded, Qt, Dear ImGui, or ImGuiX architecture;
+- [cpp-callback-async-lifetime.md](references/cpp-callback-async-lifetime.md) for C++ callbacks under locks, synchronous reentrancy, asynchronous operation ownership, cancellation, handler-driven destruction, self-join, or shutdown waits;
 - [cpp-review-workflow.md](references/cpp-review-workflow.md) for a scoped C or C++ code review, commit review, or repository audit;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;
 - [qt-cpp-engineering.md](references/qt-cpp-engineering.md) for Qt C++, Qt-facing CMake, `QObject`, models, plugins, public Qt APIs, or Qt concurrency;

@@ -296,6 +296,19 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("treat frame-local UI data as transient", skill_text)
             self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
 
+    def test_cpp_callback_async_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "cpp-callback-async-lifetime.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "cpp-callback-async-lifetime.md").exists())
+            self.assertNotIn(
+                "[cpp-callback-async-lifetime.md](references/cpp-callback-async-lifetime.md)",
+                skill_text,
+            )
+            self.assertIn("treat call-out, reentrancy, operation ownership", skill_text)
+            self.assertIn("Never join the current thread", skill_text)
+            self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
+
     def test_agent_instruction_ablation_preserves_the_core_invariant(self) -> None:
         with make_workspace(ROOT, True, "agent-instructions.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
@@ -543,9 +556,22 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
         self.assertIn("cpp-application-architecture.md", THEMATIC_REFERENCES)
         taxonomy = (ROOT / "skills" / "sovetwave" / "references" / "cpp-application-architecture.md").read_text(encoding="utf-8")
-        taxonomy_normalized = " ".join(taxonomy.split())
-        self.assertIn("When introducing a new message taxonomy", taxonomy_normalized)
-        self.assertIn("Preserve a coherent existing project vocabulary", taxonomy_normalized)
+        self.assertIn("When introducing a new message taxonomy", taxonomy)
+        self.assertIn("Preserve a coherent existing project vocabulary", taxonomy)
+
+    def test_cpp_callback_async_lifetime_suite_has_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "cpp-callback-under-lock-reentrancy",
+            "cpp-async-self-ownership-cancellation",
+            "cpp-shared-from-this-valid-lifetime",
+            "cpp-self-join-from-callback",
+            "cpp-wait-under-lock-worker-needs-lock",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn("cpp-callback-async-lifetime.md", THEMATIC_REFERENCES)
 
     def test_cpp_review_and_qt_suites_have_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
