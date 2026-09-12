@@ -28,9 +28,11 @@ try {
         if (-not (Test-Path -LiteralPath (Join-Path $userClaude 'skills\sovetwave\scripts\select_voice_cards.py'))) { throw 'Forced Claude skill installation is incomplete.' }
 
         Set-Content -LiteralPath (Join-Path $userSkills 'sovetwave\.installer-sentinel') -Value 'codex-sentinel'
+        $claudeSkillSentinel = Join-Path $userClaude 'skills\sovetwave\.installer-sentinel'
+        Set-Content -LiteralPath $claudeSkillSentinel -Value 'claude-skill-sentinel'
         $styleTarget = Join-Path $userClaude 'output-styles\sovetwave.md'
         Set-Content -LiteralPath $styleTarget -Value 'old-style-sentinel'
-        foreach ($failurePoint in @('codex', 'claude-style')) {
+        foreach ($failurePoint in @('codex', 'claude-skill', 'claude-style')) {
             $previousFailure = $env:SOVETWAVE_TEST_FAIL_AFTER
             $env:SOVETWAVE_TEST_FAIL_AFTER = $failurePoint
             $injectedFailure = $false
@@ -38,8 +40,9 @@ try {
             finally { $env:SOVETWAVE_TEST_FAIL_AFTER = $previousFailure }
             if (-not $injectedFailure) { throw "Injected $failurePoint failure unexpectedly succeeded." }
             if (-not (Test-Path -LiteralPath (Join-Path $userSkills 'sovetwave\.installer-sentinel'))) { throw "Rollback did not restore the previous Codex installation after $failurePoint." }
-            if ((Get-Content -LiteralPath $styleTarget -Raw) -notmatch '^old-style-sentinel\s*$') { throw "Rollback did not restore the previous Claude style after $failurePoint." }
-            $staging = Get-ChildItem -LiteralPath $userSkills, $userClaude -Recurse -Force -Directory -ErrorAction SilentlyContinue | Where-Object Name -like '.sovetwave-stage-*'
+            if ((Get-Content -LiteralPath $claudeSkillSentinel -Raw) -notmatch '^claude-skill-sentinel\s*$') { throw "Rollback did not restore the previous Claude skill after $failurePoint." }
+              if ((Get-Content -LiteralPath $styleTarget -Raw) -notmatch '^old-style-sentinel\s*$') { throw "Rollback did not restore the previous Claude style after $failurePoint." }
+              $staging = Get-ChildItem -LiteralPath $userSkills, $userClaude -Recurse -Force -Directory -ErrorAction SilentlyContinue | Where-Object Name -like '.sovetwave-stage-*'
             if ($staging) { throw "Staging directory survived $failurePoint rollback." }
         }
     }
