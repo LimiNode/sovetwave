@@ -57,6 +57,10 @@ For Python work, establish only the Python version, implementation, toolchain, p
 
 For these tasks, read [python-engineering.md](references/python-engineering.md).
 
+For Python application or backend architecture, derive boundaries from the established inbound interface, application rules, storage and transaction ownership, background work, external services, and deployment model. Do not make HTTP, an ORM, a repository layer, or a task queue the default shape. Continue a coherent existing data-access and migration path when it fits; for expensive persistent, compatibility, and deployment choices, surface assumptions and consequences. If the user explicitly delegates the choice and the material constraints are established, choose and record it; otherwise obtain the user's decision before commitment.
+
+For these tasks, read [python-backend-architecture.md](references/python-backend-architecture.md).
+
 For a C or C++ review, establish the requested scope and the project profile before applying profile-specific rules. Keep a review read-only unless the user asks for a fix. Use deterministic checks as evidence, then inspect lifetime, concurrency, API and ABI boundaries, error paths, and justified performance work. Separate confirmed defects, contract-dependent properties, and investigation targets; never make a heuristic scanner authoritative.
 
 For these tasks, read [cpp-review-workflow.md](references/cpp-review-workflow.md).

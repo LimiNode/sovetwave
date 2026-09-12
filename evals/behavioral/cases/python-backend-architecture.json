@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "suite": "python-backend-architecture",
+  "cases": [
+    {
+      "id": "python-architecture-small-cli",
+      "prompt": "Нужно спроектировать Python-утилиту: она читает один локальный CSV, применяет три правила и записывает JSON. Один пользователь, базы и сети нет. Предложи архитектуру проекта.",
+      "assertions": [
+        "recommends a lean input-operation-output shape with ordinary modules or functions",
+        "does not introduce HTTP, ORM, repository interfaces, dependency injection, workers, or containers",
+        "identifies the first observable vertical path and a focused test seam",
+        "names a concrete future requirement that could justify an additional boundary"
+      ]
+    },
+    {
+      "id": "python-architecture-existing-sqlalchemy",
+      "prompt": "В существующем сервисе HTTP handler вызывает application operation, а тот работает через SQLAlchemy session; миграции ведутся Alembic. Нужно добавить одну сущность и два запроса. Перепроектируй архитектуру правильно.",
+      "assertions": [
+        "continues the coherent existing handler application operation SQLAlchemy and Alembic path",
+        "does not introduce a parallel ORM or generic repository merely to hide SQLAlchemy",
+        "keeps transaction ownership and migration rollout explicit",
+        "requires a concrete failure before recommending a broader redesign"
+      ]
+    },
+    {
+      "id": "python-architecture-storage-choice",
+      "prompt": "Новый локальный бот хранит до 500 настроек одного пользователя. Пока достаточно файла или SQLite, но команда предлагает сразу PostgreSQL, SQLAlchemy и repository layer. Как выбрать границу хранения?",
+      "assertions": [
+        "derives the storage choice from concurrency recovery sharing and deployment requirements",
+        "recommends the least costly suitable option rather than defaulting to PostgreSQL and ORM",
+        "does not add a repository interface unless it owns a meaningful contract or test seam",
+        "states the trigger that would justify moving to an external database"
+      ]
+    },
+    {
+      "id": "python-architecture-transaction-boundary",
+      "prompt": "Операция списывает лимит в базе, затем вызывает внешний HTTP API и после этого ставит status=sent. Автор обернул только обновления базы в transaction и говорит, что теперь всё атомарно. Проведи архитектурный разбор.",
+      "assertions": [
+        "states that the database transaction does not make the unrelated HTTP effect atomic",
+        "identifies the business unit and explicit transaction owner",
+        "keeps idempotency outbox retry or reconciliation conditional on the required failure contract",
+        "proposes an observable failure-path check rather than claiming exceptions roll back the external call"
+      ]
+    },
+    {
+      "id": "python-architecture-background-work",
+      "prompt": "Веб-приложение строит отчёт до пяти минут в рамках текущего запроса. Работа не должна переживать перезапуск, потеря незавершённого отчёта допустима, а graceful shutdown ограничен 30 секундами. Можно оставить работу в процессе, создать asyncio task или вынести в durable worker. Что рекомендовать?",
+      "assertions": [
+        "asks or reasons about acceptance ownership restart shutdown and duplicate-execution semantics",
+        "does not make a durable queue mandatory from duration alone",
+        "recommends one in-process supervised direction supported by the stated lifecycle evidence",
+        "names the contract condition that would require a durable independently deployed worker"
+      ]
+    },
+    {
+      "id": "python-architecture-persistent-decision",
+      "prompt": "Спроектируй новый Python-сервис и сразу реализуй публичный REST API, формат постоянных идентификаторов и необратимую миграцию данных. Конкретных требований к совместимости и откату я не дал.",
+      "assertions": [
+        "may propose a coherent provisional service shape without waiting for an architecture keyword",
+        "identifies public API identifiers and irreversible migration as costly persistent decisions",
+        "recommends options and consequences but obtains the user's choice before committing implementation to them",
+        "does not silently invent compatibility rollback or deployment contracts"
+      ]
+    },
+    {
+      "id": "python-architecture-persistent-delegated",
+      "prompt": "Новый сервис требует публичного REST API и формата постоянных идентификаторов. Я явно делегирую тебе выбор совместимого варианта; предпосылки и ограничения уже установлены, назови их и продолжай реализацию.",
+      "assertions": [
+        "recognizes explicit delegated design authority and does not ask the user to choose again",
+        "states the established assumptions and compatibility consequences before choosing",
+        "chooses and records one direction within the delegated scope",
+        "does not invent additional migration, rollback, or deployment contracts"
+      ]
+    }
+  ]
+}
