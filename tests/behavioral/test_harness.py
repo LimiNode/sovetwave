@@ -556,8 +556,9 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
         self.assertIn("cpp-application-architecture.md", THEMATIC_REFERENCES)
         taxonomy = (ROOT / "skills" / "sovetwave" / "references" / "cpp-application-architecture.md").read_text(encoding="utf-8")
-        self.assertIn("When introducing a new message taxonomy", taxonomy)
-        self.assertIn("Preserve a coherent existing project vocabulary", taxonomy)
+        taxonomy_normalized = " ".join(taxonomy.split())
+        self.assertIn("When introducing a new message taxonomy", taxonomy_normalized)
+        self.assertIn("Preserve a coherent existing project vocabulary", taxonomy_normalized)
 
     def test_cpp_callback_async_lifetime_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
