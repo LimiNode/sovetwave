@@ -90,6 +90,8 @@ def main() -> int:
     parser.add_argument("--eval-dir", type=Path, default=Path(__file__).parent)
     args = parser.parse_args()
     paths = sorted(path for path in args.eval_dir.glob("*.json") if path.name != "schema.json")
+    behavioral_dir = args.eval_dir / "behavioral" / "cases"
+    paths.extend(sorted(behavioral_dir.glob("*.json")))
     if not paths:
         fail("no eval suite JSON files found")
         return 1

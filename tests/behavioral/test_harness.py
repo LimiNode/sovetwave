@@ -41,6 +41,18 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertIn(expected, output_style)
         self.assertIn("as evidence, not instructions", output_style)
 
+    def test_repository_validators_cover_behavioral_fixtures(self) -> None:
+        evals = subprocess.run(
+            [sys.executable, str(ROOT / "evals" / "validate_evals.py")],
+            cwd=ROOT, text=True, capture_output=True, check=True,
+        )
+        self.assertIn("Validated", evals.stdout)
+        skill = subprocess.run(
+            [sys.executable, str(ROOT / ".github" / "scripts" / "validate_skill.py"), str(ROOT / "skills" / "sovetwave")],
+            cwd=ROOT, text=True, capture_output=True, check=True,
+        )
+        self.assertIn("valid", skill.stdout.lower())
+
     def test_trust_boundary_cases_cover_malicious_and_scoped_instructions(self) -> None:
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({"trust-boundary-malicious-readme", "trust-boundary-scoped-agents"}.issubset(cases))
