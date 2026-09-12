@@ -36,6 +36,7 @@ from run_model_evals import (
     variant_plan,
 )
 from retry_failed_evals import main as retry_failed_main, retry_parameters, retryable_rows, verify_case_snapshot
+from run_revision_interleaved import git_provenance, interleaved_orders, prepare_checkpoint
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -79,13 +80,110 @@ class BehavioralHarnessTests(unittest.TestCase):
             "verification-confirmed-local-reproducer",
         }.issubset(cases))
 
+    def test_verification_contract_holdouts_are_distinct_from_skill_example(self) -> None:
+        skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertNotIn("call `parse` with", skill)
+        cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
+        self.assertTrue({
+            "verification-contract-decode-range-error",
+            "verification-contract-ingest-error-channel",
+            "verification-contract-lookup-status",
+        }.issubset(cases))
+
+    def test_revision_interleaving_is_balanced(self) -> None:
+        self.assertEqual(
+            [order["revisions"] for order in interleaved_orders(8)],
+            [
+                ["revision_a", "revision_b"],
+                ["revision_b", "revision_a"],
+                ["revision_b", "revision_a"],
+                ["revision_a", "revision_b"],
+                ["revision_a", "revision_b"],
+                ["revision_b", "revision_a"],
+                ["revision_b", "revision_a"],
+                ["revision_a", "revision_b"],
+            ],
+        )
+
+    def test_interleaved_runner_rejects_existing_checkpoint_without_resume(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "run.jsonl"
+            checkpoint.write_text("{}\n", encoding="utf-8")
+            output = Path(directory) / "run.json"
+            completed = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "run_revision_interleaved.py"),
+                 "--revision-a", str(ROOT), "--revision-b", str(ROOT),
+                 "--case-id", "russian-pr-status-report", "--codex-provider-config", str(Path.home() / ".codex" / "config.toml"),
+                 "--checkpoint", str(checkpoint), "--output", str(output)],
+                cwd=ROOT, text=True, capture_output=True,
+            )
+            self.assertNotEqual(completed.returncode, 0)
+            self.assertIn("checkpoint already exists", completed.stderr)
+
+    def test_interleaved_runner_rejects_mismatched_resume_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "run.jsonl"
+            checkpoint.write_text("", encoding="utf-8")
+            checkpoint.with_suffix(".meta.json").write_text(
+                json.dumps({"revision_roots": {}, "model": "wrong", "case_ids": [], "repetitions": 1}),
+                encoding="utf-8",
+            )
+            output = Path(directory) / "run.json"
+            completed = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "run_revision_interleaved.py"),
+                 "--revision-a", str(ROOT), "--revision-b", str(ROOT),
+                 "--case-id", "russian-pr-status-report", "--codex-provider-config", str(Path.home() / ".codex" / "config.toml"),
+                 "--checkpoint", str(checkpoint), "--output", str(output), "--resume"],
+                cwd=ROOT, text=True, capture_output=True,
+            )
+            self.assertNotEqual(completed.returncode, 0)
+            self.assertIn("checkpoint provenance does not match", completed.stderr)
+
+    def test_interleaved_checkpoint_creates_nested_parent_before_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "missing" / "nested" / "run.jsonl"
+            metadata_path = prepare_checkpoint(checkpoint, {"revision_provenance": {}})
+            self.assertTrue(checkpoint.parent.is_dir())
+            self.assertTrue(metadata_path.is_file())
+
+    def test_git_provenance_contains_head_and_dirty_state(self) -> None:
+        provenance = git_provenance(ROOT)
+        self.assertRegex(provenance["head"], r"^[0-9a-f]{40}$")
+        self.assertIsInstance(provenance["dirty"], bool)
+
     def test_skill_declares_progressive_reference_disclosure(self) -> None:
         skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("For a short factual status or report, read only the", skill)
-        self.assertIn("Do not read unrelated language,", skill)
-        self.assertIn("Load each domain\nreference only when its contract materially affects", skill)
-        self.assertIn("For a substantial explanation or review, also read [voice-examples.md]", skill)
-        self.assertNotIn("and [voice-examples.md](references/voice-examples.md). They supply", skill)
+        self.assertIn("For a short factual status or report,", skill)
+        self.assertIn("do not read unrelated language,", skill)
+        self.assertIn("choose the smallest\nsufficient set", skill)
+        self.assertIn("also load [voice-examples.md]", skill)
+        self.assertIn("Minimal route selection", skill)
+
+    def test_skill_keeps_the_routing_kernel_small(self) -> None:
+        skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertLess(len(skill), 14000)
+        self.assertIn("Keep repository-wide routing and invariants here", skill)
+        self.assertIn("keep detailed language,", skill)
+
+    def test_skill_preserves_activation_and_capability_routes(self) -> None:
+        skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("'Советвейв'", skill)
+        for reference in (
+            "voice-core.md", "voice-examples.md", "scenes.md", "principles.md",
+            "lexicon.md", "scientific-humor.md", "historical-lexicon.md",
+            "history-and-sources.md", "pedagogy-and-dialogue.md", "anti-patterns.md",
+        ):
+            self.assertIn(f"](references/{reference})", skill)
+        self.assertIn('select_voice_cards.py" --list-tags --json', skill)
+        self.assertIn('python3 "<skill-directory>/scripts/select_voice_cards.py"', skill)
+        self.assertIn("--scene <canonical-scene>", skill)
+        self.assertIn("--domain", skill)
+        self.assertIn("--max 2", skill)
+
+    def test_capability_routes_are_registered_for_selective_ablation(self) -> None:
+        self.assertTrue({
+            "history-and-sources.md", "pedagogy-and-dialogue.md", "anti-patterns.md",
+        }.issubset(THEMATIC_REFERENCES))
 
     def test_grader_contract_keeps_pointwise_scores_variant_external(self) -> None:
         contract = (ROOT / "evals" / "behavioral" / "graders" / "grader-contract.md").read_text(encoding="utf-8")
@@ -591,7 +689,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             )
             self.assertTrue((skill / "references" / "voice-core.md").exists())
 
-    def test_code_economy_ablation_preserves_the_core_invariant(self) -> None:
+    def test_code_economy_ablation_preserves_the_routing_kernel(self) -> None:
         with make_workspace(ROOT, True, "code-economy.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -600,9 +698,9 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[code-economy.md](references/code-economy.md)",
                 skill_text,
             )
-            self.assertIn("minimise semantic surface", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
 
-    def test_engineering_workflow_ablation_preserves_the_core_invariant(self) -> None:
+    def test_engineering_workflow_ablation_preserves_the_routing_kernel(self) -> None:
         with make_workspace(ROOT, True, "engineering-workflow.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -611,10 +709,10 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[engineering-workflow.md](references/engineering-workflow.md)",
                 skill_text,
             )
-            self.assertIn("scale the engineering procedure", skill_text)
-            self.assertIn("Treat commit, push, issue, and pull-request creation as publication steps", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
+            self.assertIn("selected references", skill_text)
 
-    def test_architecture_decision_ablation_preserves_the_core_invariant(self) -> None:
+    def test_architecture_decision_ablation_preserves_the_routing_kernel(self) -> None:
         with make_workspace(ROOT, True, "architecture-decisions.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -623,10 +721,9 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[architecture-decisions.md](references/architecture-decisions.md)",
                 skill_text,
             )
-            self.assertIn("inherit an established brownfield structure", skill_text)
-            self.assertIn("bounded spike with a decision criterion", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
 
-    def test_verification_discipline_ablation_preserves_evidence_core(self) -> None:
+    def test_verification_discipline_ablation_preserves_evidence_routing(self) -> None:
         with make_workspace(ROOT, True, "verification-discipline.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -635,9 +732,9 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[verification-discipline.md](references/verification-discipline.md)",
                 skill_text,
             )
-            self.assertIn("separate observation from explanation", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
 
-    def test_c_engineering_ablation_preserves_the_core_invariant(self) -> None:
+    def test_c_engineering_ablation_preserves_the_generic_kernel(self) -> None:
         with make_workspace(ROOT, True, "c-engineering.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -646,10 +743,10 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[c-engineering.md](references/c-engineering.md)",
                 skill_text,
             )
-            self.assertIn("establish storage duration", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
             self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
 
-    def test_python_engineering_ablation_preserves_the_core_invariant(self) -> None:
+    def test_python_engineering_ablation_preserves_the_generic_kernel(self) -> None:
         with make_workspace(ROOT, True, "python-engineering.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -658,10 +755,10 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[python-engineering.md](references/python-engineering.md)",
                 skill_text,
             )
-            self.assertIn("Treat type annotations as interface evidence", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
             self.assertTrue((skill / "references" / "code-economy.md").exists())
 
-    def test_python_backend_architecture_ablation_preserves_the_core_invariant(self) -> None:
+    def test_python_backend_architecture_ablation_preserves_the_generic_kernel(self) -> None:
         with make_workspace(ROOT, True, "python-backend-architecture.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -670,10 +767,10 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[python-backend-architecture.md](references/python-backend-architecture.md)",
                 skill_text,
             )
-            self.assertIn("Do not make HTTP, an ORM, a repository layer, or a task queue", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
             self.assertTrue((skill / "references" / "python-engineering.md").exists())
 
-    def test_cpp_application_architecture_ablation_preserves_the_core_invariant(self) -> None:
+    def test_cpp_application_architecture_ablation_preserves_the_generic_kernel(self) -> None:
         with make_workspace(ROOT, True, "cpp-application-architecture.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -682,11 +779,10 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[cpp-application-architecture.md](references/cpp-application-architecture.md)",
                 skill_text,
             )
-            self.assertIn("establish the target profile, ownership and number of instances", skill_text)
-            self.assertIn("treat frame-local UI data as transient", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
             self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
 
-    def test_cpp_callback_async_ablation_preserves_the_core_invariant(self) -> None:
+    def test_cpp_callback_async_ablation_preserves_the_generic_kernel(self) -> None:
         with make_workspace(ROOT, True, "cpp-callback-async-lifetime.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -695,11 +791,10 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[cpp-callback-async-lifetime.md](references/cpp-callback-async-lifetime.md)",
                 skill_text,
             )
-            self.assertIn("treat call-out, reentrancy, operation ownership", skill_text)
-            self.assertIn("Never join the current thread", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
             self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
 
-    def test_agent_instruction_ablation_preserves_the_core_invariant(self) -> None:
+    def test_agent_instruction_ablation_preserves_the_routing_kernel(self) -> None:
         with make_workspace(ROOT, True, "agent-instructions.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -708,10 +803,9 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[agent-instructions.md](references/agent-instructions.md)",
                 skill_text,
             )
-            self.assertIn("scoped operational contracts", skill_text)
-            self.assertIn("target agent's documented or observed", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
 
-    def test_house_conventions_ablation_preserves_precedence_and_cpp_layers(self) -> None:
+    def test_house_conventions_ablation_preserves_precedence_and_routing(self) -> None:
         with make_workspace(ROOT, True, "house-conventions.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -720,15 +814,11 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[house-conventions.md](references/house-conventions.md)",
                 skill_text,
             )
-            self.assertIn(
-                "where naming, lambda capture, documentation, repository style",
-                skill_text,
-            )
-            self.assertIn("Repository instructions and established local style override", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
             self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
             self.assertTrue((skill / "references" / "c-engineering.md").exists())
 
-    def test_cpp_review_ablation_preserves_the_core_invariant(self) -> None:
+    def test_cpp_review_ablation_preserves_the_routing_kernel(self) -> None:
         with make_workspace(ROOT, True, "cpp-review-workflow.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
             skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
@@ -737,7 +827,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "[cpp-review-workflow.md](references/cpp-review-workflow.md)",
                 skill_text,
             )
-            self.assertIn("Use deterministic checks as evidence", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
 
     def test_qt_cpp_ablation_keeps_the_generic_cpp_review_layer(self) -> None:
         with make_workspace(ROOT, True, "qt-cpp-engineering.md") as directory:
@@ -749,7 +839,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 skill_text,
             )
             self.assertTrue((skill / "references" / "cpp-review-workflow.md").exists())
-            self.assertIn("whether the target is an application", skill_text)
+            self.assertIn("Minimal route selection", skill_text)
 
     def test_ablation_rejects_a_non_thematic_reference(self) -> None:
         completed = subprocess.run(
