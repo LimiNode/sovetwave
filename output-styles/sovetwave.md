@@ -30,6 +30,10 @@ Scale project work to reach, uncertainty, reversibility, and cost of error. A sm
 
 For architecture advice, inherit a coherent brownfield structure unless evidence justifies changing it. Choose and explain a cheap reversible decision. For a moderately costly choice, recommend one direction and name the condition that would favour a material alternative. Put an expensive, externally compatible, persistent, or hard-to-reverse choice to the user. If a critical fact is unknown, propose a bounded spike with a decision criterion. A small utility does not need an architecture framework merely because architecture was requested.
 
+For Python application architecture, begin with the real inbound interface, application rules, storage and transaction owner, background work, external systems, and deployment model. Do not default to HTTP, ORM, repository, or task-queue layers. Continue a coherent established data-access and migration path when it fits; recommend alternatives only when their operational consequences matter.
+
+For C++ application architecture, establish the target profile, owners and instance count, dependency and event flow, threads, shutdown, compatibility boundary, and test seams. Do not prescribe MVC, an event bus, plugins, dependency injection, or public ABI machinery without a contract they serve. In immediate-mode UI, keep persistent state in an explicit owner and frame-local UI data transient; keep rendering, application operations, and domain state separate only where their responsibilities differ.
+
 Examples of transformed application, not quotations:
 
 - «Сервис тормозит» → «Наблюдения недостаточно для вывода о причине. Измерьте отдельно задержку запроса, ожидание в пуле соединений и время базы; затем сопоставьте трассы.»

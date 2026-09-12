@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "suite": "cpp-application-architecture",
+  "cases": [
+    {
+      "id": "cpp-architecture-private-app-profile",
+      "prompt": "Нужно добавить внутренний экран в C++ desktop application. Класс не экспортируется, приложение и все библиотеки собираются вместе. Архитектурный шаблон предлагает pImpl, export macro, virtual interface и ABI compatibility tests для каждого класса. Что действительно требуется?",
+      "assertions": [
+        "classifies the code as application-private from the stated build and consumer evidence",
+        "does not impose pImpl export or ABI machinery without a public compatibility boundary",
+        "recommends the smallest dependency and ownership shape for the screen's actual operation",
+        "names the public or independently deployed condition that would change the profile"
+      ]
+    },
+    {
+      "id": "cpp-architecture-instance-owned-state",
+      "prompt": "Приложение может открыть два документа. Контроллер хранит selected_item и callback в function-local static внутри методов, поэтому выбор и привязка первого документа видны второму. Предложи архитектурное исправление, не забывая lifetime callback.",
+      "assertions": [
+        "identifies the function-local static state as shared across document instances",
+        "moves document-specific selection and callback slots into an explicit per-document owner",
+        "does not replace the static with another process-global singleton or registry without a sharing contract",
+        "keeps callback target and pending-operation lifetime as a separate contract and verifies two-instance isolation"
+      ]
+    },
+    {
+      "id": "cpp-architecture-event-flow",
+      "prompt": "Небольшое C++ приложение имеет одно окно и три команды. UI вызывает операции синхронно и сразу получает результат. Предлагают обязательный глобальный EventBus, чтобы архитектура была MVC и когда-нибудь появились плагины. Как выстроить поток зависимостей?",
+      "assertions": [
+        "keeps UI dependencies pointing toward explicit application operations",
+        "prefers direct calls or bounded callbacks for the established synchronous flow",
+        "does not add a global EventBus MVC hierarchy or plugin system for hypothetical extensibility",
+        "states the fan-out temporal cross-thread or independent-extension condition that could justify an event boundary"
+      ]
+    },
+    {
+      "id": "cpp-architecture-shutdown-order",
+      "prompt": "Service object владеет worker thread и receiver, а внешний producer хранит callback на receiver. Деструктор сначала уничтожает receiver, потом просит worker остановиться; поздний callback иногда приходит во время shutdown. Опиши минимально достаточную архитектуру завершения.",
+      "assertions": [
+        "identifies the destruction order that allows a callback to reach a destroyed receiver",
+        "stops or disconnects producers before draining or cancelling and joining owned work",
+        "destroys consumers only after callbacks and workers can no longer reach them",
+        "proposes a focused shutdown test with pending work or a late callback rather than relying on the destructor alone"
+      ]
+    },
+    {
+      "id": "cpp-architecture-imgui-state-owner",
+      "prompt": "В Dear ImGui приложении render_settings() содержит static selected_profile и static draft_name. Окно может существовать в двух независимых workspace, а сохранение профиля нужно тестировать без UI. Как распределить состояние и операции?",
+      "assertions": [
+        "treats the render function as frame execution rather than the owner of persistent state",
+        "places selection and draft state in an explicit per-workspace or view-state owner",
+        "moves the save operation behind an application operation testable without Dear ImGui",
+        "does not require a controller hierarchy or global event bus when a direct dependency is sufficient"
+      ]
+    },
+    {
+      "id": "cpp-architecture-imgui-thread-boundary",
+      "prompt": "Background thread обновляет std::vector<Row>, пока Dear ImGui render loop проходит по тому же vector. Автор предлагает добавить mutex только вокруг push_back. Как задать архитектурную границу?",
+      "assertions": [
+        "identifies unsynchronised conflicting access across the worker and UI traversal rather than only vector reallocation",
+        "assigns mutable UI-visible state to an owner thread or uses a complete synchronization or snapshot boundary",
+        "recommends publishing an owned result or immutable snapshot from the worker at a defined point",
+        "checks shutdown and a focused concurrent update path without claiming a partial push_back lock is sufficient"
+      ]
+    },
+    {
+      "id": "cpp-architecture-plugin-decision",
+      "prompt": "Все расширения C++ приложения выпускаются одной командой и пересобираются вместе. Предлагают сразу перейти на динамические plugins с публичным C++ ABI, хотя независимой поставки пока нет. Стоит ли начинать реализацию?",
+      "assertions": [
+        "recommends ordinary composition or static registration for the established same-build deployment",
+        "does not introduce dynamic discovery version negotiation and public C++ ABI for a hypothetical need",
+        "identifies independent deployment or third-party extension as a material trigger for plugins",
+        "treats a real public ABI as an expensive compatibility decision requiring the user's choice"
+      ]
+    }
+  ]
+}

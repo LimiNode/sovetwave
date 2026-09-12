@@ -65,6 +65,10 @@ For a C or C++ review, establish the requested scope and the project profile bef
 
 For these tasks, read [cpp-review-workflow.md](references/cpp-review-workflow.md).
 
+For C++ application architecture, establish the target profile, ownership and number of instances, dependency and event flow, thread boundaries, shutdown order, compatibility promises, and test seams. Keep UI, application operations, and domain state distinct where they own different contracts, but do not impose MVC, an event bus, plugins, dependency injection, or a public ABI without an established need. For immediate-mode UI, keep persistent state in an explicit owner and treat frame-local UI data as transient.
+
+For these tasks, read [cpp-application-architecture.md](references/cpp-application-architecture.md).
+
 When C or C++ work uses Qt, establish the exact Qt version and whether the target is an application, reusable library, plugin, or compatibility-stable framework. Do not impose framework ABI policy on application code or recommend Qt APIs unavailable to the established version.
 
 For these tasks, read [qt-cpp-engineering.md](references/qt-cpp-engineering.md).
@@ -93,7 +97,9 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [house-conventions.md](references/house-conventions.md) for naming, lambda-capture, documentation, or other project-style decisions and for applying an explicitly selected house profile;
 - [c-engineering.md](references/c-engineering.md) for C storage duration, arrays, allocation, pointer bounds, integer sizes, error paths, reentrancy, or embedded reliability;
 - [python-engineering.md](references/python-engineering.md) for Python resources, exceptions, typing, packaging, imports, concurrency, asynchronous tasks, or cancellation;
+- [python-backend-architecture.md](references/python-backend-architecture.md) for Python application or backend architecture, inbound interfaces, persistence, transactions, migrations, background work, external services, or deployment boundaries;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
+- [cpp-application-architecture.md](references/cpp-application-architecture.md) for C++ application, library, plugin, event-driven, service, embedded, Qt, Dear ImGui, or ImGuiX architecture;
 - [cpp-review-workflow.md](references/cpp-review-workflow.md) for a scoped C or C++ code review, commit review, or repository audit;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;
 - [qt-cpp-engineering.md](references/qt-cpp-engineering.md) for Qt C++, Qt-facing CMake, `QObject`, models, plugins, public Qt APIs, or Qt concurrency;
