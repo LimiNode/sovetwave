@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "suite": "cpp-insertion-contrast",
+  "applicable_axes": ["technical_correctness", "causal_calibration"],
+  "cases": [
+    {
+      "id": "cpp-emplace-existing-key",
+      "prompt": "В C++ для std::unordered_map<int, Value> вызывается map.emplace(key, expensive_value()) при уже существующем key. Сравни поведение emplace с try_emplace и сформулируй review контракта вставки. Отдельно укажи, что происходит с аргументом-значением при неудачной вставке и при передаче rvalue.",
+      "assertions": [
+        "states that emplace may construct the mapped value even when the key already exists",
+        "states that try_emplace is the operation whose contract avoids constructing the mapped value on an existing key",
+        "does not claim that emplace preserves an rvalue argument from being moved",
+        "keeps allocation or exception outcomes conditional on the actual mapped type and implementation contract"
+      ]
+    },
+    {
+      "id": "cpp-try-emplace-existing-key",
+      "prompt": "В C++ для std::unordered_map<int, Value> вызывается map.try_emplace(key, constructor_args...) при уже существующем key. Сравни поведение try_emplace с emplace и сформулируй review контракта вставки. Не приписывай try_emplace гарантий, которых нет для произвольного emplace с готовым rvalue-объектом.",
+      "assertions": [
+        "states that try_emplace does not construct the mapped value from constructor arguments when the key already exists",
+        "distinguishes that guarantee from emplace rather than treating the names as interchangeable",
+        "does not generalize the no-move-on-failure property to emplace with a preconstructed rvalue",
+        "asks to verify the selected overload and mapped-type constructor contract when details matter"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-emplace-existing-key",
+        "expect": "the operations have different construction and argument-movement guarantees"
+      }
+    }
+  ]
+}

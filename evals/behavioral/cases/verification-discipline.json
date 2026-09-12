@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "suite": "verification-discipline",
+  "cases": [
+    {
+      "id": "verification-finding-needs-disconfirmation",
+      "prompt": "В review найдено утверждение: «после изменения счётчика иногда теряются записи». В приложенном фрагменте есть только один вызов increment и нет трассировки потребителя. Разбери finding, требуемые условия, сильнейшее опровержение и минимальную проверку.",
+      "assertions": [
+        "separates the observed finding from the proposed mechanism and does not call the loss confirmed without a reproducer or route evidence",
+        "states which required conditions remain unknown",
+        "proposes a strongest plausible disconfirmation and one smallest discriminating check",
+        "uses an evidence status such as investigation target or not checked"
+      ]
+    },
+    {
+      "id": "verification-passing-test-wrong-property",
+      "prompt": "Сборка и тест `test_parse_empty_input` проходят. В задаче утверждается, что исправлена переполненная длина при копировании входного пакета. Что именно доказано, чего тест не проверяет и какой следующий тест нужен?",
+      "assertions": [
+        "does not treat the passing named test as proof that the length-overflow property is fixed unless its body establishes that it exercises that property",
+        "does not infer exact coverage from the test name; states only that the named test passed and inspects its body before claiming which mechanism it exercises",
+        "proposes a focused malformed-size or boundary test for the claimed property",
+        "keeps evidence status separate from the successful build result"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "verification-finding-needs-disconfirmation",
+        "expect": "a passing test is evidence only for its exercised property"
+      }
+    },
+    {
+      "id": "verification-spike-disposition",
+      "prompt": "Проведён storage spike для embedded database. Benchmark не достиг RTO, но exploratory код уже лежит в production module. Составь следующий шаг и статус доказательств.",
+      "assertions": [
+        "reports the failed RTO criterion as evidence about the measured storage option, not automatic proof of service splitting",
+        "requires an explicit disposition of the exploratory code: delete or separately review for promotion",
+        "separates the storage result from the still-open topology decision",
+        "records the exact next measurement or decision check"
+      ]
+    },
+    {
+      "id": "verification-confirmed-local-reproducer",
+      "prompt": "Минимальный reproducer дважды вызывает функцию с одной и той же mutable default list и получает накопленное значение во втором результате. Исправление заменяет default на `None`, а focused test проверяет независимость результатов. Дай краткий evidence report.",
+      "assertions": [
+        "classifies the defect as confirmed on the reproduced path",
+        "connects the observed accumulation to shared default state",
+        "states that the focused independence test supports the correction without claiming universal absence of other defects",
+        "preserves the exact `None` identifier and reports evidence status confirmed"
+      ],
+      "relation": {
+        "kind": "directional",
+        "base_case": "verification-finding-needs-disconfirmation",
+        "expect": "a reproducer and discriminating correction test can raise an investigation target to confirmed"
+      }
+    },
+    {
+      "id": "verification-neutral-review-holdout",
+      "prompt": "Ревьюер написал: «из-за этого increment иногда теряются записи». В показанном фрагменте есть increment, но нет consumer path или трассировки. Как классифицировать замечание и что делать дальше?",
+      "assertions": [
+        "treats the report as an investigation target rather than a confirmed loss",
+        "states that the shown increment alone does not establish the consumer path or the loss mechanism",
+        "asks for the smallest check that can distinguish the plausible explanations",
+        "does not repeat a named verification template merely because the prompt implies one"
+      ],
+      "relation": {
+        "kind": "invariance",
+        "base_case": "verification-finding-needs-disconfirmation",
+        "expect": "the verification structure should be generated from an underspecified report rather than copied from prompt vocabulary"
+      }
+    }
+  ]
+}

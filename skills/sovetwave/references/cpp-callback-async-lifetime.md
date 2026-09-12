@@ -9,6 +9,12 @@ in shutdown.
 A callback, virtual dispatch, plugin hook, logging hook, or external operation
 may synchronously re-enter the object, block, destroy it, or acquire another
 lock. Treat such code as unknown unless an explicit contract proves otherwise.
+Calling unknown code while a mutex is held is a separate reentrancy boundary,
+not merely a matter of lock duration.
+
+For `std::mutex`, calling `lock()` from a thread that already owns that mutex
+has undefined behavior. Deadlock is one possible practical outcome; an
+implementation may instead detect the invalid use.
 
 Normally perform the protected state transition or take an owned snapshot
 while holding the lock, release the lock, and then call out. Verify the
@@ -53,10 +59,12 @@ run on the worker or callback thread. Trace shutdown from each context that can
 release ownership.
 
 Joining the current thread is invalid and may report
-`resource_deadlock_would_occur`. Do not add a thread-id branch or detach as a
-reflex: first assign teardown coordination and thread joining to an owner that
-can execute them from a valid context. Use two-phase shutdown when stopping
-work and reclaiming its owner cannot safely occur in one callback.
+`resource_deadlock_would_occur`. Verify self-join separately from lock
+reentrancy: a callback can release every mutex and still destroy the last owner
+on its worker thread. Do not add a thread-id branch or detach as a reflex:
+first assign teardown coordination and thread joining to an owner that can
+execute them from a valid context. Use two-phase shutdown when stopping work
+and reclaiming its owner cannot safely occur in one callback.
 
 Never join, wait, or synchronously drain work while holding a lock that the
 worker, completion handler, or cancellation path may need. Snapshot or mark
@@ -65,7 +73,10 @@ established order.
 
 ## Verify liveness boundaries
 
-Select checks from the established contract:
+Select checks from the established contract. For a suspected deadlock, use an
+isolation boundary whose timeout and teardown do not depend on the blocked
+task, such as a subprocess or CTest `TIMEOUT`; `std::async` plus `wait_for()`
+is not by itself a sufficient liveness guard.
 
 - a callback synchronously re-enters the object;
 - the last external or internal owner disappears inside a callback;

@@ -59,8 +59,24 @@
         "does not choose the service topology from an unmeasured critical assumption",
         "proposes a bounded representative spike for write load and crash recovery",
         "defines an observable decision threshold and how the result changes the architecture choice",
-        "states whether exploratory code should be discarded or deliberately promoted"
+        "states whether exploratory code should be discarded or deliberately promoted",
+        "does not infer service splitting solely from a failed storage or durability property"
       ]
+    },
+    {
+      "id": "architecture-measured-storage-no-new-spike",
+      "prompt": "Для выбранной embedded database уже есть воспроизводимый crash-recovery benchmark: запись выдерживает установленный write load, а восстановление укладывается в заданный RPO/RTO. Теперь решается только topology сервисов. Как строить рекомендацию?",
+      "assertions": [
+        "does not demand a new storage spike when the stated storage criterion is already measured",
+        "separates the established storage result from the still-open service-topology decision",
+        "names the topology evidence still required instead of inventing a service split",
+        "records the existing benchmark and, only if prior exploratory code is established, gives that artifact an explicit delete-or-review disposition"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "architecture-unknown-needs-spike",
+        "expect": "an already measured storage property should remove the storage spike, not decide topology automatically"
+      }
     }
   ]
 }

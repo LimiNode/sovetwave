@@ -20,18 +20,21 @@ from run_model_evals import (
     codex_provider_overrides,
     claude_variant_plan,
     command_for,
+    classify_semantic_response,
     validate_applicable_axes,
     load_cases,
     make_workspace,
     load_checkpoint,
     redact_command,
     redact_secrets,
+    reported_tokens_from_stderr,
     run_variant,
     parse_claude_stream,
     prepare_claude_settings,
     summarize_ablation,
     variant_plan,
 )
+from retry_failed_evals import main as retry_failed_main, retry_parameters, retryable_rows, verify_case_snapshot
 
 
 RUNNER = ROOT / "scripts" / "run_model_evals.py"
@@ -63,6 +66,25 @@ class BehavioralHarnessTests(unittest.TestCase):
     def test_trust_boundary_cases_cover_malicious_and_scoped_instructions(self) -> None:
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({"trust-boundary-malicious-readme", "trust-boundary-scoped-agents"}.issubset(cases))
+
+    def test_verification_discipline_reference_and_cases_are_routable(self) -> None:
+        self.assertIn("verification-discipline.md", THEMATIC_REFERENCES)
+        self.assertTrue((ROOT / "skills" / "sovetwave" / "references" / "verification-discipline.md").is_file())
+        cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
+        self.assertTrue({
+            "verification-finding-needs-disconfirmation",
+            "verification-passing-test-wrong-property",
+            "verification-spike-disposition",
+            "verification-confirmed-local-reproducer",
+        }.issubset(cases))
+
+    def test_skill_declares_progressive_reference_disclosure(self) -> None:
+        skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("For a short factual status or report, read only the", skill)
+        self.assertIn("Do not read unrelated language,", skill)
+        self.assertIn("Load each domain\nreference only when its contract materially affects", skill)
+        self.assertIn("For a substantial explanation or review, also read [voice-examples.md]", skill)
+        self.assertNotIn("and [voice-examples.md](references/voice-examples.md). They supply", skill)
 
     def test_grader_contract_keeps_pointwise_scores_variant_external(self) -> None:
         contract = (ROOT / "evals" / "behavioral" / "graders" / "grader-contract.md").read_text(encoding="utf-8")
@@ -228,7 +250,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 cwd=ROOT, text=True, capture_output=True, check=True,
             )
             run = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(run["schema_version"], "1.4")
+            self.assertEqual(run["schema_version"], "1.5")
             self.assertEqual(
                 run["case_ids"],
                 ["c-small-fixed-temporary-buffer", "c-small-temporary-invariance"],
@@ -318,6 +340,137 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertIsNone(result["returncode"])
         self.assertEqual(result["response"], "")
 
+    def test_retry_restores_each_codex_arm_and_fails_closed(self) -> None:
+        common = {
+            "provider": "codex", "skill_revision": "rev1234",
+            "material_inputs_dirty": False, "requested_model": "gpt-test",
+        }
+        self.assertEqual(retry_parameters({**common, "variant": "baseline"}, "rev1234"), (False, None, "gpt-test"))
+        self.assertEqual(retry_parameters({**common, "variant": "sovetwave"}, "rev1234"), (True, None, "gpt-test"))
+        self.assertEqual(retry_parameters({**common, "variant": "sovetwave_without_reference", "ablated_reference": "cpp-engineering.md"}, "rev1234"), (True, "cpp-engineering.md", "gpt-test"))
+        self.assertEqual(retry_parameters({**common, "variant": "sovetwave_without_core"}, "rev1234"), (True, CORE_ABLATION, "gpt-test"))
+        with self.assertRaisesRegex(ValueError, "only observations produced by the codex"):
+            retry_parameters({**common, "provider": "claude", "variant": "baseline"}, "rev1234")
+        with self.assertRaisesRegex(ValueError, "material inputs cannot be shown to match"):
+            retry_parameters({**common, "variant": "baseline", "skill_revision": "oldrev"}, "rev1234")
+        with self.assertRaisesRegex(ValueError, "material inputs cannot be shown to match"):
+            retry_parameters({**common, "variant": "baseline", "material_inputs_dirty": True}, "rev1234")
+        legacy = {key: value for key, value in common.items() if key != "material_inputs_dirty"}
+        legacy["skill_revision_dirty"] = False
+        with self.assertRaisesRegex(ValueError, "material inputs cannot be shown to match"):
+            retry_parameters({**legacy, "variant": "baseline"}, "rev1234")
+        with self.assertRaisesRegex(ValueError, "material inputs cannot be shown to match"):
+            retry_parameters({**common, "variant": "baseline"}, "rev1234", current_inputs_dirty=True)
+        with self.assertRaisesRegex(ValueError, "unsupported failed experimental variant"):
+            retry_parameters({**common, "variant": "unknown"}, "rev1234")
+        with self.assertRaisesRegex(ValueError, "invalid requested_model"):
+            retry_parameters({**common, "variant": "baseline", "requested_model": ""}, "rev1234")
+
+    def test_retry_rejects_planned_observations_without_model_call(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "planned.jsonl"
+            output = Path(directory) / "retries.jsonl"
+            config = Path(directory) / "config.toml"
+            source.write_text(json.dumps({"process_status": "planned"}) + "\n", encoding="utf-8")
+            config.write_text("model_provider = 'local'\n[model_providers.local]\nname = 'openai'\nbase_url = 'http://127.0.0.1'\nwire_api = 'responses'\n", encoding="utf-8")
+            with patch.object(sys, "argv", [
+                "retry_failed_evals.py", str(source), "--output", str(output),
+                "--codex-provider-config", str(config),
+            ]), patch("retry_failed_evals.run_variant") as invocation:
+                with self.assertRaisesRegex(ValueError, "planned or otherwise non-executed"):
+                    retry_failed_main()
+            invocation.assert_not_called()
+            self.assertFalse(output.exists())
+
+    def test_retry_preflights_entire_batch_before_first_model_call(self) -> None:
+        case = next(
+            item for item in load_cases(ROOT / "evals" / "behavioral" / "cases")
+            if item["id"] == "russian-pr-status-report"
+        )
+        common = {
+            "case_id": case["id"], "prompt": case["prompt"],
+            "assertions": case["assertions"],
+            "execution_mode": case["execution_mode"], "fixture": case.get("fixture"),
+            "provider": "codex", "skill_revision": "rev1234",
+            "material_inputs_dirty": False, "requested_model": "gpt-test",
+            "process_status": "timeout", "repetition": 1,
+        }
+        rows = [
+            {**common, "variant": "baseline", "sequence": 1},
+            {**common, "variant": "unknown", "sequence": 2},
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "mixed.jsonl"
+            output = Path(directory) / "retries.jsonl"
+            config = Path(directory) / "config.toml"
+            source.write_text(
+                "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+                encoding="utf-8",
+            )
+            config.write_text(
+                "model_provider = 'local'\n[model_providers.local]\n"
+                "name = 'openai'\nbase_url = 'http://127.0.0.1'\n"
+                "wire_api = 'responses'\n",
+                encoding="utf-8",
+            )
+            with (
+                patch.object(sys, "argv", [
+                    "retry_failed_evals.py", str(source), "--output", str(output),
+                    "--codex-provider-config", str(config),
+                ]),
+                patch("retry_failed_evals.repository_revision", return_value="rev1234"),
+                patch("retry_failed_evals.repository_material_inputs_dirty", return_value=False),
+                patch("retry_failed_evals.run_variant") as invocation,
+            ):
+                with self.assertRaisesRegex(ValueError, "unsupported failed experimental variant"):
+                    retry_failed_main()
+            invocation.assert_not_called()
+            self.assertFalse(output.exists())
+
+    def test_retry_selection_and_case_snapshot_fail_closed(self) -> None:
+        failed = {"process_status": "timeout"}
+        self.assertEqual(retryable_rows([{"process_status": "completed"}, failed]), [failed])
+        previous = {
+            "case_id": "sample", "prompt": "P", "assertions": ["A"],
+            "execution_mode": "prompt_only", "fixture": None,
+        }
+        verify_case_snapshot(previous, {
+            "id": "sample", "prompt": "P", "assertions": ["A"],
+            "execution_mode": "prompt_only", "fixture": None,
+        })
+        with self.assertRaisesRegex(ValueError, "changed field 'prompt'"):
+            verify_case_snapshot(previous, {
+                "id": "sample", "prompt": "changed", "assertions": ["A"],
+                "execution_mode": "prompt_only", "fixture": None,
+            })
+        with self.assertRaisesRegex(ValueError, "changed field 'fixture'"):
+            verify_case_snapshot(previous, {
+                "id": "sample", "prompt": "P", "assertions": ["A"],
+                "execution_mode": "prompt_only", "fixture": "repository-a",
+            })
+
+    def test_retry_refuses_source_output_alias_and_existing_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.jsonl"
+            config = Path(directory) / "config.toml"
+            source.write_text("", encoding="utf-8")
+            config.write_text("", encoding="utf-8")
+            with patch.object(sys, "argv", [
+                "retry_failed_evals.py", str(source), "--output", str(source),
+                "--codex-provider-config", str(config),
+            ]):
+                with self.assertRaisesRegex(ValueError, "must differ"):
+                    retry_failed_main()
+            output = Path(directory) / "existing.jsonl"
+            output.write_text("audit", encoding="utf-8")
+            with patch.object(sys, "argv", [
+                "retry_failed_evals.py", str(source), "--output", str(output),
+                "--codex-provider-config", str(config),
+            ]):
+                with self.assertRaisesRegex(FileExistsError, "refusing to overwrite"):
+                    retry_failed_main()
+            self.assertEqual(output.read_text(encoding="utf-8"), "audit")
+
     def test_empty_success_is_invalid_not_completed(self) -> None:
         case = {"id": "empty-case", "prompt": "Run the check.", "assertions": ["rejects empty output"]}
         completed = subprocess.CompletedProcess(["codex"], 0, stdout="", stderr=None)
@@ -332,6 +485,31 @@ class BehavioralHarnessTests(unittest.TestCase):
             result = run_variant("codex", case, False, None, 1, False)
         self.assertEqual(result["process_status"], "completed")
         self.assertEqual(result["semantic_status"], "unrated")
+
+    def test_result_records_attempt_recovery_and_runtime_metadata(self) -> None:
+        case = {"id": "sample", "prompt": "Explain."}
+        completed = subprocess.CompletedProcess(["codex"], 0, stdout="Answer", stderr="model: gpt-test\n")
+        with patch("run_model_evals.execute_command", return_value=completed):
+            result = run_variant(
+                "codex", case, True, None, 30, False,
+                attempt=2, recovered=True, original_process_status="timeout",
+            )
+        self.assertEqual(result["attempt"], 2)
+        self.assertTrue(result["recovered"])
+        self.assertEqual(result["original_process_status"], "timeout")
+        self.assertEqual(result["resolved_model"], "gpt-test")
+        self.assertIsInstance(result["elapsed_seconds"], float)
+        self.assertIn(result["skill_revision_dirty"], (True, False, None))
+
+    def test_semantic_classifier_is_conservative(self) -> None:
+        self.assertEqual(classify_semantic_response("План:\n1. Проверить.", "completed"), "plan_only")
+        self.assertEqual(classify_semantic_response("Не могу выполнить запрос.", "completed"), "premise_refusal")
+        self.assertEqual(classify_semantic_response("I can't reproduce the race under this setup.", "completed"), "task_answer")
+        self.assertEqual(classify_semantic_response('The server returns "authentication required"; validate the token.', "completed"), "task_answer")
+        self.assertEqual(classify_semantic_response("Answer with evidence.", "completed"), "task_answer")
+        self.assertEqual(classify_semantic_response("", "timeout"), "empty")
+        self.assertEqual(reported_tokens_from_stderr("tokens used\n8\u00a0762"), 8762)
+        self.assertEqual(reported_tokens_from_stderr("tokens used\n8 762\n2026-09-10T00:00:00Z"), 8762)
 
     def test_claude_settings_isolation_keeps_only_proxy_fields(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -446,6 +624,17 @@ class BehavioralHarnessTests(unittest.TestCase):
             )
             self.assertIn("inherit an established brownfield structure", skill_text)
             self.assertIn("bounded spike with a decision criterion", skill_text)
+
+    def test_verification_discipline_ablation_preserves_evidence_core(self) -> None:
+        with make_workspace(ROOT, True, "verification-discipline.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "verification-discipline.md").exists())
+            self.assertNotIn(
+                "[verification-discipline.md](references/verification-discipline.md)",
+                skill_text,
+            )
+            self.assertIn("separate observation from explanation", skill_text)
 
     def test_c_engineering_ablation_preserves_the_core_invariant(self) -> None:
         with make_workspace(ROOT, True, "c-engineering.md") as directory:
@@ -1072,6 +1261,15 @@ class BehavioralHarnessTests(unittest.TestCase):
             json.dumps({"type": "result", "result": "Ответ"}),
         ])
         self.assertEqual(parse_claude_stream(stream), ("Ответ", ["Skill"]))
+
+    def test_claude_structured_model_populates_singular_field(self) -> None:
+        case = {"id": "sample", "prompt": "Explain."}
+        stream = json.dumps({"type": "result", "result": "Answer", "model": "claude-test"})
+        completed = subprocess.CompletedProcess(["claude"], 0, stdout=stream, stderr="")
+        with patch("run_model_evals.execute_command", return_value=completed):
+            result = run_variant("claude", case, False, None, 30, False, claude_variant="baseline")
+        self.assertEqual(result["resolved_models"], ["claude-test"])
+        self.assertEqual(result["resolved_model"], "claude-test")
 
 
 if __name__ == "__main__":

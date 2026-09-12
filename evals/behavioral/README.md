@@ -112,6 +112,18 @@ base case implicitly: select both IDs when the measurement needs both
 responses. Determining whether an invariance, directional, or contrast claim
 holds remains evaluator or human work over the responses.
 
+The `cpp-insertion-contrast` suite contains a paired `emplace`/`try_emplace`
+case. The pair is deliberately about the library contract: `emplace` may
+construct a mapped value for an existing key and may move a supplied rvalue;
+the no-construction-on-existing-key guarantee belongs to `try_emplace` when
+constructor arguments are passed. Grade the exact overload and mapped type,
+not the operation name in isolation.
+
+The `verification-neutral-holdouts` suite contains prompts that exercise the
+same verification discipline without naming its internal vocabulary. Use it
+as a neutral holdout when measuring whether the behaviour generalises beyond
+explicitly signposted cases.
+
 ## Thematic-reference ablation
 
 An ablation compares three variants of the same Codex case: baseline, full
@@ -155,12 +167,62 @@ JSON and shown in the comparison sheet.
 Runs shorter than a complete order cycle are recorded as `order_balance:
 partial`; they are valid measurements but not fully counterbalanced.
 
+For an independent review packet, use the checked-in bundle builder after a
+run completes. It keeps unknown legacy telemetry as `null`, retains recovery
+metadata (`attempt`, `recovered`, and `original_process_status`), and computes
+token summaries only from completed invocations:
+
+```powershell
+py -3 scripts\build_bundle.py `
+  --output-dir <review-directory> `
+  --run routing=REVISION=evals\behavioral\results\routing.json `
+  --run ablation=REVISION=evals\behavioral\results\ablation.json
+```
+
 Every live invocation is also appended to a JSONL checkpoint (by default next
 to the requested output) and a readable `.partial.json` snapshot is refreshed
 after each variant. The console prints the case, repetition, arm, process
 status, and semantic status. If a run is interrupted, repeat the command with
 `--resume` to skip the invocations already present in the checkpoint. The
 checkpoint is retained as an audit trail after a successful run.
+
+Each result records the requested and resolved model when the CLI reports it,
+the provider, skill revision, dirty-tree flag, attempt number, recovery flag,
+reported tokens, and elapsed time. Reference-file tracing is recorded as
+`not_available` when
+the provider stream does not expose file-level tool inputs; an empty list must
+not be interpreted as proof that no reference was read.
+Process completion, semantic quality, and runtime/token cost are separate
+measurements. A recovered response must not silently replace the original
+failure in an audit: retry failed invocations into a separate JSONL file with:
+
+```powershell
+py -3 scripts\retry_failed_evals.py `
+  evals\behavioral\results\<run>.jsonl `
+  --output evals\behavioral\results\<run>-retries.jsonl `
+  --codex-provider-config "$env:USERPROFILE\.codex\config.toml"
+```
+
+Retries are Codex-only and select only executed failure statuses. Planned or
+unknown observations are rejected rather than converted into live calls. The
+utility also fails closed if the recorded revision or material-input state
+cannot be matched, or if the current prompt, assertions, execution mode, or
+fixture identity differs. Use `--allow-revision-change` only when a revision or
+dirty-input change is intentional and must be documented. Recovery output must
+be a new file distinct from the source; an existing audit file is never
+overwritten. Every failed observation passes this preflight before the first
+model call or output-file creation.
+
+Use the original run for first-attempt reliability and the retry file for a
+recovery sensitivity analysis. Do not pool recovered observations with the
+first-attempt completion rate without reporting the retry rate and selection
+rule.
+
+The runner also records a conservative service-level `semantic_class` before
+human grading: `task_answer`, `plan_only`, `premise_refusal`,
+`tool_failure_answer`, `partial`, or `empty`. This classification is a routing
+aid, not a semantic score; assertions and the grader contract remain the source
+of truth for answer quality.
 
 Supported thematic references are `agent-instructions.md`,
 `architecture-decisions.md`, `c-engineering.md`, `code-economy.md`,
@@ -169,7 +231,8 @@ Supported thematic references are `agent-instructions.md`,
 `development-workflow-russian.md`, `engineering-workflow.md`,
 `house-conventions.md`, `messaging-and-distributed-systems.md`,
 `pedagogy-and-dialogue.md`, `python-backend-architecture.md`,
-`python-engineering.md`, `qt-cpp-engineering.md`, and `history-and-sources.md`.
+`python-engineering.md`, `qt-cpp-engineering.md`, `verification-discipline.md`,
+and `history-and-sources.md`.
 The always-loaded voice core is deliberately not
 ablatable: removing it would compare different skills rather than isolate a
 thematic layer.

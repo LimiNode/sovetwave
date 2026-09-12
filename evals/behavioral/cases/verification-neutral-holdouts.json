@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "suite": "verification-neutral-holdouts",
+  "applicable_axes": ["technical_correctness", "causal_calibration", "native_russian"],
+  "cases": [
+    {
+      "id": "verification-neutral-counter-write",
+      "prompt": "В отчёте сказано: после изменения счётчика иногда пропадают записи. Показан только вызов increment; код чтения и путь доставки результата не приложены. Как оформить вывод по этому фрагменту и какой следующий шаг выбрать?",
+      "assertions": [
+        "treats the report as an investigation target rather than a confirmed loss",
+        "states that the shown increment does not establish the read or delivery path",
+        "asks for the smallest check that separates a write defect from a downstream handling problem",
+        "does not invent a mechanism or pretend that one successful run settles the question"
+      ]
+    },
+    {
+      "id": "verification-neutral-parser-boundary",
+      "prompt": "После исправления парсера сборка проходит, а в отчёте приведён только успешный тест короткого корректного сообщения. Утверждается, что проблема с длиной входного пакета устранена. Что можно заключить сейчас и какой тест добавить?",
+      "assertions": [
+        "separates a successful build and named test from the claimed length-handling property",
+        "does not infer coverage from the test name alone and asks to inspect what the test exercises",
+        "proposes a malformed-size or boundary-length test for the packet path",
+        "does not claim that all parser defects are absent"
+      ]
+    },
+    {
+      "id": "verification-neutral-storage-spike",
+      "prompt": "Небольшой эксперимент с embedded-хранилищем не достиг целевого времени восстановления, но его код уже добавлен в рабочий модуль. Составь краткий инженерный вывод и определи ближайшее решение по коду и измерению.",
+      "assertions": [
+        "reports the missed recovery target as evidence about the measured storage option, not proof that the system must be split",
+        "requires an explicit decision to remove the experiment or review it separately before promotion",
+        "keeps the storage result separate from the unresolved topology decision",
+        "names a concrete next measurement or decision check"
+      ]
+    }
+  ]
+}

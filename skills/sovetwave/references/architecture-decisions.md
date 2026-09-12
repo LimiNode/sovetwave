@@ -54,8 +54,14 @@ observation that could overturn the choice.
 
 A spike answers one expensive unknown. Define the question, the smallest
 representative path, the measurement or compatibility check, the decision
-threshold, and whether the spike code will be discarded. Do not let exploratory
-code become production architecture merely because it already exists.
+threshold, and the disposition of the exploratory artifact. After measurement,
+delete the spike or deliberately promote it to production/test infrastructure
+only through a separate review. Do not let exploratory code become production
+architecture merely because it already exists.
+
+Failure of a storage or durability property does not by itself prove that
+services must be split. Establish the storage decision first; discuss service
+topology separately against its own measured boundary and operational contract.
 
 ## Refuse architecture inflation
 

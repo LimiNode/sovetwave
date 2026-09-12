@@ -6,10 +6,11 @@
       "id": "cpp-callback-under-lock-reentrancy",
       "prompt": "C++ worker под `std::mutex` обновляет состояние и синхронно вызывает `listener->on_data(data)`. Контракт listener разрешает из callback вызвать `worker.stop()`, а `stop()` берёт тот же mutex. Проведи review и предложи минимальную проверку.",
       "assertions": [
-        "identifies synchronous callback reentrancy and the same-thread lock attempt as a self-deadlock or invalid mutex-use path",
+        "identifies synchronous callback reentrancy and the same-thread lock attempt as undefined behavior under std::mutex and does not present deadlock as guaranteed",
         "recommends completing or snapshotting protected state and calling the listener after releasing the lock",
         "does not present recursive_mutex or a thread-id exception as the primary repair",
-        "checks the explicit on_data to stop reentrant path"
+        "checks the explicit on_data to stop reentrant path",
+        "does not use std::async plus wait_for as the sole deadlock guard and prefers a process-level or CTest timeout"
       ]
     },
     {
@@ -39,7 +40,8 @@
         "identifies that destruction on the owned worker makes join target the current thread",
         "does not praise destructor RAII without accounting for the callback execution context",
         "does not recommend detach or a thread-id bypass as an automatic general fix",
-        "assigns stop and join coordination to a context that can complete two-phase shutdown safely"
+        "assigns stop and join coordination to a context that can complete two-phase shutdown safely",
+        "checks self-join separately from lock reentrancy"
       ]
     },
     {
@@ -51,6 +53,36 @@
         "keeps state transition visibility and shutdown ordering explicit rather than merely deleting synchronization",
         "verifies that the worker can observe stop and complete before join returns"
       ]
+    },
+    {
+      "id": "cpp-callback-after-unlock-no-reentrancy-defect",
+      "prompt": "C++ worker под `std::mutex` обновляет состояние, делает копию данных, освобождает mutex и только затем вызывает `listener->on_data(snapshot)`. Callback может вызвать `worker.stop()`, который берёт тот же mutex. Проведи review: есть ли здесь тот же дефект повторного входа и что именно проверить?",
+      "assertions": [
+        "recognizes that the callback occurs after the protected section and the stated path has no same-thread lock reentrancy defect",
+        "does not invent a deadlock merely because the callback can call stop",
+        "still checks snapshot validity and the separate lifetime or shutdown contract",
+        "keeps the verification proportional to the stated callback-after-unlock path"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-callback-under-lock-reentrancy",
+        "expect": "the lock-reentrancy defect should disappear when call-out occurs after unlock"
+      }
+    },
+    {
+      "id": "cpp-self-join-from-callback-inverted-ownership",
+      "prompt": "Worker handler не владеет последним `shared_ptr<Service>`: завершение handler только сообщает владельцу main thread, а именно владелец выполняет `stop()` и `join()`. Проведи review завершения и проверь, возникает ли self-join.",
+      "assertions": [
+        "recognizes that join is coordinated by a context other than the worker callback",
+        "does not report self-join merely because a worker handler participates in shutdown",
+        "still checks that stop notification, worker completion, and join ordering are explicit",
+        "distinguishes this ownership arrangement from destruction on the worker thread"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-self-join-from-callback",
+        "expect": "moving final teardown coordination off the worker removes the self-join path"
+      }
     }
   ]
 }

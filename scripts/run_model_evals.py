@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import atexit
+from functools import lru_cache
 import json
 import os
 import re
@@ -13,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -55,6 +57,7 @@ THEMATIC_REFERENCES = frozenset({
     "python-engineering.md",
     "python-backend-architecture.md",
     "qt-cpp-engineering.md",
+    "verification-discipline.md",
 })
 CASE_RELATION_KINDS = frozenset({"contrast", "directional", "invariance"})
 EXECUTION_MODES = frozenset({"prompt_only", "repository_grounded"})
@@ -173,6 +176,84 @@ def redact_secrets(text: str) -> str:
 def redact_command(command: list[str]) -> list[str]:
     """Return a safe-to-store representation of an executable command."""
     return [redact_secrets(argument) for argument in command]
+
+
+def resolved_model_from_stderr(stderr: str) -> str | None:
+    """Extract the non-secret model label printed by Codex/Claude CLIs."""
+    match = re.search(r"(?:^|\n)model:\s*([^\s\r\n]+)", stderr, re.IGNORECASE)
+    return match.group(1) if match else None
+
+
+def reported_tokens_from_stderr(stderr: str) -> int | None:
+    """Extract the CLI's reported token count without depending on separators."""
+    match = re.search(r"tokens used[ \t]*\r?\n[ \t]*([0-9 ,\u00a0\u202f]+)", stderr, re.IGNORECASE)
+    if not match:
+        return None
+    digits = re.sub(r"\D", "", match.group(1))
+    return int(digits) if digits else None
+
+
+def classify_semantic_response(response: str, status: str) -> str:
+    """Apply a conservative service-level class before human semantic grading."""
+    if not response.strip():
+        return "empty"
+    lowered = response.strip().lower()
+    first_line = lowered.splitlines()[0]
+    # Recognise only strict leading templates; qualified statements and
+    # quoted service errors remain ordinary task answers.
+    if first_line.startswith(("cannot comply", "i can't perform", "i cannot perform", "не могу выполнить", "невозможно выполнить")):
+        return "premise_refusal"
+    if first_line.startswith(("permission denied", "authentication required", "unauthorized", "tool error")):
+        return "tool_failure_answer"
+    if first_line.startswith(("план:", "plan:", "шаг 1:", "step 1:")) and len(response.splitlines()) < 8:
+        return "plan_only"
+    return "task_answer" if status == "completed" else "partial"
+
+
+@lru_cache(maxsize=1)
+def repository_revision() -> str | None:
+    """Return the evaluated skill revision without failing an eval run."""
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True,
+            encoding="utf-8", errors="replace", capture_output=True,
+            timeout=10, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    revision = (completed.stdout or "").strip()
+    return revision if completed.returncode == 0 and re.fullmatch(r"[0-9a-f]{7,40}", revision) else None
+
+
+@lru_cache(maxsize=1)
+def repository_revision_dirty() -> bool | None:
+    """Report whether tracked Sovetwave skill files differ from HEAD."""
+    try:
+        completed = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no", "--", "skills/sovetwave"],
+            cwd=ROOT, text=True, encoding="utf-8", errors="replace",
+            capture_output=True, timeout=10, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return bool((completed.stdout or "").strip()) if completed.returncode == 0 else None
+
+
+@lru_cache(maxsize=1)
+def repository_material_inputs_dirty() -> bool | None:
+    """Report whether tracked or untracked skill, case, or fixture inputs are dirty."""
+    try:
+        completed = subprocess.run(
+            [
+                "git", "status", "--porcelain", "--untracked-files=all", "--",
+                "skills/sovetwave", "evals/behavioral/cases", "evals/behavioral/fixtures",
+            ],
+            cwd=ROOT, text=True, encoding="utf-8", errors="replace",
+            capture_output=True, timeout=10, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return bool((completed.stdout or "").strip()) if completed.returncode == 0 else None
 
 
 def result_key(result: dict[str, Any]) -> tuple[str, int, int, str]:
@@ -613,6 +694,9 @@ def run_variant(
     claude_setting_sources: str = "project",
     claude_variant: str | None = None,
     claude_settings_source: Path | None = None,
+    attempt: int = 1,
+    recovered: bool = False,
+    original_process_status: str | None = None,
 ) -> dict[str, Any]:
     if ablated_reference is not None and not styled:
         raise ValueError("a reference can be ablated only from a Sovetwave variant")
@@ -622,6 +706,7 @@ def run_variant(
         if provider == "claude" and claude_variant is not None
         else claude_full_skill
     )
+    started = time.monotonic()
     with make_workspace(ROOT, styled, ablated_reference, effective_full_skill, fixture) as temp_dir:
         workspace = Path(temp_dir)
         isolated_settings = prepare_claude_settings(claude_settings_source, workspace) if provider == "claude" else None
@@ -643,7 +728,19 @@ def run_variant(
             "assertions": case.get("assertions", []),
             "applicable_axes": case.get("applicable_axes"),
             "command": redact_command(command),
+            "provider": provider,
+            "requested_model": model,
+            "attempt": attempt,
+            "recovered": recovered,
+            "reference_files_read": [],
+            "reference_trace_status": "not_available",
+            "skill_revision": repository_revision(),
+            "skill_revision_dirty": repository_revision_dirty(),
+            "material_inputs_dirty": repository_material_inputs_dirty(),
+            "fixture": case.get("fixture"),
         }
+        if original_process_status is not None:
+            result["original_process_status"] = original_process_status
         if provider == "claude":
             result.update({
                 "claude_variant": claude_variant or ("sovetwave" if styled and claude_full_skill else "sovetwave_style_only" if styled else "baseline"),
@@ -658,6 +755,7 @@ def run_variant(
             result["status"] = "planned"
             result["process_status"] = "planned"
             result["semantic_status"] = "not_run"
+            result["semantic_class"] = "not_run"
             return result
         try:
             completed = execute_command(provider, command, cwd=workspace, timeout=timeout)
@@ -669,6 +767,8 @@ def run_variant(
                 "returncode": None,
                 "response": "",
                 "stderr": redact_secrets(str(error)),
+                "elapsed_seconds": round(time.monotonic() - started, 3),
+                "semantic_class": "empty",
             })
             return result
         except OSError as error:
@@ -679,6 +779,8 @@ def run_variant(
                 "returncode": None,
                 "response": "",
                 "stderr": redact_secrets(str(error)),
+                "elapsed_seconds": round(time.monotonic() - started, 3),
+                "semantic_class": "tool_failure_answer",
             })
             return result
         response = response_path.read_text(encoding="utf-8") if response_path.exists() else (completed.stdout or "")
@@ -687,6 +789,12 @@ def run_variant(
             result["tool_trace"] = tool_trace
             result["skill_invoked"] = "Skill" in tool_trace
             result["resolved_models"] = resolved_models
+        stderr_model = resolved_model_from_stderr(completed.stderr or "")
+        if provider == "claude" and len(result.get("resolved_models", [])) == 1:
+            result["resolved_model"] = result["resolved_models"][0]
+        else:
+            result["resolved_model"] = stderr_model
+        result["reported_tokens"] = reported_tokens_from_stderr(completed.stderr or "")
         response = response.strip()
         if completed.returncode != 0:
             status = "failed"
@@ -698,9 +806,11 @@ def run_variant(
             "status": status,
             "process_status": status,
             "semantic_status": "unrated" if status == "completed" else "not_run",
+            "semantic_class": classify_semantic_response(response, status),
             "returncode": completed.returncode,
             "response": response,
             "stderr": redact_secrets((completed.stderr or "").strip()),
+            "elapsed_seconds": round(time.monotonic() - started, 3),
         })
         return result
 
@@ -869,7 +979,7 @@ def main() -> int:
     resume_keys = {result_key(result) for result in results}
     partial_path = output.with_suffix(".partial.json")
     partial_metadata = {
-        "schema_version": "1.4",
+        "schema_version": "1.5",
         "provider": args.provider,
         "model": args.model,
         "dry_run": args.dry_run,
@@ -959,11 +1069,14 @@ def main() -> int:
         except (OSError, subprocess.TimeoutExpired):
             cli_version = "unavailable"
     payload = {
-        "schema_version": "1.4",
+        "schema_version": "1.5",
         "created_at": datetime.now(UTC).isoformat(),
         "provider": args.provider,
         "model": args.model,
         "cli_version": cli_version,
+        "skill_revision": repository_revision(),
+        "skill_revision_dirty": repository_revision_dirty(),
+        "material_inputs_dirty": repository_material_inputs_dirty(),
         "claude_configured_model": claude_meta.get("configured_model"),
         "claude_proxy_host": claude_meta.get("proxy_host"),
         "dry_run": args.dry_run,
