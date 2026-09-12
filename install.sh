@@ -123,6 +123,10 @@ if [ "$test_fail_after" = codex ]; then
 fi
 mv -- "$claude_skill_stage" "$claude_skill_target"
 claude_skill_installed=true
+if [ "$test_fail_after" = claude-skill ]; then
+  printf '%s\n' 'Injected installer failure after claude-skill replacement.' >&2
+  exit 97
+fi
 mv -- "$claude_stage" "$claude_target"
 claude_installed=true
 if [ "$test_fail_after" = claude-style ]; then

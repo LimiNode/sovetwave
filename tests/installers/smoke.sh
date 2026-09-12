@@ -23,15 +23,17 @@ test -f "$user_skills/sovetwave/scripts/select_voice_cards.py"
 test -f "$user_claude/skills/sovetwave/scripts/select_voice_cards.py"
 
 printf '%s\n' 'sentinel' > "$user_skills/sovetwave/.installer-sentinel"
+printf '%s\n' 'claude-skill-sentinel' > "$user_claude/skills/sovetwave/.installer-sentinel"
 style_target="$user_claude/output-styles/sovetwave.md"
-printf '%s\n' 'old-style-sentinel' > "$style_target"
-for failure_point in codex claude-style; do
+  printf '%s\n' 'old-style-sentinel' > "$style_target"
+  for failure_point in codex claude-skill claude-style; do
   if SOVETWAVE_TEST_FAIL_AFTER="$failure_point" CODEX_SKILLS_DIR="$user_skills" CLAUDE_CONFIG_DIR="$user_claude" sh "$repo_root/install.sh" --force; then
     echo "injected $failure_point installer failure unexpectedly succeeded" >&2
     exit 1
   fi
   test -f "$user_skills/sovetwave/.installer-sentinel"
-  grep -qx 'old-style-sentinel' "$style_target"
+  grep -qx 'claude-skill-sentinel' "$user_claude/skills/sovetwave/.installer-sentinel"
+    grep -qx 'old-style-sentinel' "$style_target"
   if find "$user_skills" "$user_claude" -type d -name '.sovetwave-stage*' -print -quit | grep -q .; then
     echo "staging directory survived rollback" >&2
     exit 1
