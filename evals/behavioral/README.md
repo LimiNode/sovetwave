@@ -192,6 +192,12 @@ reported tokens, and elapsed time. Reference-file tracing is recorded as
 `not_available` when
 the provider stream does not expose file-level tool inputs; an empty list must
 not be interpreted as proof that no reference was read.
+Codex runs also request the JSON event stream and retain non-secret structured
+usage when the provider exposes it (`input_tokens`, `cached_input_tokens`,
+`cache_write_input_tokens`, `output_tokens`, and `reasoning_output_tokens`).
+Unknown event shapes are
+ignored and the stderr token count remains a legacy fallback. Event parsing is
+telemetry only; the final answer still comes from `--output-last-message`.
 Process completion, semantic quality, and runtime/token cost are separate
 measurements. A recovered response must not silently replace the original
 failure in an audit: retry failed invocations into a separate JSONL file with:

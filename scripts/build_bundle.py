@@ -16,6 +16,13 @@ from pathlib import Path
 
 TOKEN_RE = re.compile(r"tokens used[ \t]*\r?\n[ \t]*([0-9 ,\u00a0\u202f]+)", re.IGNORECASE)
 MODEL_RE = re.compile(r"(?:^|\n)model:\s*([^\s\r\n]+)", re.IGNORECASE)
+CODEX_USAGE_COMPONENTS = (
+    "input_tokens",
+    "cached_input_tokens",
+    "cache_write_input_tokens",
+    "output_tokens",
+    "reasoning_output_tokens",
+)
 
 
 def parse_tokens(stderr: str) -> int | None:
@@ -60,6 +67,20 @@ def sanitize_result(experiment: str, revision: str, row: dict) -> dict:
             raise ValueError(
                 f"observation skill_revision {observed_revision!r} does not match supplied revision {revision!r}"
             )
+    codex_usage = row.get("codex_usage")
+    usage_events = row.get("codex_usage_events")
+    duplicate_usage_events = row.get("codex_duplicate_usage_events")
+    # Structured usage is safe to flatten only when exactly one aggregate
+    # turn snapshot was observed.  Missing legacy metadata stays unknown.
+    usage_valid = (
+        isinstance(codex_usage, dict)
+        and usage_events == 1
+        and duplicate_usage_events == 0
+    )
+    usage_fields = {
+        f"codex_{component}": codex_usage.get(component) if usage_valid else None
+        for component in CODEX_USAGE_COMPONENTS
+    }
     return {
         "experiment": experiment,
         "revision": revision,
@@ -84,7 +105,18 @@ def sanitize_result(experiment: str, revision: str, row: dict) -> dict:
         "attempt": row.get("attempt"),
         "recovered": row.get("recovered"),
         "original_process_status": row.get("original_process_status"),
+        "codex_usage": codex_usage,
+        "codex_usage_status": row.get("codex_usage_status"),
+        "codex_usage_events": usage_events,
+        "codex_duplicate_usage_events": duplicate_usage_events,
+        "codex_event_types": row.get("codex_event_types"),
+        "codex_tool_calls": row.get("codex_tool_calls"),
+        "codex_anonymous_tool_items": row.get("codex_anonymous_tool_items"),
+        "codex_item_counts_by_type": row.get("codex_item_counts_by_type"),
+        "reference_trace_status": row.get("reference_trace_status"),
+        "reference_files_read": row.get("reference_files_read") or [],
         "response": row.get("response") or "",
+        **usage_fields,
     }
 
 
@@ -105,7 +137,22 @@ def statistics_rows(observations: list[dict]) -> list[dict]:
             row["elapsed_seconds"] for row in rows
             if isinstance(row["elapsed_seconds"], (int, float))
         ]
-        output.append({
+        usage_totals: dict[str, int] = {}
+        usage_values: dict[str, list[int]] = {component: [] for component in CODEX_USAGE_COMPONENTS}
+        for row in completed:
+            usage = row.get("codex_usage")
+            if not (
+                isinstance(usage, dict)
+                and row.get("codex_usage_events") == 1
+                and row.get("codex_duplicate_usage_events") == 0
+            ):
+                continue
+            for component in CODEX_USAGE_COMPONENTS:
+                value = usage.get(component)
+                if isinstance(value, int) and not isinstance(value, bool):
+                    usage_totals[component] = usage_totals.get(component, 0) + value
+                    usage_values[component].append(value)
+        stats_row = {
             "experiment": experiment,
             "revision": revision,
             "variant": variant,
@@ -121,7 +168,14 @@ def statistics_rows(observations: list[dict]) -> list[dict]:
             "elapsed_mean_completed_seconds": round(statistics.mean(elapsed_completed), 3) if elapsed_completed else None,
             "elapsed_observations_all": len(elapsed_all),
             "elapsed_mean_all_seconds": round(statistics.mean(elapsed_all), 3) if elapsed_all else None,
-        })
+            "codex_usage_totals_completed": json.dumps(usage_totals, sort_keys=True) if usage_totals else None,
+            "reference_trace_observed": sum(row.get("reference_trace_status") == "observed" for row in rows),
+        }
+        for component, values in usage_values.items():
+            stats_row[f"codex_{component}_observations_completed"] = len(values)
+            stats_row[f"codex_{component}_mean_completed"] = round(statistics.mean(values), 2) if values else None
+            stats_row[f"codex_{component}_median_completed"] = round(statistics.median(values), 2) if values else None
+        output.append(stats_row)
     return output
 
 
@@ -188,6 +242,11 @@ def main() -> int:
         "process_status", "semantic_status", "semantic_class", "requested_model",
         "resolved_model", "reported_tokens", "elapsed_seconds", "skill_revision",
         "material_inputs_dirty", "attempt", "recovered", "original_process_status",
+        "reference_trace_status", "codex_tool_calls", "codex_usage_events",
+        "codex_duplicate_usage_events", "codex_usage_status",
+        "codex_input_tokens", "codex_cached_input_tokens",
+        "codex_cache_write_input_tokens", "codex_output_tokens",
+        "codex_reasoning_output_tokens", "codex_anonymous_tool_items",
     ]
     write_csv(out / "observations.csv", observations, fields)
     write_csv(out / "statistics.csv", stats, list(stats[0]) if stats else [])
