@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "suite": "verification-contract-holdouts",
+  "applicable_axes": ["technical_correctness", "causal_calibration", "critical_literalness"],
+  "cases": [
+    {
+      "id": "verification-contract-decode-range-error",
+      "prompt": "Функция `decode(Frame) noexcept` при повреждённом кадре выбрасывает `std::range_error`. Автор предлагает добавить `catch (...)`, чтобы сохранить красивую сигнатуру. Как исправить контракт и какую конкретную проверку назвать?",
+      "assertions": [
+        "treats noexcept as a behavioural contract rather than decoration",
+        "chooses a throwing interface without noexcept or an established non-throwing error representation",
+        "rejects a catch-all added only to preserve the qualifier",
+        "names a concrete malformed-frame check and its expected observation"
+      ]
+    },
+    {
+      "id": "verification-contract-ingest-error-channel",
+      "prompt": "`ingest(Message) noexcept` сейчас выбрасывает `std::logic_error` при нарушении формата. Команда хочет оставить `noexcept`, но отдельного error-кода или другого невыбрасывающего канала ещё нет. Какой минимальный контракт выбрать и чем проверить именно путь ошибки?",
+      "assertions": [
+        "states that the current throwing behaviour contradicts noexcept",
+        "does not invent an already-established error channel",
+        "selects either removal of noexcept or a conditional non-throwing representation",
+        "proposes a concrete invalid-message check with an observable result"
+      ]
+    },
+    {
+      "id": "verification-contract-lookup-status",
+      "prompt": "`lookup(Key) noexcept` возвращает `Record`, но при неизвестном ключе вызывает `throw std::out_of_range`. Как кратко описать дефект контракта, какие варианты исправления допустимы и какую проверку выполнить после изменения?",
+      "assertions": [
+        "separates the throwing behaviour from a true non-throwing API promise",
+        "keeps the choice between a throwing signature and an established explicit failure value conditional on repository context",
+        "does not prescribe a new error type as if it already existed",
+        "names a concrete unknown-key check and the expected returned or thrown result"
+      ]
+    }
+  ]
+}
