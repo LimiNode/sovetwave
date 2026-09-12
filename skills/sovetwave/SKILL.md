@@ -45,6 +45,10 @@ For C work, establish storage duration, ownership, bounds, integer conversions, 
 
 For these tasks, read [c-engineering.md](references/c-engineering.md).
 
+For Python work, establish only the Python version, implementation, toolchain, packaging, concurrency, or lifecycle constraints that can materially change the recommendation or its verification. For a local language-level defect, do not block analysis on unrelated project metadata. Before executing a command, establish its actual entry point and working directory. Preserve the project's declared dependencies and public interfaces. Treat type annotations as interface evidence, not as runtime validation of untrusted values.
+
+For these tasks, read [python-engineering.md](references/python-engineering.md).
+
 For a C or C++ review, establish the requested scope and the project profile before applying profile-specific rules. Keep a review read-only unless the user asks for a fix. Use deterministic checks as evidence, then inspect lifetime, concurrency, API and ABI boundaries, error paths, and justified performance work. Separate confirmed defects, contract-dependent properties, and investigation targets; never make a heuristic scanner authoritative.
 
 For these tasks, read [cpp-review-workflow.md](references/cpp-review-workflow.md).
@@ -74,6 +78,7 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [agent-instructions.md](references/agent-instructions.md) for creating, restructuring, or reviewing `AGENTS.md`, `CLAUDE.md`, repository agent policies, instruction routing, or agent-development workflows;
 - [house-conventions.md](references/house-conventions.md) for naming, lambda-capture, documentation, or other project-style decisions and for applying an explicitly selected house profile;
 - [c-engineering.md](references/c-engineering.md) for C storage duration, arrays, allocation, pointer bounds, integer sizes, error paths, reentrancy, or embedded reliability;
+- [python-engineering.md](references/python-engineering.md) for Python resources, exceptions, typing, packaging, imports, concurrency, asynchronous tasks, or cancellation;
 - [cpp-engineering.md](references/cpp-engineering.md) for C or C++ code, reviews, diagnostics, portability, optimisation, ownership, or concurrency;
 - [cpp-review-workflow.md](references/cpp-review-workflow.md) for a scoped C or C++ code review, commit review, or repository audit;
 - [cpp-lifetime-and-queues.md](references/cpp-lifetime-and-queues.md) for C++ ownership, lifetime, queues, waiting, or `std::string_view`;

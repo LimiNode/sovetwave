@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "suite": "python-engineering",
+  "cases": [
+    {
+      "id": "python-mutable-default-state-leak",
+      "prompt": "В Python-функции написано `def collect(item, bucket=[]): bucket.append(item); return bucket`. Тест проверяет только один вызов и проходит. Проведи review и предложи узкую проверку исправления.",
+      "assertions": [
+        "explains that the mutable default is created once at function definition and shared by calls",
+        "uses a sentinel such as None and constructs independent state inside the function unless sharing is the explicit contract",
+        "does not blame garbage collection or claim that the list is recreated per call",
+        "verifies with at least two independent calls and preserves an intentional shared-state contract if one is established"
+      ]
+    },
+    {
+      "id": "python-context-manager-resource-ownership",
+      "prompt": "Функция открывает файл, затем создаёт parser session и имеет четыре ранних `return`; в двух ветках закрывается только файл. Автор предлагает добавить `close()` перед каждым return. Как исправить владение без размножения cleanup-кода?",
+      "assertions": [
+        "identifies incomplete cleanup on early and exceptional exits as the confirmed defect",
+        "uses existing or small context-manager ownership and a finally boundary rather than duplicated close calls",
+        "establishes the reverse cleanup order and behavior after partial acquisition",
+        "proposes fault injection or focused tests at acquisition and processing failures"
+      ]
+    },
+    {
+      "id": "python-exception-boundary-contract",
+      "prompt": "Worker содержит `except Exception: logger.warning('failed'); return None`, а вызывающий код считает `None` обычным отсутствием данных. Иногда до исключения worker уже записывает часть результата во внешнюю систему. Проведи review.",
+      "assertions": [
+        "separates the broad catch from the ambiguous None result and partially completed external effect",
+        "catches or translates only exceptions the boundary can handle and preserves exception context",
+        "does not assume logging rolls back external work or add an unconditional retry",
+        "requires an explicit failure result or propagation plus transaction or idempotency verification where the contract requires it"
+      ]
+    },
+    {
+      "id": "python-task-cancellation-ownership",
+      "prompt": "Async service вызывает `asyncio.create_task(sync_loop())`, не хранит task, а внутри `sync_loop` есть `except BaseException: pass`. При shutdown процесс иногда зависает и ошибки фоновой задачи теряются. Как провести минимальный рефакторинг?",
+      "assertions": [
+        "gives the task an owner that retains and awaits or supervises it",
+        "removes broad swallowing of cancellation and normally propagates cancellation after cleanup",
+        "defines a shutdown order that stops new work signals owned tasks and awaits bounded cleanup when required",
+        "does not introduce an unrelated queue framework or claim that create_task alone provides supervision"
+      ]
+    },
+    {
+      "id": "python-typing-runtime-boundary",
+      "prompt": "HTTP handler получает JSON и передаёт его в `def create_user(data: UserPayload)`. Автор говорит, что аннотация `UserPayload` уже гарантирует наличие `email: str`, поэтому runtime validation не нужна. Что здесь доказано?",
+      "assertions": [
+        "states that ordinary Python annotations do not validate untrusted runtime JSON",
+        "places schema validation and normalization at the external boundary",
+        "does not duplicate validation through every trusted internal layer",
+        "keeps static type checking separate from malformed-input tests"
+      ]
+    },
+    {
+      "id": "python-declared-dependency-boundary",
+      "prompt": "Пакет импортирует `yaml`, потому что библиотека `toolkit` сейчас случайно устанавливает PyYAML транзитивно. В `pyproject.toml` PyYAML не объявлен. Локально всё работает, а clean install падает. Какой минимальный фикс и проверка?",
+      "assertions": [
+        "identifies reliance on an undeclared transitive runtime dependency",
+        "declares the direct runtime dependency in the project's existing packaging metadata rather than mutating sys.path",
+        "preserves the chosen build backend and version policy unless migration is requested",
+        "verifies import and tests from a clean environment built from declared metadata"
+      ]
+    },
+    {
+      "id": "python-concurrency-from-workload",
+      "prompt": "CLI последовательно вызывает блокирующий HTTP SDK и затем считает CPU-heavy отчёт. Предлагают целиком переписать программу на asyncio и добавить task queue, хотя измерений нет. Выбери границы конкурентности.",
+      "assertions": [
+        "separates blocking I/O from CPU-bound work and asks for measured workload and latency or throughput goals",
+        "does not claim asyncio makes blocking SDK calls or CPU work non-blocking",
+        "establishes the Python implementation version GIL or free-threaded mode and extension compatibility before choosing CPU parallelism",
+        "keeps threads processes and native code conditional on the measured workload shared-state safety and transfer or deployment cost",
+        "rejects an unrequired async framework or task queue and includes focused measurement and shutdown checks"
+      ]
+    },
+    {
+      "id": "python-free-threaded-cpu-parallelism",
+      "prompt": "Сервис работает на CPython 3.14 в free-threaded сборке; проверено, что GIL отключён и используемые расширения его не включают. Независимые CPU-bound задания дорого передавать между процессами. Ревьюер утверждает, что Python threads в принципе не могут исполнять такой код параллельно, и требует multiprocessing. Верна ли рекомендация?",
+      "assertions": [
+        "rejects the blanket claim because the established free-threaded CPython runtime can execute Python threads in parallel",
+        "keeps thread safety and extension compatibility as separate requirements rather than treating absence of the GIL as automatic correctness",
+        "compares threads with processes or native code using measured throughput shared-state risk and transfer startup or deployment cost",
+        "does not require multiprocessing or an async framework solely from the CPU-bound label"
+      ]
+    },
+    {
+      "id": "python-local-defect-no-toolchain-ritual",
+      "prompt": "Проведи короткий review локального дефекта: `def collect(item, bucket=[]): bucket.append(item); return bucket`. Неизвестны pyproject.toml, менеджер окружения и способ запуска полного набора тестов; показан focused test с двумя вызовами функции.",
+      "assertions": [
+        "identifies the mutable default as a language-level shared-state defect from the shown code",
+        "does not begin by demanding unrelated Python version, packaging, deployment, or full-suite metadata",
+        "proposes the smallest correction and a focused two-call verification",
+        "states which broader toolchain facts remain not established instead of inventing them"
+      ]
+    }
+  ]
+}
