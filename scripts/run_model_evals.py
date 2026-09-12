@@ -37,6 +37,7 @@ THEMATIC_REFERENCES = frozenset({
     "c-engineering.md",
     "code-economy.md",
     "cpp-engineering.md",
+    "cpp-application-architecture.md",
     "cpp-lifetime-and-queues.md",
     "cpp-review-workflow.md",
     "development-workflow-russian.md",
@@ -46,6 +47,7 @@ THEMATIC_REFERENCES = frozenset({
     "messaging-and-distributed-systems.md",
     "pedagogy-and-dialogue.md",
     "python-engineering.md",
+    "python-backend-architecture.md",
     "qt-cpp-engineering.md",
 })
 

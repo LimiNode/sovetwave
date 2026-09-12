@@ -271,6 +271,31 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("Treat type annotations as interface evidence", skill_text)
             self.assertTrue((skill / "references" / "code-economy.md").exists())
 
+    def test_python_backend_architecture_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "python-backend-architecture.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "python-backend-architecture.md").exists())
+            self.assertNotIn(
+                "[python-backend-architecture.md](references/python-backend-architecture.md)",
+                skill_text,
+            )
+            self.assertIn("Do not make HTTP, an ORM, a repository layer, or a task queue", skill_text)
+            self.assertTrue((skill / "references" / "python-engineering.md").exists())
+
+    def test_cpp_application_architecture_ablation_preserves_the_core_invariant(self) -> None:
+        with make_workspace(ROOT, True, "cpp-application-architecture.md") as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            skill_text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertFalse((skill / "references" / "cpp-application-architecture.md").exists())
+            self.assertNotIn(
+                "[cpp-application-architecture.md](references/cpp-application-architecture.md)",
+                skill_text,
+            )
+            self.assertIn("establish the target profile, ownership and number of instances", skill_text)
+            self.assertIn("treat frame-local UI data as transient", skill_text)
+            self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
+
     def test_agent_instruction_ablation_preserves_the_core_invariant(self) -> None:
         with make_workspace(ROOT, True, "agent-instructions.md") as directory:
             skill = Path(directory) / ".agents" / "skills" / "sovetwave"
@@ -479,13 +504,48 @@ class BehavioralHarnessTests(unittest.TestCase):
             "python-declared-dependency-boundary",
             "python-concurrency-from-workload",
             "python-free-threaded-cpu-parallelism",
-            "python-local-defect-no-toolchain-ritual",
             "python-architecture-persistent-delegated",
+            "python-local-defect-no-toolchain-ritual",
         }
         indexed = {case["id"]: case for case in cases}
         self.assertTrue(required_ids.issubset(indexed))
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
         self.assertIn("python-engineering.md", THEMATIC_REFERENCES)
+
+    def test_python_backend_architecture_suite_has_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "python-architecture-small-cli",
+            "python-architecture-existing-sqlalchemy",
+            "python-architecture-storage-choice",
+            "python-architecture-transaction-boundary",
+            "python-architecture-background-work",
+            "python-architecture-persistent-decision",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn("python-backend-architecture.md", THEMATIC_REFERENCES)
+
+    def test_cpp_application_architecture_suite_has_thematic_coverage(self) -> None:
+        cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
+        required_ids = {
+            "cpp-architecture-private-app-profile",
+            "cpp-architecture-instance-owned-state",
+            "cpp-architecture-event-flow",
+            "cpp-architecture-shutdown-order",
+            "cpp-architecture-imgui-state-owner",
+            "cpp-architecture-imgui-thread-boundary",
+            "cpp-architecture-plugin-decision",
+        }
+        indexed = {case["id"]: case for case in cases}
+        self.assertTrue(required_ids.issubset(indexed))
+        self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertIn("cpp-application-architecture.md", THEMATIC_REFERENCES)
+        taxonomy = (ROOT / "skills" / "sovetwave" / "references" / "cpp-application-architecture.md").read_text(encoding="utf-8")
+        taxonomy_normalized = " ".join(taxonomy.split())
+        self.assertIn("When introducing a new message taxonomy", taxonomy_normalized)
+        self.assertIn("Preserve a coherent existing project vocabulary", taxonomy_normalized)
 
     def test_cpp_review_and_qt_suites_have_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
