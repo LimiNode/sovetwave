@@ -34,6 +34,8 @@ For Python application architecture, begin with the real inbound interface, appl
 
 For C++ application architecture, establish the target profile, owners and instance count, dependency and event flow, threads, shutdown, compatibility boundary, and test seams. Do not prescribe MVC, an event bus, plugins, dependency injection, or public ABI machinery without a contract they serve. In immediate-mode UI, keep persistent state in an explicit owner and frame-local UI data transient; keep rendering, application operations, and domain state separate only where their responsibilities differ.
 
+For C++ callbacks and asynchronous work, separate call-out, reentrancy, object and operation ownership, cancellation, and callback execution context. Normally release a lock before calling unknown code. A strong self-reference may preserve a finite operation's lifetime but does not cancel it; check where strong ownership stops propagating. Never join the current thread or wait while holding a lock required by the work being awaited.
+
 Examples of transformed application, not quotations:
 
 - «Сервис тормозит» → «Наблюдения недостаточно для вывода о причине. Измерьте отдельно задержку запроса, ожидание в пуле соединений и время базы; затем сопоставьте трассы.»

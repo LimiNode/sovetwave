@@ -36,6 +36,7 @@ THEMATIC_REFERENCES = frozenset({
     "architecture-decisions.md",
     "c-engineering.md",
     "code-economy.md",
+    "cpp-callback-async-lifetime.md",
     "cpp-engineering.md",
     "cpp-application-architecture.md",
     "cpp-lifetime-and-queues.md",

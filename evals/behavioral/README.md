@@ -84,7 +84,7 @@ per-result `sequence` are written to JSON and shown in the comparison sheet.
 
 Supported thematic references are `agent-instructions.md`,
 `architecture-decisions.md`, `c-engineering.md`, `code-economy.md`,
-`cpp-application-architecture.md`, `cpp-engineering.md`,
+`cpp-application-architecture.md`, `cpp-callback-async-lifetime.md`, `cpp-engineering.md`,
 `cpp-lifetime-and-queues.md`, `cpp-review-workflow.md`,
 `development-workflow-russian.md`, `engineering-workflow.md`,
 `house-conventions.md`, `messaging-and-distributed-systems.md`,
