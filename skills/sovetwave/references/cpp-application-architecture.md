@@ -62,11 +62,11 @@ unsubscribe behaviour, failure visibility, and shutdown; an `EventBus` name
 does not establish any of them.
 
 When introducing a new message taxonomy, distinguish requested work from an
-established occurrence—often command versus event. Preserve a coherent
-existing project vocabulary; do not rename messages merely to enforce these
-labels. Do not broadcast mutable domain objects merely to avoid choosing an
-owner. Keep synchronous and deferred paths distinguishable in the API and
-tests.
+established occurrence—often command versus event.
+Preserve a coherent existing project vocabulary; do not rename messages merely
+to enforce these labels. Do not broadcast mutable domain objects merely to
+avoid choosing an owner. Keep synchronous and deferred paths distinguishable in
+the API and tests.
 
 ## Define threads and shutdown together
 

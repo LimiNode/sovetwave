@@ -118,6 +118,89 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertEqual(len(run["results"]), 2)
             self.assertEqual({item["case_id"] for item in run["results"]}, {"russian-pr-status-report"})
 
+    def test_repeated_case_ids_run_a_pair_and_record_its_relation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run.json"
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(RUNNER),
+                    "--provider", "codex",
+                    "--dry-run",
+                    "--case-id", "c-small-fixed-temporary-buffer",
+                    "--case-id", "c-small-temporary-invariance",
+                    "--output", str(output),
+                ],
+                cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(run["schema_version"], "1.3")
+            self.assertEqual(
+                run["case_ids"],
+                ["c-small-fixed-temporary-buffer", "c-small-temporary-invariance"],
+            )
+            self.assertEqual(len(run["results"]), 4)
+            self.assertEqual(
+                run["case_relations"],
+                {
+                    "c-small-temporary-invariance": {
+                        "kind": "invariance",
+                        "base_case": "c-small-fixed-temporary-buffer",
+                    },
+                },
+            )
+
+    def test_case_id_and_limit_cannot_silently_truncate_a_relation_pair(self) -> None:
+        completed = subprocess.run(
+            [
+                sys.executable, str(RUNNER), "--provider", "codex", "--dry-run",
+                "--case-id", "c-small-fixed-temporary-buffer",
+                "--case-id", "c-small-temporary-invariance", "--limit", "1",
+            ], cwd=ROOT, text=True, capture_output=True,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("--limit cannot be combined", completed.stderr)
+
+    def test_case_relations_reject_invalid_graphs(self) -> None:
+        base = {"id": "base", "prompt": "Base", "assertions": ["base assertion"]}
+        scenarios = [
+            (
+                "unknown base",
+                {"suite.json": [base, {"id": "derived", "prompt": "Derived", "assertions": ["a"], "relation": {"kind": "contrast", "base_case": "missing"}}]},
+                "unknown relation base_case",
+            ),
+            (
+                "cross-suite base",
+                {
+                    "base.json": [base],
+                    "derived.json": [{"id": "derived", "prompt": "Derived", "assertions": ["a"], "relation": {"kind": "contrast", "base_case": "base"}}],
+                },
+                "must stay within one suite",
+            ),
+            (
+                "cycle",
+                {"suite.json": [
+                    {"id": "base", "prompt": "Base", "assertions": ["a"], "relation": {"kind": "contrast", "base_case": "derived"}},
+                    {"id": "derived", "prompt": "Derived", "assertions": ["a"], "relation": {"kind": "contrast", "base_case": "base"}},
+                ]},
+                "case relation cycle",
+            ),
+            (
+                "empty expectation",
+                {"suite.json": [base, {"id": "derived", "prompt": "Derived", "assertions": ["a"], "relation": {"kind": "contrast", "base_case": "base", "expect": "  "}}]},
+                "relation expect.*non-empty",
+            ),
+        ]
+        for name, suites, message in scenarios:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                case_dir = Path(directory)
+                for filename, cases in suites.items():
+                    (case_dir / filename).write_text(
+                        json.dumps({"version": "1.0", "suite": filename, "cases": cases}),
+                        encoding="utf-8",
+                    )
+                with self.assertRaisesRegex(ValueError, message):
+                    load_cases(case_dir)
     def test_case_id_cannot_be_truncated_by_limit(self) -> None:
         completed = subprocess.run(
             [
@@ -423,6 +506,14 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(any("natural Russian" in item for item in mixed["assertions"]))
         self.assertIn("`farthest-first`", formal["prompt"])
         self.assertTrue(any("preserves every quoted variant name" in item for item in formal["assertions"]))
+        self.assertEqual(
+            formal["relation"],
+            {
+                "kind": "contrast",
+                "base_case": "russian-rag-capacity-analysis",
+                "expect": "formal names remain exact while incidental generic jargon is translated",
+            },
+        )
         reference = (ROOT / "skills" / "sovetwave" / "references" / "russian-technical-language.md").read_text(encoding="utf-8")
         self.assertIn("целевая функция / критерий оптимизации", reference)
         self.assertIn("закрытое контрольное оценивание / оценка на закрытой контрольной выборке", reference)
@@ -504,6 +595,18 @@ class BehavioralHarnessTests(unittest.TestCase):
         indexed = {case["id"]: case for case in cases}
         self.assertTrue(required_ids.issubset(indexed))
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
+        self.assertEqual(
+            {case_id: indexed[case_id].get("relation") for case_id in required_ids if "relation" in indexed[case_id]},
+            {
+                "c-small-temporary-stack-insufficient": {"kind": "directional", "base_case": "c-small-fixed-temporary-buffer"},
+                "c-small-temporary-recursive-depth": {"kind": "directional", "base_case": "c-small-fixed-temporary-buffer"},
+                "c-small-temporary-invariance": {"kind": "invariance", "base_case": "c-small-fixed-temporary-buffer"},
+                "c-static-immutable-table": {"kind": "contrast", "base_case": "c-static-buffer-reentrancy"},
+                "c-bounded-vla-profile": {"kind": "contrast", "base_case": "c-untrusted-vla-stack-bound"},
+                "c-allocation-size-guarded": {"kind": "contrast", "base_case": "c-allocation-size-overflow"},
+                "c-simple-cleanup-no-label": {"kind": "contrast", "base_case": "c-partial-initialization-cleanup"},
+            },
+        )
         self.assertIn("c-engineering.md", THEMATIC_REFERENCES)
 
     def test_python_engineering_suite_has_thematic_coverage(self) -> None:
@@ -556,9 +659,8 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
         self.assertIn("cpp-application-architecture.md", THEMATIC_REFERENCES)
         taxonomy = (ROOT / "skills" / "sovetwave" / "references" / "cpp-application-architecture.md").read_text(encoding="utf-8")
-        taxonomy_normalized = " ".join(taxonomy.split())
-        self.assertIn("When introducing a new message taxonomy", taxonomy_normalized)
-        self.assertIn("Preserve a coherent existing project vocabulary", taxonomy_normalized)
+        self.assertIn("When introducing a new message taxonomy", taxonomy)
+        self.assertIn("Preserve a coherent existing project vocabulary", taxonomy)
 
     def test_cpp_callback_async_lifetime_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")
@@ -666,6 +768,29 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("Styled", content)
             self.assertIn("Ablation: **не проверялось**", content)
             self.assertIn("Техническая правильность", content)
+
+    def test_comparison_sheet_reports_case_relationships(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory) / "run.json"
+            sheet = Path(directory) / "comparison.md"
+            run.write_text(json.dumps({
+                "case_ids": ["base", "derived"],
+                "case_relations": {
+                    "derived": {"kind": "invariance", "base_case": "base"},
+                },
+                "results": [
+                    {"case_id": "base", "variant": "baseline", "prompt": "Base", "response": "Plain", "assertions": ["a"]},
+                    {"case_id": "base", "variant": "sovetwave", "prompt": "Base", "response": "Styled", "assertions": ["a"]},
+                    {"case_id": "derived", "variant": "baseline", "prompt": "Derived", "response": "Plain", "assertions": ["b"]},
+                    {"case_id": "derived", "variant": "sovetwave", "prompt": "Derived", "response": "Styled", "assertions": ["b"]},
+                ],
+            }), encoding="utf-8")
+            subprocess.run([sys.executable, str(COMPARE), str(run), "--output", str(sheet)], cwd=ROOT, check=True)
+            content = sheet.read_text(encoding="utf-8")
+            self.assertIn("## Case relationships", content)
+            self.assertIn("| `derived` | `invariance` | `base` | — | `not_evaluated` |", content)
+            self.assertIn("Relation: **invariance** relative to `base`.", content)
+            self.assertIn("Semantic relation status: **not_evaluated**", content)
 
     def test_comparison_sheet_marks_missing_ablation_variants(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

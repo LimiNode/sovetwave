@@ -43,6 +43,41 @@ Run one named case when validating a specific regression or language rule:
 py -3 scripts\run_model_evals.py --provider codex --dry-run --case-id russian-pr-status-report
 ```
 
+Repeat `--case-id` to run an explicit related pair without running the entire
+case directory. The runner preserves the requested order:
+
+```powershell
+py -3 scripts\run_model_evals.py --provider codex --dry-run `
+  --case-id c-small-fixed-temporary-buffer `
+  --case-id c-small-temporary-invariance
+```
+
+## Case relationships
+
+A derived behavioral case may declare a relation to a base case in the same
+suite. The runner checks the relation's schema and references; it does not
+judge whether the model's responses satisfy the claimed semantic relation:
+
+```json
+"relation": {
+  "kind": "invariance",
+  "base_case": "c-small-fixed-temporary-buffer"
+}
+```
+
+Use `contrast` for a paired counterexample or decision contrast that changes a
+decision-relevant condition. This project-level relation is broader than a
+formal minimal Contrast Set: for a local decision-boundary experiment, vary as
+few decision-relevant facts as practical. Use `directional` when the assertions
+require that change to move the recommendation, and `invariance` when the
+conclusion should survive an irrelevant change. The runner rejects unknown
+kinds, missing or cross-suite bases, self-references, and cycles. It records the
+declared, schema-validated relation map in the run JSON; `compare_runs.py` shows
+an overview and the base beside each derived case. A relation does not add the
+base case implicitly: select both IDs when the measurement needs both
+responses. Determining whether an invariance, directional, or contrast claim
+holds remains evaluator or human work over the responses.
+
 ## Thematic-reference ablation
 
 An ablation compares three variants of the same Codex case: baseline, full

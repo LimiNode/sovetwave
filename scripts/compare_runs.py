@@ -66,6 +66,14 @@ def main() -> int:
     if ablation is not None:
         expected_variants.append("sovetwave_without_reference")
     case_ids = payload.get("case_ids") or list(grouped)
+    case_relations = {
+        case_id: relation
+        for case_id, relation in payload.get("case_relations", {}).items()
+        if isinstance(case_id, str)
+        and isinstance(relation, dict)
+        and relation.get("kind") in {"contrast", "directional", "invariance"}
+        and isinstance(relation.get("base_case"), str)
+    }
     repetitions = int(payload.get("repetitions", max((max(items) for items in grouped.values()), default=1)))
     lines = ["# Behavioral eval comparison", "", f"Run: `{args.run.name}`", ""]
     if ablation is None:
@@ -76,6 +84,21 @@ def main() -> int:
             f"Method: {ablation.get('method', 'not recorded')}",
             "",
         ])
+    if case_relations:
+        lines.extend([
+            "## Case relationships",
+            "",
+            "Relations are declared in the case schema and validated structurally (kind, base case, and optional expectation). Semantic agreement is **not evaluated** by this renderer.",
+            "",
+            "| Case | Relation | Base case | Declared expectation | Semantic status |",
+            "|---|---|---|---|---|",
+        ])
+        for case_id in case_ids:
+            relation = case_relations.get(case_id)
+            if relation is not None:
+                expectation = str(relation.get("expect", "")).replace("|", "\\|") or "—"
+                lines.append(f"| `{case_id}` | `{relation['kind']}` | `{relation['base_case']}` | {expectation} | `not_evaluated` |")
+        lines.append("")
     for case_id in case_ids:
         case_repetitions = grouped.get(case_id, {})
         known_prompt = next(
@@ -83,6 +106,14 @@ def main() -> int:
             "",
         )
         lines.extend([f"## {case_id}", ""])
+        relation = case_relations.get(case_id)
+        if relation is not None:
+            lines.extend([
+                f"Relation: **{relation['kind']}** relative to `{relation['base_case']}`.",
+                f"Declared expectation: {relation.get('expect', 'not specified')}.",
+                "Semantic relation status: **not_evaluated** (schema metadata is not a model-behaviour verdict).",
+                "",
+            ])
         for repetition in range(1, repetitions + 1):
             variants = case_repetitions.get(repetition, {})
             baseline = variants.get("baseline", {})
