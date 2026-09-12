@@ -52,6 +52,7 @@ THEMATIC_REFERENCES = frozenset({
     "qt-cpp-engineering.md",
 })
 CASE_RELATION_KINDS = frozenset({"contrast", "directional", "invariance"})
+CORE_ABLATION = "__core__"
 
 
 def validate_case_relations(
@@ -209,13 +210,20 @@ def make_workspace(
     root: Path,
     styled: bool,
     ablated_reference: str | None = None,
+    claude_full_skill: bool = False,
 ) -> tempfile.TemporaryDirectory[str]:
     workspace = tempfile.TemporaryDirectory(prefix="sovetwave-eval-")
     if styled:
         destination = Path(workspace.name) / ".agents" / "skills" / "sovetwave"
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(root / "skills" / "sovetwave", destination)
-        if ablated_reference is not None:
+        if claude_full_skill:
+            claude_destination = Path(workspace.name) / ".claude" / "skills" / "sovetwave"
+            claude_destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(root / "skills" / "sovetwave", claude_destination)
+        if ablated_reference == CORE_ABLATION:
+            (destination / "SKILL.md").unlink()
+        elif ablated_reference is not None:
             disable_reference(destination, ablated_reference)
     return workspace
 
@@ -228,6 +236,9 @@ def command_for(
     model: str | None,
     output_path: Path,
     codex_overrides: list[str] | None = None,
+    activation: str = "explicit",
+    claude_full_skill: bool = False,
+    claude_setting_sources: str = "project",
 ) -> list[str]:
     if provider == "codex":
         command = [
@@ -239,18 +250,39 @@ def command_for(
             command.extend(codex_overrides)
         if model:
             command.extend(["--model", model])
-        return command + (["$sovetwave\n" + prompt] if styled else [prompt])
+        marker_allowed = styled and activation == "explicit" and (workspace / ".agents" / "skills" / "sovetwave" / "SKILL.md").is_file()
+        return command + (["$sovetwave\n" + prompt] if marker_allowed else [prompt])
     if provider == "claude":
-        command = ["claude", "--print", "--bare", "--tools", "", "--permission-mode", "plan"]
+        # A full-skill run must let Claude discover and invoke the installed
+        # skill. Baseline receives the same tool surface so the comparison
+        # isolates the skill files rather than a tooling privilege.
+        tool_set = "Skill,Read,Bash" if claude_full_skill else ""
+        # Keep the prompt immediately after --print. Claude's variadic
+        # --allowedTools and --add-dir options otherwise consume a trailing
+        # positional prompt as another list item.
+        command = ["claude", "--print", prompt]
+        if claude_full_skill:
+            command.extend([
+                "--tools", tool_set,
+                "--allowedTools", tool_set,
+                "--setting-sources", claude_setting_sources,
+                "--permission-mode", "plan",
+            ])
+        else:
+            command.extend(["--bare", "--tools", tool_set, "--permission-mode", "plan"])
         if styled:
             command.extend(["--append-system-prompt-file", str(ROOT / "output-styles" / "sovetwave.md")])
+        if claude_full_skill:
+            command.extend(["--add-dir", str(workspace)])
         if model:
             command.extend(["--model", model])
-        return command + [prompt]
+        return command
     raise ValueError(f"unsupported provider: {provider}")
 
 
 def variant_name(styled: bool, ablated_reference: str | None) -> str:
+    if ablated_reference == CORE_ABLATION:
+        return "sovetwave_without_core"
     if ablated_reference is not None:
         return "sovetwave_without_reference"
     return "sovetwave" if styled else "baseline"
@@ -260,14 +292,16 @@ def variant_plan(
     ablated_reference: str | None,
     repetition: int,
 ) -> list[tuple[bool, str | None]]:
-    """Keep baseline first and balance full versus ablated order over repeats."""
-    plan = [(False, None), (True, None)]
+    """Rotate variant order to reduce position and temporal bias."""
+    plan = [(False, None), (True, None)] if repetition % 2 else [(True, None), (False, None)]
     if ablated_reference is None:
         return plan
     ablated = (True, ablated_reference)
-    if repetition % 2 == 0:
-        return [(False, None), ablated, (True, None)]
-    return plan + [ablated]
+    return {
+        1: [(False, None), (True, None), ablated],
+        2: [(True, None), ablated, (False, None)],
+        0: [ablated, (False, None), (True, None)],
+    }[repetition % 3]
 
 
 def run_variant(
@@ -281,18 +315,25 @@ def run_variant(
     ablated_reference: str | None = None,
     repetition: int = 1,
     sequence: int = 1,
+    activation: str = "explicit",
+    claude_full_skill: bool = False,
+    claude_setting_sources: str = "project",
 ) -> dict[str, Any]:
     if ablated_reference is not None and not styled:
         raise ValueError("a reference can be ablated only from a Sovetwave variant")
-    with make_workspace(ROOT, styled, ablated_reference) as temp_dir:
+    with make_workspace(ROOT, styled, ablated_reference, claude_full_skill) as temp_dir:
         workspace = Path(temp_dir)
         response_path = workspace / "last-message.txt"
-        command = command_for(provider, workspace, case["prompt"], styled, model, response_path, codex_overrides)
+        command = command_for(
+            provider, workspace, case["prompt"], styled, model, response_path,
+            codex_overrides, activation, claude_full_skill, claude_setting_sources,
+        )
         result: dict[str, Any] = {
             "case_id": case["id"],
             "variant": variant_name(styled, ablated_reference),
             "repetition": repetition,
             "sequence": sequence,
+            "activation": activation,
             "prompt": redact_secrets(case["prompt"]),
             "assertions": case.get("assertions", []),
             "command": redact_command(command),
@@ -352,7 +393,7 @@ def summarize_ablation(
     dry_run: bool,
 ) -> str:
     """State whether every planned ablated variant was actually observed."""
-    ablated = [result for result in results if result["variant"] == "sovetwave_without_reference"]
+    ablated = [result for result in results if result["variant"].startswith("sovetwave_without_")]
     if dry_run:
         return "planned"
     if not ablated:
@@ -376,7 +417,24 @@ def main() -> int:
         "--ablate-reference",
         help="for Codex only, remove this conditional skill reference from the ablated variant (for example cpp-engineering.md)",
     )
+    parser.add_argument("--ablate-core", action="store_true", help="remove the whole core skill from the ablated variant")
+    parser.add_argument(
+        "--claude-full-skill",
+        action="store_true",
+        help="for Claude, expose the complete Sovetwave skill from the temporary project in addition to its output style",
+    )
+    parser.add_argument(
+        "--claude-setting-sources",
+        default="project",
+        help="comma-separated Claude setting sources for full-skill runs (default: project; use user,project for proxy settings stored in ~/.claude)",
+    )
     parser.add_argument("--repetitions", type=int, default=1, help="number of independent runs per case and variant")
+    parser.add_argument(
+        "--activation",
+        choices=("explicit", "natural"),
+        default="explicit",
+        help="Codex activation condition: inject $sovetwave explicitly or leave activation to the prompt",
+    )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--timeout", type=int, default=120)
@@ -391,12 +449,22 @@ def main() -> int:
 
     if args.codex_provider_config is not None and args.provider != "codex":
         parser.error("--codex-provider-config is only valid with --provider codex")
+    if args.claude_full_skill and args.provider != "claude":
+        parser.error("--claude-full-skill is only valid with --provider claude")
+    if args.claude_setting_sources != "project" and args.provider != "claude":
+        parser.error("--claude-setting-sources is only valid with --provider claude")
     if args.ablate_reference is not None and args.provider != "codex":
         parser.error("--ablate-reference is currently supported only for provider codex")
+    if args.ablate_core and args.provider != "codex":
+        parser.error("--ablate-core is currently supported only for provider codex")
+    if args.ablate_core and args.ablate_reference is not None:
+        parser.error("--ablate-core cannot be combined with --ablate-reference")
+    if args.provider == "claude" and args.activation == "natural":
+        parser.error("--activation natural is currently supported only for Codex")
     if args.repetitions < 1:
         parser.error("--repetitions must be at least 1")
-    if args.ablate_reference is not None and args.repetitions < 2:
-        parser.error("--ablate-reference requires at least 2 repetitions")
+    if (args.ablate_reference is not None or args.ablate_core) and args.repetitions < 2:
+        parser.error("ablation requires at least 2 repetitions")
     if args.ablate_reference is not None:
         reference = ROOT / "skills" / "sovetwave" / "references" / args.ablate_reference
         if (
@@ -417,6 +485,7 @@ def main() -> int:
         parser.error(str(error))
 
     cases = load_cases(args.case_dir)
+    ablation_target = CORE_ABLATION if args.ablate_core else args.ablate_reference
     if args.case_id is not None:
         if len(set(args.case_id)) != len(args.case_id):
             parser.error("--case-id values must be unique")
@@ -438,7 +507,7 @@ def main() -> int:
             "repetition": repetition,
             "variants": [
                 variant_name(styled, ablated_reference)
-                for styled, ablated_reference in variant_plan(args.ablate_reference, repetition)
+                for styled, ablated_reference in variant_plan(ablation_target, repetition)
             ],
         }
         for repetition in range(1, args.repetitions + 1)
@@ -446,7 +515,7 @@ def main() -> int:
     for case in cases:
         for repetition in range(1, args.repetitions + 1):
             for sequence, (styled, ablated_reference) in enumerate(
-                variant_plan(args.ablate_reference, repetition),
+                variant_plan(ablation_target, repetition),
                 start=1,
             ):
                 result = run_variant(
@@ -460,6 +529,9 @@ def main() -> int:
                     ablated_reference,
                     repetition,
                     sequence,
+                    args.activation,
+                    args.claude_full_skill,
+                    args.claude_setting_sources,
                 )
                 results.append(result)
                 if result.get("status") in FAILED_STATUSES and not args.continue_on_error:
@@ -470,7 +542,7 @@ def main() -> int:
         if stopped_early:
             break
     ablation_status: str | None = None
-    if args.ablate_reference is not None:
+    if ablation_target is not None:
         ablation_status = summarize_ablation(
             results,
             expected_ablations=len(cases) * args.repetitions,
@@ -483,6 +555,9 @@ def main() -> int:
         "model": args.model,
         "dry_run": args.dry_run,
         "repetitions": args.repetitions,
+        "activation": args.activation,
+        "claude_full_skill": args.claude_full_skill,
+        "claude_setting_sources": args.claude_setting_sources,
         "case_ids": [case["id"] for case in cases],
         "case_relations": {
             case["id"]: case["relation"]
@@ -490,15 +565,20 @@ def main() -> int:
             if "relation" in case
         },
         "variant_orders": variant_orders,
+        "order_balance": (
+            "complete"
+            if args.repetitions % (3 if ablation_target is not None else 2) == 0
+            else "partial"
+        ),
         "stopped_early": stopped_early,
         "results": results,
     }
-    if args.ablate_reference is not None:
+    if ablation_target is not None:
         payload["ablation"] = {
-            "reference": args.ablate_reference,
+            "reference": "core skill" if args.ablate_core else args.ablate_reference,
             "status": ablation_status,
-            "method": "Removed from the isolated Codex skill copy; the core skill remains enabled.",
-            "order_policy": "baseline first; full and ablated Sovetwave alternate by repetition",
+            "method": "Removed from the isolated Codex skill copy; this is a whole-layer control." if args.ablate_core else "Removed from the isolated Codex skill copy; the core skill remains enabled.",
+            "order_policy": "Latin-square rotation across baseline, full, and ablated variants",
         }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -16,6 +16,7 @@ try {
     try {
         & (Join-Path $repoRoot 'install.ps1') -ClaudeHome $userClaude
         if (-not (Test-Path -LiteralPath (Join-Path $userSkills 'sovetwave\SKILL.md'))) { throw 'User-scope skill was not installed.' }
+        if (-not (Test-Path -LiteralPath (Join-Path $userClaude 'skills\sovetwave\SKILL.md'))) { throw 'Standalone Claude skill was not installed.' }
         if (-not (Test-Path -LiteralPath (Join-Path $userClaude 'output-styles\sovetwave.md'))) { throw 'Claude output style was not installed.' }
 
         $rejected = $false
@@ -24,6 +25,7 @@ try {
 
         & (Join-Path $repoRoot 'install.ps1') -ClaudeHome $userClaude -Force
         if (-not (Test-Path -LiteralPath (Join-Path $userSkills 'sovetwave\scripts\select_voice_cards.py'))) { throw 'Forced user-scope installation is incomplete.' }
+        if (-not (Test-Path -LiteralPath (Join-Path $userClaude 'skills\sovetwave\scripts\select_voice_cards.py'))) { throw 'Forced Claude skill installation is incomplete.' }
 
         Set-Content -LiteralPath (Join-Path $userSkills 'sovetwave\.installer-sentinel') -Value 'codex-sentinel'
         $styleTarget = Join-Path $userClaude 'output-styles\sovetwave.md'
@@ -47,6 +49,7 @@ try {
 
     & (Join-Path $repoRoot 'install.ps1') -CodexScope Repo -RepoPath $targetRepo -ClaudeHome $repoClaude
     if (-not (Test-Path -LiteralPath (Join-Path $targetRepo '.agents\skills\sovetwave\SKILL.md'))) { throw 'Repo-scope skill was not installed.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $repoClaude 'skills\sovetwave\SKILL.md'))) { throw 'Repo-scope Claude skill was not installed.' }
 
     $rejected = $false
     try { & (Join-Path $repoRoot 'install.ps1') -CodexScope Repo -RepoPath $targetRepo -ClaudeHome $repoClaude } catch { $rejected = $true }

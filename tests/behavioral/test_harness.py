@@ -15,8 +15,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from run_model_evals import (
+    CORE_ABLATION,
     THEMATIC_REFERENCES,
     codex_provider_overrides,
+    command_for,
     load_cases,
     make_workspace,
     redact_command,
@@ -56,6 +58,12 @@ class BehavioralHarnessTests(unittest.TestCase):
     def test_trust_boundary_cases_cover_malicious_and_scoped_instructions(self) -> None:
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({"trust-boundary-malicious-readme", "trust-boundary-scoped-agents"}.issubset(cases))
+
+    def test_grader_contract_keeps_pointwise_scores_variant_external(self) -> None:
+        contract = (ROOT / "evals" / "behavioral" / "graders" / "grader-contract.md").read_text(encoding="utf-8")
+        self.assertIn('"score": 0', contract)
+        self.assertIn("Associate each pointwise result with its variant outside", contract)
+        self.assertNotIn('"baseline": 0, "sovetwave": 0', contract)
 
     def test_stderr_redacts_credentials(self) -> None:
         self.assertEqual(redact_secrets("Bearer abc.def_123"), "[redacted credential]")
@@ -293,14 +301,14 @@ class BehavioralHarnessTests(unittest.TestCase):
                 [item["variant"] for item in run["results"]],
                 [
                     "baseline", "sovetwave", "sovetwave_without_reference",
-                    "baseline", "sovetwave_without_reference", "sovetwave",
+                    "sovetwave", "sovetwave_without_reference", "baseline",
                 ],
             )
             self.assertEqual(
                 run["variant_orders"],
                 [
                     {"repetition": 1, "variants": ["baseline", "sovetwave", "sovetwave_without_reference"]},
-                    {"repetition": 2, "variants": ["baseline", "sovetwave_without_reference", "sovetwave"]},
+                    {"repetition": 2, "variants": ["sovetwave", "sovetwave_without_reference", "baseline"]},
                 ],
             )
             self.assertEqual([item["sequence"] for item in run["results"]], [1, 2, 3, 1, 2, 3])
@@ -850,8 +858,89 @@ class BehavioralHarnessTests(unittest.TestCase):
 
     def test_ablation_variant_plan_alternates_only_the_thematic_variants(self) -> None:
         self.assertEqual(variant_plan("cpp-engineering.md", 1), [(False, None), (True, None), (True, "cpp-engineering.md")])
-        self.assertEqual(variant_plan("cpp-engineering.md", 2), [(False, None), (True, "cpp-engineering.md"), (True, None)])
+        self.assertEqual(variant_plan("cpp-engineering.md", 2), [(True, None), (True, "cpp-engineering.md"), (False, None)])
+        self.assertEqual(variant_plan("cpp-engineering.md", 3), [(True, "cpp-engineering.md"), (False, None), (True, None)])
         self.assertEqual(variant_plan(None, 3), [(False, None), (True, None)])
+
+    def test_natural_activation_does_not_inject_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run.json"
+            subprocess.run(
+                [sys.executable, str(RUNNER), "--provider", "codex", "--dry-run",
+                 "--case-id", "russian-pr-status-report", "--activation", "natural", "--output", str(output)],
+                cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(run["activation"], "natural")
+            self.assertNotIn("$sovetwave", run["results"][1]["command"][-1])
+
+    def test_core_ablation_removes_only_the_skill_entrypoint(self) -> None:
+        with make_workspace(ROOT, True, CORE_ABLATION) as directory:
+            skill = Path(directory) / ".agents" / "skills" / "sovetwave"
+            self.assertFalse((skill / "SKILL.md").exists())
+            self.assertTrue((skill / "references" / "cpp-engineering.md").exists())
+
+    def test_core_ablation_does_not_inject_activation_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run.json"
+            subprocess.run(
+                [sys.executable, str(RUNNER), "--provider", "codex", "--dry-run",
+                 "--case-id", "cpp-vector-invalidation", "--ablate-core", "--repetitions", "2",
+                 "--output", str(output)], cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertNotIn("$sovetwave", run["results"][2]["command"][-1])
+            self.assertEqual(run["order_balance"], "partial")
+
+    def test_core_ablation_reports_generic_repetition_error(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(RUNNER), "--provider", "codex", "--dry-run",
+             "--ablate-core", "--repetitions", "1"],
+            cwd=ROOT, text=True, capture_output=True,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("ablation requires at least 2 repetitions", completed.stderr)
+        self.assertNotIn("--ablate-reference requires", completed.stderr)
+
+    def test_natural_activation_is_rejected_for_claude(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(RUNNER), "--provider", "claude", "--dry-run", "--activation", "natural"],
+            cwd=ROOT, text=True, capture_output=True,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("only for codex", completed.stderr.lower())
+
+    def test_claude_full_skill_workspace_exposes_skill_and_output_style(self) -> None:
+        with make_workspace(ROOT, True, claude_full_skill=True) as directory:
+            workspace = Path(directory)
+            self.assertTrue((workspace / ".claude" / "skills" / "sovetwave" / "SKILL.md").is_file())
+            command = command_for(
+                "claude", workspace, "prompt", True, None, workspace / "response.txt", claude_full_skill=True
+            )
+            self.assertIn("--add-dir", command)
+            self.assertIn(str(workspace), command)
+            tools_index = command.index("--tools")
+            self.assertEqual(command[tools_index + 1], "Skill,Read,Bash")
+            allowed_index = command.index("--allowedTools")
+            self.assertEqual(command[allowed_index + 1], "Skill,Read,Bash")
+            setting_index = command.index("--setting-sources")
+            self.assertEqual(command[setting_index + 1], "project")
+            self.assertNotIn("--bare", command)
+            self.assertEqual(command[0:3], ["claude", "--print", "prompt"])
+
+            baseline = command_for(
+                "claude", workspace, "prompt", False, None, workspace / "baseline.txt", claude_full_skill=True
+            )
+            self.assertNotIn("--bare", baseline)
+            self.assertEqual(baseline[0:3], ["claude", "--print", "prompt"])
+            for option in ("--tools", "--allowedTools", "--setting-sources"):
+                self.assertEqual(command[command.index(option) + 1], baseline[baseline.index(option) + 1])
+
+            proxy_command = command_for(
+                "claude", workspace, "prompt", True, None, workspace / "proxy.txt",
+                claude_full_skill=True, claude_setting_sources="user,project",
+            )
+            self.assertEqual(proxy_command[proxy_command.index("--setting-sources") + 1], "user,project")
 
 
 if __name__ == "__main__":
