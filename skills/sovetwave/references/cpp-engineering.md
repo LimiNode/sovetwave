@@ -20,6 +20,27 @@ For each resource-owning path, account for ownership before the call, after succ
 
 Do not infer a useful value from an object merely because it has been moved from. Establish what its type contract guarantees before reading it or reusing its contents.
 
+## Match mutable state scope to object identity
+
+When an instance method exposes a mutable reference or pointer, identify the
+storage behind it. A function-local `static` object is shared by every call to
+that implementation, including calls through different instances. Thread-safe
+initialization of the local static does not provide per-instance isolation or
+synchronize later mutation.
+
+If the contract requires one callback, registry entry, cache, or status slot per
+object, keep that state in the object or in external storage keyed by a stable
+instance identity. Use shared static state only when sharing is the established
+contract. Verify isolation with at least two instances: assigning or clearing
+one slot must not change the other.
+
+Preserve sentinel semantics. An empty `std::function` can represent an
+unclaimed callback slot because its boolean conversion is false; a no-op lambda
+is an installed callable and is therefore not equivalent. Moving a slot into an
+instance also ties destruction of the callable to that instance, but it does
+not establish the lifetime of objects reached through the callback, the owner
+that assigns it, or pending operations. Check those contracts separately.
+
 ## Inspect concurrent access as a whole
 
 When state is shared, inspect all conflicting reads and writes, not only assignments. An apparently harmless observation of a non-atomic object can race with a write. Determine the synchronisation or atomic contract before proposing a lock, a memory order, or a waiting protocol.
