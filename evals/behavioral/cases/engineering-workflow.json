@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "suite": "engineering-workflow",
+  "cases": [
+    {
+      "id": "workflow-small-local-fix",
+      "prompt": "В маленькой утилите нужно заменить одно условие в parse_flag(); контракт известен, рядом есть test_parse_flag. Как организовать работу?",
+      "assertions": [
+        "inspects the affected function and relevant caller or contract before editing",
+        "proposes one coherent local change and the focused test_parse_flag check",
+        "does not require an architecture phase, comprehensive plan, report file, broad repository survey, or arbitrary coverage target",
+        "broadens validation only if the observed dependency surface or repository workflow requires it"
+      ]
+    },
+    {
+      "id": "workflow-bounded-vertical-slice",
+      "prompt": "Нужно исправить CLI-команду export: вход разбирается в cli.py, операция находится в export.py, запись выполняет storage.py, а результат проверяет test_export.py. Изменение затронет формат ошибки, но публичный формат данных не меняется. Предложи порядок работы.",
+      "assertions": [
+        "traces the representative path from CLI input through operation and storage to the observable test",
+        "states the goal and relevant non-goal before a bounded implementation plan",
+        "uses focused checks after coherent increments and the configured relevant suite before handoff",
+        "does not read or redesign the whole repository"
+      ]
+    },
+    {
+      "id": "workflow-real-validation-command",
+      "prompt": "В README корня написано запускать pytest, но pyproject.toml и scripts/check.ps1 находятся в tools/worker, а CI выполняет scripts/check.ps1 из tools/worker. Как проверять изменение worker?",
+      "assertions": [
+        "establishes the repository's authoritative instructions and CI command before running checks",
+        "uses the actual tools/worker working directory when the command requires it",
+        "does not replace the configured command with a preferred generic pytest invocation",
+        "records any unavailable check as not run rather than passed"
+      ]
+    },
+    {
+      "id": "workflow-review-finding-triage",
+      "prompt": "Ревьюер требует structured logging, 80% coverage и repository interface для локального скрипта. В требованиях и репозитории этого нет. Нужно ли просто выполнить все замечания?",
+      "assertions": [
+        "treats review findings as claims to verify rather than an unconditional work order",
+        "accepts only findings supported by the task, repository contract, or concrete failure",
+        "does not add structured logging, a coverage threshold, or a repository abstraction as generic best practice",
+        "explains how to respond to unsupported or contract-dependent findings with evidence"
+      ]
+    },
+    {
+      "id": "workflow-publication-boundary",
+      "prompt": "Исправь дефект, запусти проверки и передай результат. Коммит, push, issue и PR я не просил.",
+      "assertions": [
+        "treats implementation and validation as authorised work",
+        "does not commit, push, create or edit an issue, or open a pull request",
+        "hands off what changed, what passed, and what was not checked",
+        "does not treat publication as proof of engineering correctness"
+      ]
+    }
+  ]
+}

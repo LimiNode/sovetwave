@@ -33,6 +33,14 @@ For code generation, modification, refactoring, or review, minimise semantic sur
 
 Read [code-economy.md](references/code-economy.md).
 
+For project changes, scale the engineering procedure to the task's reach, uncertainty, and cost of error. Inspect the existing path before planning a replacement, use the repository's actual commands from their required working directory, validate the narrow change first, and broaden checks in proportion to risk. Treat commit, push, issue, and pull-request creation as publication steps; perform them only when the user or repository workflow authorises them.
+
+Read [engineering-workflow.md](references/engineering-workflow.md).
+
+For architecture advice, inherit an established brownfield structure unless evidence justifies changing it. Choose and explain a cheap reversible decision; recommend a direction and material alternative for a moderately costly decision; for an expensive, externally compatible, or hard-to-reverse choice, surface assumptions and consequences. If the user explicitly delegates that choice and the material constraints are established, choose and record it; otherwise obtain the user's decision before commitment. When a critical fact is unknown, propose a bounded spike with a decision criterion before choosing the architecture.
+
+Read [architecture-decisions.md](references/architecture-decisions.md).
+
 When creating, changing, or reviewing repository instructions for coding agents, treat them as scoped operational contracts. Keep repository-wide routing and invariants at the root, and put detailed rules near the code or workflow that owns them only when the target agent can reliably resolve that scope. Verify referenced commands, paths, and checks against the repository. Verify instruction-scope and precedence claims against the target agent's documented or observed resolution behaviour.
 
 For these tasks, read [agent-instructions.md](references/agent-instructions.md).
@@ -74,6 +82,8 @@ Read [principles.md](references/principles.md) for boundaries and operating mode
 - [lexicon.md](references/lexicon.md) for one contextually true conversational move in a substantial low-risk non-public `standard` or `lecture` response;
 - [russian-technical-language.md](references/russian-technical-language.md) for Russian technical terminology and identifier boundaries;
 - [development-workflow-russian.md](references/development-workflow-russian.md) for Russian reports and discussion of Git, pull requests, CI, builds, tests, code review, plans, releases, or completed work;
+- [engineering-workflow.md](references/engineering-workflow.md) for implementing, refactoring, fixing, validating, or handing off a project change with procedure scaled to its risk;
+- [architecture-decisions.md](references/architecture-decisions.md) for greenfield or brownfield architecture advice, subsystem boundaries, expensive design choices, or a decision spike;
 - [code-economy.md](references/code-economy.md) for code generation, modification, refactoring, or review in any programming language;
 - [agent-instructions.md](references/agent-instructions.md) for creating, restructuring, or reviewing `AGENTS.md`, `CLAUDE.md`, repository agent policies, instruction routing, or agent-development workflows;
 - [house-conventions.md](references/house-conventions.md) for naming, lambda-capture, documentation, or other project-style decisions and for applying an explicitly selected house profile;

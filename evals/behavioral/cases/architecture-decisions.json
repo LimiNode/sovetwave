@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "suite": "architecture-decisions",
+  "cases": [
+    {
+      "id": "architecture-small-utility-no-framework",
+      "prompt": "Хочу нормальную архитектуру для новой утилиты примерно на 300 строк: три операции, один объект состояния, ввод из файла и вывод JSON. Что построить?",
+      "assertions": [
+        "recommends a lean separation such as input, operation, and output rather than an architecture framework",
+        "does not introduce repositories, services, dependency injection, plugins, queues, or Clean Architecture without a present contract",
+        "chooses a concrete reversible starting shape instead of presenting decorative alternatives",
+        "identifies the condition that would justify a new boundary later"
+      ]
+    },
+    {
+      "id": "architecture-brownfield-inherits",
+      "prompt": "В существующем приложении все команды идут entrypoint → use case → storage adapter. Нужно добавить ещё одну команду с тем же жизненным циклом. Предложи архитектуру.",
+      "assertions": [
+        "inherits the established dependency direction and vertical path",
+        "does not redesign the application or add a parallel architecture without a concrete failure",
+        "recommends the smallest new use case and adapter changes that fit the existing contracts",
+        "names any missing evidence that could materially change the recommendation"
+      ]
+    },
+    {
+      "id": "architecture-cheap-reversible-choice",
+      "prompt": "Для внутреннего преобразования из двух полей можно оставить обычную функцию или вводить отдельный mapper class. Публичного API и состояния нет. Что выбрать?",
+      "assertions": [
+        "chooses the plain function as the cheaper reversible option unless repository evidence says otherwise",
+        "explains the decision without forcing multiple equal-looking options",
+        "does not add an interface or class for hypothetical extensibility",
+        "states a concrete future condition that could justify extraction"
+      ]
+    },
+    {
+      "id": "architecture-moderate-recommendation",
+      "prompt": "Сервису нужны фоновые задания. Можно выполнять их в текущем процессе или вынести в отдельный worker. Задания не должны переживать перезапуск, потеря незавершённой работы допустима, а graceful shutdown ограничен 30 секундами. Дай инженерную рекомендацию.",
+      "assertions": [
+        "recommends one direction from the stated lifecycle and deployment constraints",
+        "names a materially different alternative and the condition that would make it preferable",
+        "considers ownership, shutdown, failure visibility, and deployment cost",
+        "does not leave the user with an unranked list of patterns"
+      ]
+    },
+    {
+      "id": "architecture-expensive-public-decision",
+      "prompt": "Мы выбираем публичный plugin ABI и формат файлов, которые должны читаться много лет. Я явно делегирую тебе выбор: назови предпосылки и последствия, выбери вариант и начни реализацию.",
+      "assertions": [
+        "identifies ABI and persistent format as expensive hard-to-reverse compatibility decisions",
+        "recognizes the explicit delegation, states assumptions and consequences, chooses one compatibility direction, and proceeds only within that delegated scope",
+        "does not silently choose a compatibility promise without naming the decision and its assumptions",
+        "separates the architecture decision from the later file-level implementation plan"
+      ]
+    },
+    {
+      "id": "architecture-unknown-needs-spike",
+      "prompt": "Неизвестно, выдержит ли выбранная embedded database нашу запись и восстановление после сбоя. От этого зависит, делить ли сервисы. Что делать?",
+      "assertions": [
+        "does not choose the service topology from an unmeasured critical assumption",
+        "proposes a bounded representative spike for write load and crash recovery",
+        "defines an observable decision threshold and how the result changes the architecture choice",
+        "states whether exploratory code should be discarded or deliberately promoted"
+      ]
+    }
+  ]
+}
