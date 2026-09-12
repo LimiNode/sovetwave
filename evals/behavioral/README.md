@@ -9,6 +9,26 @@ py -3 scripts\run_model_evals.py --provider codex --dry-run
 py -3 scripts\run_model_evals.py --provider claude --dry-run
 ```
 
+For a standalone Claude installation, use `--claude-full-skill` to measure the
+complete project skill together with the output style. The harness places the
+skill in the temporary project's `.claude/skills/sovetwave` directory and
+passes that project to Claude; without this option a Claude run measures only
+the output style layer.
+
+```powershell
+py -3 scripts\run_model_evals.py `
+  --provider claude `
+  --model <model> `
+  --claude-full-skill `
+  --case-id russian-pr-status-report `
+  --dry-run
+```
+
+Если Claude Code получает proxy endpoint и credentials из пользовательского
+`~/.claude/settings.json`, добавьте `--claude-setting-sources user,project`.
+По умолчанию используется только `project`, чтобы не смешивать eval с личными
+настройками и skills.
+
 Run a live comparison only after selecting the model, account, and spending limit:
 
 ```powershell
@@ -42,6 +62,10 @@ Run one named case when validating a specific regression or language rule:
 ```powershell
 py -3 scripts\run_model_evals.py --provider codex --dry-run --case-id russian-pr-status-report
 ```
+
+Use `--activation natural` to measure an installed skill without injecting the
+`$sovetwave` marker into the prompt. The default `explicit` mode is useful for
+an intentional activation control; record the activation mode with the run.
 
 Repeat `--case-id` to run an explicit related pair without running the entire
 case directory. The runner preserves the requested order:
@@ -112,10 +136,14 @@ planned ablated repetition completed; a run stopped before later repetitions
 is `partial` or `not_tested`. A repeated model run remains a measurement, not
 a proof; score each repetition and compare its evidence.
 
-For an ablation, baseline runs first. Full Sovetwave and the ablated variant
-then alternate order between repetitions: full → ablated for odd repetitions,
-ablated → full for even ones. The planned `variant_orders` and the actual
-per-result `sequence` are written to JSON and shown in the comparison sheet.
+For repeated comparisons, variant order is rotated to reduce position and
+temporal bias. With three variants the harness uses the Latin-square cycle
+`baseline → full → ablated`, `full → ablated → baseline`,
+`ablated → baseline → full`; with two variants it alternates their order.
+The planned `variant_orders` and actual per-result `sequence` are written to
+JSON and shown in the comparison sheet.
+Runs shorter than a complete order cycle are recorded as `order_balance:
+partial`; they are valid measurements but not fully counterbalanced.
 
 Supported thematic references are `agent-instructions.md`,
 `architecture-decisions.md`, `c-engineering.md`, `code-economy.md`,
@@ -129,7 +157,13 @@ The always-loaded voice core is deliberately not
 ablatable: removing it would compare different skills rather than isolate a
 thematic layer.
 
-The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. The Claude adapter uses `--bare`; its Sovetwave variant appends the repository Output Style. Neither adapter enables model tools.
+For a whole-layer control, use `--ablate-core`. This removes the complete
+`SKILL.md` from the temporary styled workspace and records
+`sovetwave_without_core`; it is intentionally interpreted as a control against
+the installed skill, not as evidence that any individual reference is
+unnecessary.
+
+The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. The Claude output-style-only adapter uses `--bare` and enables no model tools. With `--claude-full-skill`, both baseline and Sovetwave use project skill discovery and the same `Skill,Read,Bash` tool and permission surface; only the Sovetwave workspace contains the skill.
 
 By default a live run stops on the first failed, timed-out, or empty invocation,
 so an invalid login or unavailable model does not produce a full set of empty

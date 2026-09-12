@@ -17,7 +17,7 @@
       "prompt": "Функция открывает файл, затем создаёт parser session и имеет четыре ранних `return`; в двух ветках закрывается только файл. Автор предлагает добавить `close()` перед каждым return. Как исправить владение без размножения cleanup-кода?",
       "assertions": [
         "identifies incomplete cleanup on early and exceptional exits as the confirmed defect",
-        "uses existing or small context-manager ownership and a finally boundary rather than duplicated close calls",
+        "uses an existing or small context-manager ownership boundary, or a finally block when no such ownership API exists, without duplicated cleanup",
         "establishes the reverse cleanup order and behavior after partial acquisition",
         "proposes fault injection or focused tests at acquisition and processing failures"
       ]

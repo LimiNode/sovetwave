@@ -26,6 +26,8 @@ def variant_label(variant: str, result: dict[str, Any], ablation_reference: str 
     if variant == "sovetwave_without_reference":
         reference = result.get("ablated_reference", ablation_reference or "thematic reference")
         return f"Sovetwave without `{reference}`"
+    if variant == "sovetwave_without_core":
+        return "Sovetwave without core skill"
     return variant
 
 
@@ -64,7 +66,11 @@ def main() -> int:
     }
     expected_variants = ["baseline", "sovetwave"]
     if ablation is not None:
-        expected_variants.append("sovetwave_without_reference")
+        expected_variants.append(
+            "sovetwave_without_core"
+            if ablation.get("reference") == "core skill"
+            else "sovetwave_without_reference"
+        )
     case_ids = payload.get("case_ids") or list(grouped)
     case_relations = {
         case_id: relation
@@ -82,6 +88,7 @@ def main() -> int:
         lines.extend([
             f"Ablation: `{ablation.get('reference', 'unknown')}` — **{ablation.get('status', 'not_tested')}**.",
             f"Method: {ablation.get('method', 'not recorded')}",
+            f"Order balance: **{payload.get('order_balance', ablation.get('order_balance', 'not_recorded'))}**.",
             "",
         ])
     if case_relations:

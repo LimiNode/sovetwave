@@ -35,6 +35,7 @@ if ([string]::IsNullOrWhiteSpace($ClaudeHome)) { $ClaudeHome = Join-Path $HOME '
 
 $targets = @(
     @{ Source = Join-Path $repoRoot 'skills\sovetwave'; Destination = Join-Path $CodexSkillsHome 'sovetwave' },
+    @{ Source = Join-Path $repoRoot 'skills\sovetwave'; Destination = Join-Path $ClaudeHome 'skills\sovetwave' },
     @{ Source = Join-Path $repoRoot 'output-styles\sovetwave.md'; Destination = Join-Path $ClaudeHome 'output-styles\sovetwave.md' }
 )
 

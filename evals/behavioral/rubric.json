@@ -17,5 +17,6 @@
     "2": "частично годится",
     "3": "хорошо",
     "4": "убедительно и без заметных издержек"
-  }
+  },
+  "hard_gates": ["technical_correctness", "causal_calibration", "critical_literalness"]
 }

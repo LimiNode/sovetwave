@@ -10,6 +10,7 @@ user_claude="$work_dir/user-claude"
 
 CODEX_SKILLS_DIR="$user_skills" CLAUDE_CONFIG_DIR="$user_claude" sh "$repo_root/install.sh"
 test -f "$user_skills/sovetwave/SKILL.md"
+test -f "$user_claude/skills/sovetwave/SKILL.md"
 test -f "$user_claude/output-styles/sovetwave.md"
 
 if CODEX_SKILLS_DIR="$user_skills" CLAUDE_CONFIG_DIR="$user_claude" sh "$repo_root/install.sh"; then
@@ -19,6 +20,7 @@ fi
 
 CODEX_SKILLS_DIR="$user_skills" CLAUDE_CONFIG_DIR="$user_claude" sh "$repo_root/install.sh" --force
 test -f "$user_skills/sovetwave/scripts/select_voice_cards.py"
+test -f "$user_claude/skills/sovetwave/scripts/select_voice_cards.py"
 
 printf '%s\n' 'sentinel' > "$user_skills/sovetwave/.installer-sentinel"
 style_target="$user_claude/output-styles/sovetwave.md"
@@ -41,6 +43,7 @@ repo_claude="$work_dir/repo-claude"
 mkdir -p "$target_repo/.git"
 CLAUDE_CONFIG_DIR="$repo_claude" sh "$repo_root/install.sh" --codex-scope repo --repo-path "$target_repo"
 test -f "$target_repo/.agents/skills/sovetwave/SKILL.md"
+test -f "$repo_claude/skills/sovetwave/SKILL.md"
 
 if CLAUDE_CONFIG_DIR="$repo_claude" sh "$repo_root/install.sh" --codex-scope repo --repo-path "$target_repo"; then
   echo "second repo-scope installation unexpectedly succeeded" >&2
