@@ -24,6 +24,22 @@ try {
 
         & (Join-Path $repoRoot 'install.ps1') -ClaudeHome $userClaude -Force
         if (-not (Test-Path -LiteralPath (Join-Path $userSkills 'sovetwave\scripts\select_voice_cards.py'))) { throw 'Forced user-scope installation is incomplete.' }
+
+        Set-Content -LiteralPath (Join-Path $userSkills 'sovetwave\.installer-sentinel') -Value 'codex-sentinel'
+        $styleTarget = Join-Path $userClaude 'output-styles\sovetwave.md'
+        Set-Content -LiteralPath $styleTarget -Value 'old-style-sentinel'
+        foreach ($failurePoint in @('codex', 'claude-style')) {
+            $previousFailure = $env:SOVETWAVE_TEST_FAIL_AFTER
+            $env:SOVETWAVE_TEST_FAIL_AFTER = $failurePoint
+            $injectedFailure = $false
+            try { & (Join-Path $repoRoot 'install.ps1') -ClaudeHome $userClaude -Force } catch { $injectedFailure = $true }
+            finally { $env:SOVETWAVE_TEST_FAIL_AFTER = $previousFailure }
+            if (-not $injectedFailure) { throw "Injected $failurePoint failure unexpectedly succeeded." }
+            if (-not (Test-Path -LiteralPath (Join-Path $userSkills 'sovetwave\.installer-sentinel'))) { throw "Rollback did not restore the previous Codex installation after $failurePoint." }
+            if ((Get-Content -LiteralPath $styleTarget -Raw) -notmatch '^old-style-sentinel\s*$') { throw "Rollback did not restore the previous Claude style after $failurePoint." }
+            $staging = Get-ChildItem -LiteralPath $userSkills, $userClaude -Recurse -Force -Directory -ErrorAction SilentlyContinue | Where-Object Name -like '.sovetwave-stage-*'
+            if ($staging) { throw "Staging directory survived $failurePoint rollback." }
+        }
     }
     finally {
         $env:CODEX_SKILLS_DIR = $previousSkillsDir

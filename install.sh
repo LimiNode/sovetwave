@@ -56,15 +56,65 @@ for destination in "$codex_target" "$claude_target"; do
   fi
 done
 
-install_item() {
-  source_path=$1
-  destination=$2
-  mkdir -p "$(dirname -- "$destination")"
-  if [ "$force" = true ] && [ -e "$destination" ]; then rm -rf -- "$destination"; fi
-  cp -R -- "$source_path" "$destination"
-  printf '%s\n' "Installed $destination"
+codex_parent=$(dirname -- "$codex_target")
+claude_parent=$(dirname -- "$claude_target")
+mkdir -p "$codex_parent" "$claude_parent"
+stage_root=
+stage_claude=
+codex_stage=
+claude_stage=
+codex_backup=
+claude_backup=
+codex_installed=false
+claude_installed=false
+committed=false
+test_fail_after=${SOVETWAVE_TEST_FAIL_AFTER:-}
+cleanup_staging() {
+  [ -z "$stage_root" ] || rm -rf -- "$stage_root" || true
+  [ -z "$stage_claude" ] || rm -rf -- "$stage_claude" || true
 }
+rollback() {
+  if [ "$committed" = true ]; then return; fi
+  if [ "$codex_installed" = true ] && [ -e "$codex_target" ]; then rm -rf -- "$codex_target" || true; fi
+  if [ "$claude_installed" = true ] && [ -e "$claude_target" ]; then rm -rf -- "$claude_target" || true; fi
+  if [ -n "$codex_backup" ] && [ -e "$codex_backup" ]; then mv -- "$codex_backup" "$codex_target" || true; fi
+  if [ -n "$claude_backup" ] && [ -e "$claude_backup" ]; then mv -- "$claude_backup" "$claude_target" || true; fi
+  cleanup_staging
+}
+trap rollback EXIT
+stage_root=$(mktemp -d "$codex_parent/.sovetwave-stage.XXXXXX")
+stage_claude=$(mktemp -d "$claude_parent/.sovetwave-stage.XXXXXX")
+codex_stage="$stage_root/sovetwave"
+claude_stage="$stage_claude/sovetwave.md"
 
-install_item "$repo_dir/skills/sovetwave" "$codex_target"
-install_item "$repo_dir/output-styles/sovetwave.md" "$claude_target"
+cp -R -- "$repo_dir/skills/sovetwave" "$codex_stage"
+cp -- "$repo_dir/output-styles/sovetwave.md" "$claude_stage"
+test -f "$codex_stage/SKILL.md" -a -f "$claude_stage"
+
+if [ -e "$codex_target" ]; then
+  codex_backup="$codex_target.sovetwave-backup.$$"
+  mv -- "$codex_target" "$codex_backup"
+fi
+if [ -e "$claude_target" ]; then
+  claude_backup="$claude_target.sovetwave-backup.$$"
+  mv -- "$claude_target" "$claude_backup"
+fi
+mv -- "$codex_stage" "$codex_target"
+codex_installed=true
+if [ "$test_fail_after" = codex ]; then
+  printf '%s\n' 'Injected installer failure after Codex replacement.' >&2
+  exit 97
+fi
+mv -- "$claude_stage" "$claude_target"
+claude_installed=true
+if [ "$test_fail_after" = claude-style ]; then
+  printf '%s\n' 'Injected installer failure after claude-style replacement.' >&2
+  exit 97
+fi
+committed=true
+trap - EXIT
+if [ -n "$codex_backup" ] && ! rm -rf -- "$codex_backup"; then printf '%s\n' "Warning: could not remove backup $codex_backup" >&2; fi
+if [ -n "$claude_backup" ] && ! rm -rf -- "$claude_backup"; then printf '%s\n' "Warning: could not remove backup $claude_backup" >&2; fi
+if ! cleanup_staging; then printf '%s\n' 'Warning: could not remove installer staging directory.' >&2; fi
+printf '%s\n' "Installed $codex_target" "Installed $claude_target"
 printf '%s\n' 'Installed Sovetwave output style. In Claude Code run /config, choose Sovetwave under Output style, then run /clear or start a new session.'
