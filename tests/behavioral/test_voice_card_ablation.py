@@ -1,4 +1,6 @@
 import importlib.util
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -127,6 +129,75 @@ class VoiceCardAblationTests(unittest.TestCase):
             '{"type":"item.completed","item":{"id":"cmd-1","type":"command_execution","command":"py select_voice_cards.py --scene lesson"}}',
         ])
         self.assertEqual(ablation_runner.selector_invocations(stream), 1)
+
+    def test_selector_trace_requires_exact_command_and_command_execution(self) -> None:
+        stream = "\n".join([
+            '{"type":"item.completed","item":{"id":"read-1","type":"file_read","command":"py select_voice_cards.py --scene review"}}',
+            '{"type":"item.completed","item":{"id":"cmd-1","type":"command_execution","command":"python .agents/skills/sovetwave/scripts/select_voice_cards.py --scene review --domain analysis --max 2 --json"}}',
+        ])
+        checked = ablation_runner.validate_selector_trace(
+            stream, expected=1, fixed_tags={"scene": "review", "domain": "analysis"}, oracle_payload=None,
+        )
+        self.assertTrue(checked["selector_invocation_match"])
+        self.assertEqual(checked["recorded_selector_invocations"], 1)
+
+    def test_selector_trace_rejects_wrong_args_duplicate_and_unexpected_control(self) -> None:
+        wrong = '{"item":{"id":"cmd-1","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 3"}}'
+        checked = ablation_runner.validate_selector_trace(
+            wrong, expected=1, fixed_tags={"scene": "review", "domain": "analysis"}, oracle_payload=None,
+        )
+        self.assertFalse(checked["selector_invocation_match"])
+        self.assertEqual(checked["selector_trace_status"], "wrong_selector_args")
+        duplicate = "\n".join([
+            '{"item":{"id":"a","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 2 --json"}}',
+            '{"item":{"id":"b","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 2 --json"}}',
+        ])
+        self.assertEqual(ablation_runner.selector_invocations(duplicate), 2)
+        control = ablation_runner.validate_selector_trace(duplicate, expected=0, fixed_tags=None, oracle_payload=None)
+        self.assertFalse(control["selector_invocation_match"])
+
+    def test_selector_trace_compares_exposed_stdout_with_oracle(self) -> None:
+        payload = [{"id": "card", "use": "teach", "anchor": "anchor"}]
+        stream = '{"item":{"id":"cmd","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 2 --json","aggregated_output":"[{\\"id\\":\\"card\\",\\"use\\":\\"teach\\",\\"anchor\\":\\"anchor\\"}]"}}'
+        checked = ablation_runner.validate_selector_trace(
+            stream, expected=1, fixed_tags={"scene": "review", "domain": "analysis"}, oracle_payload=payload,
+        )
+        self.assertTrue(checked["selector_invocation_match"])
+        self.assertEqual(checked["selector_oracle_equivalence"], "matched")
+
+    def test_dynamic_treatment_instruction_pins_json_command(self) -> None:
+        envelope = materializer.materialize("voice-card-selector-teaching-explanation", "A")
+        with tempfile.TemporaryDirectory() as directory:
+            skill = Path(directory) / "SKILL.md"
+            skill.write_text("kernel\n", encoding="utf-8")
+            ablation_runner.append_treatment(skill, envelope)
+            rendered = skill.read_text(encoding="utf-8")
+        self.assertIn("select_voice_cards.py", rendered)
+        self.assertIn("--max 2 --json", rendered)
+
+    def test_timeout_is_a_persistable_first_attempt_failure(self) -> None:
+        # Use the real workspace helper while making the model invocation fail
+        # before a subprocess can produce a response.
+        runner = ablation_runner.load_module("timeout_runner", ROOT / "scripts" / "run_model_evals.py")
+        original = runner.execute_command
+        runner.execute_command = lambda *args, **kwargs: (_ for _ in ()).throw(subprocess.TimeoutExpired(args[1] if len(args) > 1 else [], 1))
+        try:
+            row = next(row for row in ablation_runner.invocation_plan() if row["arm"] == "A" and row["selector_eligible"])
+            result = ablation_runner.execute_one(runner, row, "test-model", 1, [], "hash")
+        finally:
+            runner.execute_command = original
+        self.assertEqual(result["process_status"], "timeout")
+        self.assertFalse(result["first_attempt_completion"])
+        self.assertEqual(result["treatment_status"], "not_observed")
+
+    def test_metadata_identity_binds_provider_configuration(self) -> None:
+        manifest = ablation_runner.load_manifest()
+        left = ablation_runner.metadata(manifest, "model", "aaa")
+        right = ablation_runner.metadata(manifest, "model", "bbb")
+        self.assertNotEqual(
+            ablation_runner._metadata_identity(left),
+            ablation_runner._metadata_identity(right),
+        )
 
 
 if __name__ == "__main__":

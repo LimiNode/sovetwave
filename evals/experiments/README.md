@@ -67,7 +67,11 @@ invocation on each positive observation; B and C are checked for zero. The
 runner writes an append-only checkpoint and provenance sidecar and supports
 resume only when their metadata matches.
 
-Primary metrics are semantic assertion pass rate and first-attempt completion.
+Primary metrics are `full_observation_pass` and first-attempt completion.
+Observations with `treatment_status=invalid` are execution-integrity failures:
+they remain in the append-only checkpoint and audit output, but are excluded
+from causal comparisons (and stop the runner by default). Pointwise assertion
+pass rate is reported as a secondary diagnostic only.
 Secondary metrics are applicable voice/language axes, input/cached/uncached
 input, output/reasoning tokens, tool calls, and elapsed time. The pre-registered
 engineering gates allow at most one additional semantic failure or completion
