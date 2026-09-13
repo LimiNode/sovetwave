@@ -12,6 +12,7 @@ import hashlib
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,20 @@ def selector_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def behavioral_cases() -> dict[str, dict[str, Any]]:
+    """Resolve IDs through the same loader used by the model-eval runner."""
+    scripts_dir = str(ROOT / "scripts")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    path = ROOT / "scripts" / "run_model_evals.py"
+    spec = importlib.util.spec_from_file_location("sovetwave_eval_runner", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load behavioral runner from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return {case["id"]: case for case in module.load_cases(module.DEFAULT_CASES)}
 
 
 def selected_ids(selector: Any, corpus: dict[str, Any], scene: str, domain: str, maximum: int) -> list[str]:
@@ -85,6 +100,13 @@ def validate_manifest(manifest: dict[str, Any], mapping: dict[tuple[str, str], l
     controls = [case for case in cases if not case.get("selector_eligible")]
     if len(positive) != 4 or len(controls) != 2:
         raise ValueError("pilot must contain four selector-positive cases and two controls")
+    case_ids = [case.get("id") for case in cases]
+    if pilot.get("case_ids") != case_ids:
+        raise ValueError("pilot.case_ids must match the case definitions in order")
+    available = behavioral_cases()
+    missing = [case_id for case_id in case_ids if case_id not in available]
+    if missing:
+        raise ValueError(f"pilot references unknown behavioral case: {missing[0]}")
     for case in cases:
         if case["selector_eligible"]:
             pair = (case.get("scene"), case.get("domain"))

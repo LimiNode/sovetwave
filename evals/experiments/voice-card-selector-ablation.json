@@ -29,12 +29,12 @@
   "pilot": {
     "repetitions": 3,
     "expected_observations": 54,
-    "order": "For repetition r and case index i, rotate [A, B, C] by (r + i) mod 3.",
+    "order": "For 1-based repetition r and zero-based case index i, rotate [A, B, C] by (r - 1 + i) mod 3.",
     "case_ids": [
       "russian-rag-capacity-analysis",
       "cpp-architecture-event-flow",
-      "verification-neutral-review-holdout",
-      "russian-api-documentation",
+      "verification-neutral-parser-boundary",
+      "voice-card-selector-teaching-explanation",
       "russian-pr-status-report",
       "code-economy-noexcept-is-contract"
     ]
@@ -57,7 +57,7 @@
       "reason": "Architecture review where a concise corrective voice may help."
     },
     {
-      "id": "verification-neutral-review-holdout",
+      "id": "verification-neutral-parser-boundary",
       "group": "selector-positive",
       "selector_eligible": true,
       "scene": "diagnosis",
@@ -65,12 +65,12 @@
       "reason": "Diagnosis/review with an explicit uncertainty boundary."
     },
     {
-      "id": "russian-api-documentation",
+      "id": "voice-card-selector-teaching-explanation",
       "group": "selector-positive",
       "selector_eligible": true,
-      "scene": "handover",
-      "domain": "documentation",
-      "reason": "Substantial Russian documentation and contract explanation."
+      "scene": "lesson",
+      "domain": "teaching",
+      "reason": "Substantial, low-risk teaching/explanation response."
     },
     {
       "id": "russian-pr-status-report",
@@ -96,9 +96,13 @@
     "reporting": "Report completion and censoring separately; compare paired observations by case, repetition, and arm order."
   },
   "decision_criteria": {
-    "static_replacement": "Prefer B over A only if B is non-inferior on primary metrics and applicable voice/language axes while reducing selector tool calls and/or elapsed time.",
-    "remove_cards": "Prefer C over B only if no primary or applicable voice/language metric shows a material degradation; otherwise retain cards.",
-    "material_degradation": "Pre-register any numerical threshold in the review before model runs; this design does not treat a single pilot as proof of equivalence."
+    "semantic_assertions": "For 18 observations per arm, allow at most one additional failed observation for the comparator; any new repeated error class is a blocker.",
+    "first_attempt_completion": "Allow at most one fewer completed first attempt than the comparator; any systematic timeout or tool failure is a blocker regardless of averages.",
+    "voice_language_positive_cases": "On the four selector-positive cases, allow at most a 5 percentage-point aggregate drop in applicable voice/language axes.",
+    "static_replacement": "Prefer B over A only if the semantic, completion, and positive-case voice gates pass, B removes at least one selector tool call per observation by construction, and median elapsed time or uncached input falls by at least 10%.",
+    "remove_cards": "Prefer C over B only if no primary or applicable voice/language gate shows material degradation and at least one meaningful cost metric falls by 10%; otherwise retain cards.",
+    "negative_controls": "A, B, and C should not diverge systematically on the two ineligible controls; systematic divergence is an infrastructure blocker.",
+    "interpretation": "The 18-observation pilot is an engineering gate, not a formal non-inferiority test; report censoring and completion separately."
   },
   "provenance": {
     "runner": "scripts/run_revision_interleaved.py",

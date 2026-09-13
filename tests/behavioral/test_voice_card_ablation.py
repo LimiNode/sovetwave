@@ -12,7 +12,7 @@ spec.loader.exec_module(planner)
 
 
 class VoiceCardAblationTests(unittest.TestCase):
-    def test_static_map_is_exhaustively_equivalent_to_current_selector(self) -> None:
+    def test_static_map_is_equivalent_for_preregistered_pairs(self) -> None:
         mapping = planner.validate_static_map()
         self.assertEqual(len(mapping), 5)
         self.assertEqual(mapping[("review", "analysis")], ["kvant-model-and-measurement", "physics-folklore-requirement"])
@@ -42,6 +42,13 @@ class VoiceCardAblationTests(unittest.TestCase):
         manifest = planner.read_json(planner.MANIFEST)
         self.assertEqual(manifest["status"], "design_only")
         self.assertEqual(manifest["provenance"]["model_runs"], "not_started")
+
+    def test_unknown_case_id_fails_closed_through_behavioral_loader(self) -> None:
+        manifest = planner.read_json(planner.MANIFEST)
+        manifest["cases"][0] = dict(manifest["cases"][0], id="case-that-does-not-exist")
+        manifest["pilot"] = dict(manifest["pilot"], case_ids=[case["id"] for case in manifest["cases"]])
+        with self.assertRaisesRegex(ValueError, "unknown behavioral case"):
+            planner.validate_manifest(manifest, planner.validate_static_map())
 
 
 if __name__ == "__main__":

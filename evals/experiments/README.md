@@ -19,10 +19,11 @@ experiment.
 
 ## Pilot
 
-The pilot has six existing behavioral cases: four selector-positive cases and
-two negative controls where the selector is explicitly inapplicable. Three
+The pilot has six behavioral cases: four selector-positive cases (including a
+dedicated teaching/explanation case) and two negative controls where the selector is explicitly inapplicable. Three
 repetitions produce 54 observations. For case index `i` and repetition `r`,
-the arm order is `[A, B, C]` rotated by `(r + i) mod 3`, giving 18
+the arm order is `[A, B, C]` rotated by `(r - 1 + i) mod 3` (1-based `r`,
+zero-based `i`), giving 18
 observations per arm and balanced first positions.
 
 Generate the plan without invoking a model:
@@ -38,6 +39,11 @@ those guarantees and record completion/censoring separately.
 
 Primary metrics are semantic assertion pass rate and first-attempt completion.
 Secondary metrics are applicable voice/language axes, input/cached/uncached
-input, output/reasoning tokens, tool calls, and elapsed time. Numerical
-non-inferiority thresholds are intentionally not chosen by this design; they
-must be agreed in review before any model run.
+input, output/reasoning tokens, tool calls, and elapsed time. The pre-registered
+engineering gates allow at most one additional semantic failure or completion
+loss per 18 observations, cap positive-case voice/language loss at 5 percentage
+points, require B to remove its selector call and reduce median elapsed or
+uncached input by at least 10%, and require C to show no material degradation
+plus a 10% cost reduction. Any systematic timeout/tool failure or divergence
+on negative controls blocks the corresponding simplification. These are pilot
+gates, not a formal non-inferiority test.
