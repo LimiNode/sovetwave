@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "source_corpus": "skills/sovetwave/references/voice-cards.json",
+  "source_sha256": "29f40deeb907bfc01e81f7a5aefa11b950f6752a5b50598b4fe3880d94463ab9",
+  "selector_max": 2,
+  "canonical_pairs": [
+    {"scene": "lesson", "domain": "teaching", "card_ids": ["fuksman-prerequisite", "teacher-board-next-step"]},
+    {"scene": "review", "domain": "engineering", "card_ids": ["teacher-correction-with-check"]},
+    {"scene": "diagnosis", "domain": "systems", "card_ids": ["radio-propagation-context"]},
+    {"scene": "handover", "domain": "documentation", "card_ids": ["repin-ambiguous-order"]},
+    {"scene": "review", "domain": "analysis", "card_ids": ["kvant-model-and-measurement", "physics-folklore-requirement"]}
+  ]
+}
