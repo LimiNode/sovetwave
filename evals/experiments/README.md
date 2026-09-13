@@ -6,14 +6,20 @@ behavioral case suite. No model call is made by the planner.
 
 ## Causal contrasts
 
-- **A — dynamic:** the current `select_voice_cards.py` runtime path.
-- **B — static-equivalent:** a committed lookup for the same canonical
-  `scene/domain` pairs and the same card IDs, with no selector subprocess.
+- **A — dynamic:** invoke `select_voice_cards.py` once with the authoritative
+  preregistered `scene/domain` pair; do not infer tags or run `--list-tags`.
+- **B — static-equivalent:** a committed lookup for the same fixed
+  `scene/domain` pairs and the exact same ordered `id/use/anchor` payload, with
+  no selector subprocess.
 - **C — no-cards:** the slim kernel and domain references without voice cards.
 
+This is a fixed-tag pilot. It does not measure tag inference or `--list-tags`
+vocabulary-discovery cost. Those require a separate production-path study.
+
 The static map is validated against the current corpus and selector by
-`scripts/plan_voice_card_ablation.py`; every canonical pair in the map must
-produce the exact same ordered IDs in the dynamic selector. The corpus SHA is
+`scripts/plan_voice_card_ablation.py`; every preregistered positive pair must
+produce the exact same ordered `id/use/anchor` payload in the dynamic selector.
+The corpus SHA is
 recorded so a corpus edit invalidates the map instead of silently changing the
 experiment.
 
@@ -36,6 +42,17 @@ The generated plan records Git HEAD, dirty state, arm counts, and the
 checkpoint/provenance requirements inherited from
 `scripts/run_revision_interleaved.py`. A future execution runner must retain
 those guarantees and record completion/censoring separately.
+
+Inspect one effective treatment without invoking a model:
+
+```text
+py -3 scripts/materialize_voice_card_arms.py --case-id voice-card-selector-teaching-explanation --arm A --json
+```
+
+The materializer executes the selector only for eligible A observations. B
+uses the committed payload, C carries no payload, and all three arms omit
+selector/cards for negative controls. Routing instructions are host context,
+not additions to the user prompt.
 
 Primary metrics are semantic assertion pass rate and first-attempt completion.
 Secondary metrics are applicable voice/language axes, input/cached/uncached

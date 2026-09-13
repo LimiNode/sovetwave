@@ -51,12 +51,13 @@ def behavioral_cases() -> dict[str, dict[str, Any]]:
     return {case["id"]: case for case in module.load_cases(module.DEFAULT_CASES)}
 
 
-def selected_ids(selector: Any, corpus: dict[str, Any], scene: str, domain: str, maximum: int) -> list[str]:
+def selected_payload(selector: Any, corpus: dict[str, Any], scene: str, domain: str, maximum: int) -> list[dict[str, str]]:
     requested = {"scenes": {scene}, "domains": {domain}, "traits": set()}
-    return [card["id"] for card in selector.select(corpus["cards"], requested, maximum)]
+    cards = selector.select(corpus["cards"], requested, maximum)
+    return [{key: card[key] for key in ("id", "use", "anchor")} for card in cards]
 
 
-def validate_static_map() -> dict[tuple[str, str], list[str]]:
+def validate_static_map() -> dict[tuple[str, str], list[dict[str, str]]]:
     static = read_json(STATIC_MAP)
     digest = hashlib.sha256(CORPUS.read_bytes()).hexdigest()
     if static.get("source_sha256") != digest:
@@ -67,26 +68,31 @@ def validate_static_map() -> dict[tuple[str, str], list[str]]:
     maximum = static.get("selector_max")
     if not isinstance(maximum, int) or maximum < 0:
         raise ValueError("selector_max must be a non-negative integer")
-    mapping: dict[tuple[str, str], list[str]] = {}
+    mapping: dict[tuple[str, str], list[dict[str, str]]] = {}
     for entry in static.get("canonical_pairs", []):
         pair = (entry.get("scene"), entry.get("domain"))
         if pair in mapping or not all(isinstance(part, str) and part for part in pair):
             raise ValueError(f"invalid or duplicate canonical pair: {pair!r}")
-        ids = entry.get("card_ids")
-        if not isinstance(ids, list) or len(ids) > maximum or len(set(ids)) != len(ids):
-            raise ValueError(f"invalid card_ids for {pair!r}")
+        payload = entry.get("payload")
+        if not isinstance(payload, list) or len(payload) > maximum:
+            raise ValueError(f"invalid payload for {pair!r}")
+        if not all(isinstance(card, dict) and set(card) == {"id", "use", "anchor"} for card in payload):
+            raise ValueError(f"payload for {pair!r} must contain only id/use/anchor objects")
+        ids = [card["id"] for card in payload]
+        if len(set(ids)) != len(ids):
+            raise ValueError(f"duplicate card in payload for {pair!r}")
         if not set(ids).issubset(known_ids):
             raise ValueError(f"static map contains an unknown card for {pair!r}")
-        expected = selected_ids(selector, corpus, pair[0], pair[1], maximum)
-        if ids != expected:
-            raise ValueError(f"static map differs from selector for {pair!r}: {ids!r} != {expected!r}")
-        mapping[pair] = ids
+        expected = selected_payload(selector, corpus, pair[0], pair[1], maximum)
+        if payload != expected:
+            raise ValueError(f"static payload differs from selector for {pair!r}: {payload!r} != {expected!r}")
+        mapping[pair] = payload
     if not mapping:
         raise ValueError("static routing map has no canonical pairs")
     return mapping
 
 
-def validate_manifest(manifest: dict[str, Any], mapping: dict[tuple[str, str], list[str]]) -> None:
+def validate_manifest(manifest: dict[str, Any], mapping: dict[tuple[str, str], list[dict[str, str]]]) -> None:
     arms = manifest.get("arms", [])
     if [arm.get("id") for arm in arms] != ["A", "B", "C"]:
         raise ValueError("arms must be ordered A, B, C")
@@ -114,6 +120,9 @@ def validate_manifest(manifest: dict[str, Any], mapping: dict[tuple[str, str], l
                 raise ValueError(f"positive case has no canonical static pair: {case['id']}")
         elif case.get("scene") is not None or case.get("domain") is not None:
             raise ValueError(f"negative control must not provide selector tags: {case['id']}")
+    positive_pairs = {(case["scene"], case["domain"]) for case in positive}
+    if set(mapping) != positive_pairs:
+        raise ValueError("static routing map must cover exactly the preregistered positive pairs")
 
 
 def interleaved_plan(manifest: dict[str, Any]) -> list[dict[str, Any]]:

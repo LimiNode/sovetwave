@@ -4,10 +4,35 @@
   "source_sha256": "29f40deeb907bfc01e81f7a5aefa11b950f6752a5b50598b4fe3880d94463ab9",
   "selector_max": 2,
   "canonical_pairs": [
-    {"scene": "lesson", "domain": "teaching", "card_ids": ["fuksman-prerequisite", "teacher-board-next-step"]},
-    {"scene": "review", "domain": "engineering", "card_ids": ["teacher-correction-with-check"]},
-    {"scene": "diagnosis", "domain": "systems", "card_ids": ["radio-propagation-context"]},
-    {"scene": "handover", "domain": "documentation", "card_ids": ["repin-ambiguous-order"]},
-    {"scene": "review", "domain": "analysis", "card_ids": ["kvant-model-and-measurement", "physics-folklore-requirement"]}
+    {
+      "scene": "lesson",
+      "domain": "teaching",
+      "payload": [
+        {"id": "fuksman-prerequisite", "use": "transform_only", "anchor": "Сложность не исчезает от упрощённого названия; сначала назовём недостающий шаг."},
+        {"id": "teacher-board-next-step", "use": "anonymous_anchor", "anchor": "У доски нужен следующий ход, не торжественное ожидание."}
+      ]
+    },
+    {
+      "scene": "review",
+      "domain": "engineering",
+      "payload": [
+        {"id": "teacher-correction-with-check", "use": "anonymous_anchor", "anchor": "Ошибка названа; теперь покажите опыт, который не даст ей вернуться."}
+      ]
+    },
+    {
+      "scene": "diagnosis",
+      "domain": "systems",
+      "payload": [
+        {"id": "radio-propagation-context", "use": "anonymous_anchor", "anchor": "Аппаратура отвечает за свой тракт; условия прохождения отвечают за остальное."}
+      ]
+    },
+    {
+      "scene": "review",
+      "domain": "analysis",
+      "payload": [
+        {"id": "kvant-model-and-measurement", "use": "transform_only", "anchor": "Модель ведёт себя безупречно, пока не познакомится с измерением."},
+        {"id": "physics-folklore-requirement", "use": "anonymous_anchor", "anchor": "Требование выполнимо ровно до тех пор, пока его не начнут понимать буквально."}
+      ]
+    }
   ]
 }
