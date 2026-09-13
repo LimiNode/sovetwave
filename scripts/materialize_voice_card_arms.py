@@ -78,15 +78,18 @@ def materialize(case_id: str, arm: str) -> dict[str, Any]:
     eligible = case["selector_eligible"]
     scene, domain = case.get("scene"), case.get("domain")
     selector_invoked = False
+    oracle_selector_invoked = False
     selector_command: list[str] | None = None
-    payload: list[dict[str, str]] = []
+    payload: list[dict[str, str]] | None = []
+    oracle_payload: list[dict[str, str]] | None = None
     mode = "disabled"
     routing_instruction = "Voice-card selection is inapplicable. Do not inspect tags, invoke the selector, or load cards."
     if eligible and arm == "A":
         if not scene or not domain:
             raise ValueError(f"selector-positive case has no fixed tags: {case_id}")
-        payload, selector_command = dynamic_payload(scene, domain)
-        selector_invoked = True
+        oracle_payload, selector_command = dynamic_payload(scene, domain)
+        oracle_selector_invoked = True
+        payload = None
         mode = "runtime_selector"
         routing_instruction = (
             f"Use the fixed preregistered tags scene={scene!r}, domain={domain!r}. "
@@ -117,9 +120,11 @@ def materialize(case_id: str, arm: str) -> dict[str, Any]:
         "tag_inference_measured": False,
         "list_tags_discovery_measured": False,
         "selector_invoked": selector_invoked,
+        "oracle_selector_invoked": oracle_selector_invoked,
         "selector_command": selector_command,
         "card_mode": mode,
         "card_payload": payload,
+        "validation_oracle_payload": oracle_payload,
         "routing_instruction": routing_instruction,
     }
 

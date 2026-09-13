@@ -54,6 +54,19 @@ uses the committed payload, C carries no payload, and all three arms omit
 selector/cards for negative controls. Routing instructions are host context,
 not additions to the user prompt.
 
+The measured runner is opt-in and keeps the A oracle out of the A input:
+
+```text
+py -3 scripts/run_voice_card_ablation.py --output <result.json>
+```
+
+Without `--execute` this writes only the 54-row dry-run plan. With explicit
+`--execute` and a provider configuration, A's selector command runs inside the
+Codex session and its JSON event stream is checked for exactly one selector
+invocation on each positive observation; B and C are checked for zero. The
+runner writes an append-only checkpoint and provenance sidecar and supports
+resume only when their metadata matches.
+
 Primary metrics are semantic assertion pass rate and first-attempt completion.
 Secondary metrics are applicable voice/language axes, input/cached/uncached
 input, output/reasoning tokens, tool calls, and elapsed time. The pre-registered

@@ -28,7 +28,7 @@
     }
   ],
   "contrasts": {
-    "A_vs_B": "Runtime selector and tool-round-trip cost, holding card IDs constant.",
+    "A_vs_B": "Runtime selector and tool-round-trip cost, holding the full ordered id/use/anchor card payload constant.",
     "B_vs_C": "Marginal semantic and voice value of the cards without selector cost.",
     "A_vs_C": "Cost and value of the complete current card package."
   },
@@ -117,7 +117,7 @@
     "interpretation": "The 18-observation pilot is an engineering gate, not a formal non-inferiority test; report censoring and completion separately."
   },
   "provenance": {
-    "runner": "scripts/run_revision_interleaved.py",
+    "runner": "scripts/run_voice_card_ablation.py",
     "requirements": ["record Git HEAD and dirty-state", "checkpoint one observation at a time", "reject resume on provenance mismatch", "record requested and resolved model"],
     "model_runs": "not_started"
   }

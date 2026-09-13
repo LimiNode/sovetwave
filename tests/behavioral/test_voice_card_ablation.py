@@ -16,6 +16,12 @@ assert materializer_spec is not None and materializer_spec.loader is not None
 materializer = importlib.util.module_from_spec(materializer_spec)
 materializer_spec.loader.exec_module(materializer)
 
+RUNNER = ROOT / "scripts" / "run_voice_card_ablation.py"
+runner_spec = importlib.util.spec_from_file_location("run_voice_card_ablation", RUNNER)
+assert runner_spec is not None and runner_spec.loader is not None
+ablation_runner = importlib.util.module_from_spec(runner_spec)
+runner_spec.loader.exec_module(ablation_runner)
+
 
 class VoiceCardAblationTests(unittest.TestCase):
     def test_static_map_is_equivalent_for_preregistered_pairs(self) -> None:
@@ -66,13 +72,15 @@ class VoiceCardAblationTests(unittest.TestCase):
             dynamic = materializer.materialize(case["id"], "A")
             static = materializer.materialize(case["id"], "B")
             no_cards = materializer.materialize(case["id"], "C")
-            self.assertTrue(dynamic["selector_invoked"])
+            self.assertFalse(dynamic["selector_invoked"])
+            self.assertTrue(dynamic["oracle_selector_invoked"])
             self.assertFalse(static["selector_invoked"])
             self.assertFalse(no_cards["selector_invoked"])
-            self.assertEqual(dynamic["card_payload"], static["card_payload"])
-            self.assertTrue(dynamic["card_payload"])
+            self.assertIsNone(dynamic["card_payload"])
+            self.assertEqual(dynamic["validation_oracle_payload"], static["card_payload"])
+            self.assertTrue(static["card_payload"])
             self.assertEqual(no_cards["card_payload"], [])
-            self.assertTrue(all(set(card) == {"id", "use", "anchor"} for card in dynamic["card_payload"]))
+            self.assertTrue(all(set(card) == {"id", "use", "anchor"} for card in static["card_payload"]))
             self.assertEqual(dynamic["fixed_tags"], {"scene": case["scene"], "domain": case["domain"]})
             self.assertIn(case["scene"], dynamic["selector_command"])
             self.assertIn(case["domain"], dynamic["selector_command"])
@@ -91,12 +99,34 @@ class VoiceCardAblationTests(unittest.TestCase):
             for arm in ("A", "B", "C"):
                 treatment = materializer.materialize(case["id"], arm)
                 self.assertFalse(treatment["selector_invoked"])
+                self.assertFalse(treatment["oracle_selector_invoked"])
                 self.assertIsNone(treatment["selector_command"])
                 self.assertEqual(treatment["card_payload"], [])
                 self.assertEqual(treatment["card_mode"], "disabled")
                 self.assertIn("inapplicable", treatment["routing_instruction"])
                 prompts.add(treatment["user_prompt"])
             self.assertEqual(len(prompts), 1)
+
+    def test_execution_plan_keeps_a_oracle_out_of_a_input(self) -> None:
+        rows = ablation_runner.invocation_plan()
+        self.assertEqual(len(rows), 54)
+        positive_a = [row for row in rows if row["case_group"] == "selector-positive" and row["arm"] == "A"]
+        positive_b = [row for row in rows if row["case_group"] == "selector-positive" and row["arm"] == "B"]
+        positive_c = [row for row in rows if row["case_group"] == "selector-positive" and row["arm"] == "C"]
+        self.assertEqual(len(positive_a), 12)
+        self.assertEqual(len(positive_b), 12)
+        self.assertEqual(len(positive_c), 12)
+        self.assertTrue(all(not row["card_payload_supplied"] and row["expected_selector_invocations"] == 1 for row in positive_a))
+        self.assertTrue(all(row["card_payload_supplied"] and row["expected_selector_invocations"] == 0 for row in positive_b))
+        self.assertTrue(all(not row["card_payload_supplied"] and row["expected_selector_invocations"] == 0 for row in positive_c))
+
+    def test_selector_telemetry_counts_one_lifecycle_item(self) -> None:
+        stream = "\n".join([
+            '{"type":"item.started","item":{"id":"cmd-1","type":"command_execution","command":"py select_voice_cards.py --scene lesson"}}',
+            '{"type":"item.updated","item":{"id":"cmd-1","type":"command_execution","command":"py select_voice_cards.py --scene lesson"}}',
+            '{"type":"item.completed","item":{"id":"cmd-1","type":"command_execution","command":"py select_voice_cards.py --scene lesson"}}',
+        ])
+        self.assertEqual(ablation_runner.selector_invocations(stream), 1)
 
 
 if __name__ == "__main__":
