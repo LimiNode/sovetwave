@@ -148,6 +148,11 @@ class VoiceCardAblationTests(unittest.TestCase):
         )
         self.assertFalse(checked["selector_invocation_match"])
         self.assertEqual(checked["selector_trace_status"], "wrong_selector_args")
+        cat = '{"item":{"id":"cat-1","type":"command_execution","command":"cat select_voice_cards.py --scene review --domain analysis --max 2 --json"}}'
+        cat_checked = ablation_runner.validate_selector_trace(
+            cat, expected=1, fixed_tags={"scene": "review", "domain": "analysis"}, oracle_payload=None,
+        )
+        self.assertFalse(cat_checked["selector_invocation_match"])
         duplicate = "\n".join([
             '{"item":{"id":"a","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 2 --json"}}',
             '{"item":{"id":"b","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 2 --json"}}',

@@ -106,6 +106,11 @@ def _normalize_selector_payload(value: Any) -> Any:
     return [{key: card.get(key) for key in ("id", "use", "anchor")} for card in value]
 
 
+def _resolved_model_value(results: list[dict[str, Any]]) -> str | None:
+    resolved = sorted({r.get("resolved_model") for r in results if isinstance(r.get("resolved_model"), str) and r.get("resolved_model")})
+    return resolved[0] if len(resolved) == 1 else ("ambiguous" if resolved else None)
+
+
 def validate_selector_trace(
     stream: str,
     *,
@@ -150,6 +155,9 @@ def validate_selector_trace(
         or maximum != "2"
         or "--json" not in tokens
         or "--list-tags" in tokens
+        or len(tokens) != 9
+        or tokens[0].replace("\\", "/").rsplit("/", 1)[-1].lower() not in {"python", "python.exe", "python3", "python3.exe", "py", "py.exe"}
+        or tokens[1].replace("\\", "/").rsplit("/", 1)[-1].lower() != "select_voice_cards.py"
     ):
         result["selector_trace_status"] = "wrong_selector_args"
         return result
@@ -221,7 +229,7 @@ def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
     skill_path.write_text(skill_path.read_text(encoding="utf-8") + block + "\n", encoding="utf-8")
 
 
-def metadata(manifest: dict[str, Any], model: str, provider_overrides_sha256: str | None) -> dict[str, Any]:
+def metadata(manifest: dict[str, Any], model: str, provider_overrides_sha256: str | None = None) -> dict[str, Any]:
     return {
         "schema_version": "1.0",
         "experiment_id": manifest["experiment_id"],
@@ -242,13 +250,12 @@ def _metadata_identity(metadata_payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _write_checkpoint_metadata(path: Path, meta: dict[str, Any], results: list[dict[str, Any]]) -> None:
-    resolved = sorted({r.get("resolved_model") for r in results if isinstance(r.get("resolved_model"), str) and r.get("resolved_model")})
     payload = dict(meta)
-    payload["resolved_model"] = resolved[0] if len(resolved) == 1 else ("ambiguous" if resolved else None)
+    payload["resolved_model"] = _resolved_model_value(results)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, overrides: list[str], provider_overrides_sha256: str | None) -> dict[str, Any]:
+def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, overrides: list[str], provider_overrides_sha256: str | None = None) -> dict[str, Any]:
     envelope = materializer.materialize(row["case_id"], row["arm"])
     cases = planner.behavioral_cases()
     case = cases[row["case_id"]]
@@ -362,7 +369,7 @@ def main() -> int:
                 break
     finally:
         runner.release_checkpoint_lock(lock)
-    payload = {**meta, "resolved_model": next(iter({r.get("resolved_model") for r in results if r.get("resolved_model")} ), None),
+    payload = {**meta, "resolved_model": _resolved_model_value(results),
                "status": "stopped_invalid_treatment" if 'stopped_invalid' in locals() and stopped_invalid else "completed", "observations": results}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
