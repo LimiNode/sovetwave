@@ -86,6 +86,7 @@ class VoiceCardAblationTests(unittest.TestCase):
             self.assertEqual(dynamic["fixed_tags"], {"scene": case["scene"], "domain": case["domain"]})
             self.assertIn(case["scene"], dynamic["selector_command"])
             self.assertIn(case["domain"], dynamic["selector_command"])
+            self.assertIn("--json", dynamic["routing_instruction"])
             self.assertNotIn("--list-tags", dynamic["selector_command"])
             self.assertIn("fixed preregistered tags", dynamic["routing_instruction"])
             self.assertIn("Do not invoke", static["routing_instruction"])
