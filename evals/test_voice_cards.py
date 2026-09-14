@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import subprocess
 import sys
@@ -13,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SELECTOR = ROOT / "skills" / "sovetwave" / "scripts" / "select_voice_cards.py"
 CORPUS = ROOT / "skills" / "sovetwave" / "references" / "voice-cards.json"
+STATIC_ROUTING = ROOT / "skills" / "sovetwave" / "references" / "voice-card-routing.json"
 SOURCE_REGISTRY = ROOT / "research" / "sources.md"
 
 
@@ -45,6 +47,22 @@ def assert_selector_error(*arguments: str, fragment: str) -> None:
 
 def main() -> int:
     corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
+    routing = json.loads(STATIC_ROUTING.read_text(encoding="utf-8"))
+    if routing.get("source_sha256") != hashlib.sha256(CORPUS.read_bytes()).hexdigest():
+        raise SystemExit("static routing source hash does not match voice-card corpus")
+    card_ids = {card["id"] for card in corpus["cards"]}
+    seen_pairs = set()
+    for pair in routing.get("canonical_pairs", []):
+        key = (pair.get("scene"), pair.get("domain"))
+        if key in seen_pairs:
+            raise SystemExit(f"duplicate static routing pair: {key}")
+        seen_pairs.add(key)
+        expected_ids = pair.get("card_ids")
+        if not isinstance(expected_ids, list) or not expected_ids or not set(expected_ids) <= card_ids:
+            raise SystemExit(f"static routing has invalid card IDs: {key}")
+        selected_ids = [card["id"] for card in run_selector("--scene", key[0], "--domain", key[1], "--max", "2")]
+        if selected_ids != expected_ids:
+            raise SystemExit(f"static routing differs from selector for {key}: {expected_ids} != {selected_ids}")
     source_refs = corpus["source_refs"]
     source_registry = SOURCE_REGISTRY.read_text(encoding="utf-8")
     if any(not card.get("source_refs") for card in corpus["cards"]):

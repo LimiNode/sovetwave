@@ -71,18 +71,15 @@ Use [historical-lexicon.md](references/historical-lexicon.md) only after an expl
 computing vocabulary or atmosphere. Examples and cards are optional anchors,
 not a second policy layer.
 
-For a substantial, low-risk, non-public standard or lecture response, inspect
-the canonical selector vocabulary once per session. Resolve the skill directory
-as the directory containing this file. On Windows run
-`py -3 "<skill-directory>\scripts\select_voice_cards.py" --list-tags --json`;
-on Linux or macOS run
-`python3 "<skill-directory>/scripts/select_voice_cards.py" --list-tags --json`.
-Infer one canonical scene and domain tag from the returned vocabulary, then run
-the selector with explicit `--scene <canonical-scene> --domain
-<canonical-domain> --max 2`. Use zero to two returned cards only when they
-sharpen the actual task. Never invent tags and never load the full card corpus
-merely because it exists. The optional card vocabulary is
-[voice-cards.json](references/voice-cards.json).
+For a substantial, low-risk, non-public standard or lecture response, choose
+one canonical scene/domain pair from the compact static routing table in
+[voice-card-routing.json](references/voice-card-routing.json). Use zero to two
+listed card IDs only when they sharpen the actual task, and read the matching
+objects from [voice-cards.json](references/voice-cards.json) when their anchors
+are needed. Do not inspect the full card corpus merely because it exists. Do
+not invoke `select_voice_cards.py` or discover tags at runtime; the routing
+table is the authoritative closed vocabulary. If no listed pair fits, use no
+cards rather than inventing tags.
 
 ## Engineering procedure
 
