@@ -1,8 +1,11 @@
-# Voice-card selector ablation pilot
+# Voice-card selector ablation pilot (protocol v2)
 
 This directory contains the design for the first selector-value experiment.
 It is deliberately separate from the production routing path and the default
 behavioral case suite. No model call is made by the planner.
+Protocol v2 replaces the production selector paragraph in each ephemeral
+skill copy; it never appends a competing selector policy. The replacement is
+fail-closed and requires exactly one production selector block.
 
 ## Causal contrasts
 
@@ -54,6 +57,16 @@ uses the committed payload, C carries no payload, and all three arms omit
 selector/cards for negative controls. Routing instructions are host context,
 not additions to the user prompt.
 
+Before the pilot, run the live execution preflight on the synthetic fixture:
+
+```text
+py -3 scripts/run_voice_card_preflight.py --output <preflight.json> --execute --model gpt-5.6-sol --codex-provider-config <config.toml>
+```
+
+The preflight is a diagnostic outside the pilot dataset. It must establish
+one `fixed_select` for A and zero selector calls for B and C before the pilot
+is frozen and started.
+
 The measured runner is opt-in and keeps the A oracle out of the A input:
 
 ```text
@@ -64,8 +77,10 @@ Without `--execute` this writes only the 54-row dry-run plan. With explicit
 `--execute` and a provider configuration, A's selector command runs inside the
 Codex session and its JSON event stream is checked for exactly one selector
 invocation on each positive observation; B and C are checked for zero. The
-runner writes an append-only checkpoint and provenance sidecar and supports
-resume only when their metadata matches.
+runner writes an append-only checkpoint and provenance sidecar, including the
+effective ephemeral skill SHA and structured selector trace, and supports
+resume only when their metadata matches. Invalid treatment stops the run by
+default and is never included in causal metrics.
 
 Primary metrics are `full_observation_pass` and first-attempt completion.
 Observations with `treatment_status=invalid` are execution-integrity failures:

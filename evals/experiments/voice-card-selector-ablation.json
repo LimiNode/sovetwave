@@ -1,8 +1,9 @@
 {
   "schema_version": "1.0",
-  "experiment_id": "voice-card-selector-ablation-pilot",
+  "experiment_id": "voice-card-selector-ablation-fixed-tag-v2",
+  "protocol_revision": 2,
   "status": "design_only",
-  "base_revision": "d0033b7f7880ce60629a1652d0f56806ff247951",
+  "base_revision": "0d2b35e645520e4e62513cefd6c93f5995c94b73",
   "purpose": "Separate the cost of runtime card selection from the marginal value of selected voice cards.",
   "tag_policy": {
     "mode": "fixed_preregistered_tags",
@@ -118,7 +119,7 @@
   },
   "provenance": {
     "runner": "scripts/run_voice_card_ablation.py",
-    "requirements": ["record Git HEAD and dirty-state", "checkpoint one observation at a time", "reject resume on provenance mismatch", "record requested and resolved model"],
+    "requirements": ["record protocol revision, Git HEAD, and dirty-state", "checkpoint one observation at a time", "reject resume on provenance mismatch", "record requested and resolved model", "record effective ephemeral skill SHA256", "record structured selector trace"],
     "model_runs": "not_started"
   }
 }

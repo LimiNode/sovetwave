@@ -176,11 +176,12 @@ class VoiceCardAblationTests(unittest.TestCase):
         envelope = materializer.materialize("voice-card-selector-teaching-explanation", "A")
         with tempfile.TemporaryDirectory() as directory:
             skill = Path(directory) / "SKILL.md"
-            skill.write_text("kernel\n", encoding="utf-8")
+            skill.write_text((ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8"), encoding="utf-8")
             ablation_runner.append_treatment(skill, envelope)
             rendered = skill.read_text(encoding="utf-8")
         self.assertIn("select_voice_cards.py", rendered)
         self.assertIn("--max 2 --json", rendered)
+        self.assertNotIn("Inspect the closed tag vocabulary", rendered)
 
     def test_controls_append_treatment_without_tags_or_cards(self) -> None:
         manifest = materializer.read_json(materializer.MANIFEST)
@@ -191,7 +192,7 @@ class VoiceCardAblationTests(unittest.TestCase):
                 envelope = materializer.materialize(case["id"], arm)
                 with tempfile.TemporaryDirectory() as directory:
                     skill = Path(directory) / "SKILL.md"
-                    skill.write_text("kernel\n", encoding="utf-8")
+                    skill.write_text((ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8"), encoding="utf-8")
                     ablation_runner.append_treatment(skill, envelope)
                     rendered[arm] = skill.read_text(encoding="utf-8")
             self.assertEqual(rendered["A"], rendered["B"])

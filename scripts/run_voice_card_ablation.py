@@ -111,6 +111,23 @@ def _resolved_model_value(results: list[dict[str, Any]]) -> str | None:
     return resolved[0] if len(resolved) == 1 else ("ambiguous" if resolved else None)
 
 
+def _resolved_model_from_stream(stream: str) -> str | None:
+    for line in (stream or "").splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        for candidate in (event.get("model"), event.get("resolved_model"), event.get("resolvedModel")):
+            if isinstance(candidate, str) and candidate:
+                return candidate
+        thread = event.get("thread")
+        if isinstance(thread, dict) and isinstance(thread.get("model"), str):
+            return thread["model"]
+    return None
+
+
 def validate_selector_trace(
     stream: str,
     *,
@@ -120,8 +137,38 @@ def validate_selector_trace(
 ) -> dict[str, Any]:
     """Validate the preregistered selector treatment in a Codex event stream."""
     items = _selector_items(stream)
+    traces: list[dict[str, Any]] = []
+    for item in items:
+        command = _command_text(item).replace("\\", "/")
+        try:
+            item_tokens = [token.strip("'\"") for token in shlex.split(command, posix=False)]
+        except ValueError:
+            item_tokens = command.split()
+        if "--list-tags" in item_tokens:
+            kind = "list_tags"
+        elif all(flag in item_tokens for flag in ("--scene", "--domain", "--max", "--json")):
+            kind = "fixed_select"
+        else:
+            kind = "other_selector"
+        payload = _selector_output(item)
+        payload_hash = hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest() if payload is not None else None
+        traces.append({
+            "item_id": item.get("id"),
+            "kind": kind,
+            "normalized_command": command,
+            "scene": item_tokens[item_tokens.index("--scene") + 1] if "--scene" in item_tokens and item_tokens.index("--scene") + 1 < len(item_tokens) else None,
+            "domain": item_tokens[item_tokens.index("--domain") + 1] if "--domain" in item_tokens and item_tokens.index("--domain") + 1 < len(item_tokens) else None,
+            "max": item_tokens[item_tokens.index("--max") + 1] if "--max" in item_tokens and item_tokens.index("--max") + 1 < len(item_tokens) else None,
+            "json": "--json" in item_tokens,
+            "list_tags": "--list-tags" in item_tokens,
+            "exit_code": item.get("exit_code", item.get("exitCode")),
+            "output_status": "observed" if payload is not None else "not_available",
+            "payload_sha256": payload_hash,
+            "oracle_match": payload == oracle_payload if payload is not None and expected else None,
+        })
     result: dict[str, Any] = {
         "recorded_selector_invocations": len(items),
+        "selector_trace": traces,
         "selector_invocation_match": False,
         "selector_trace_status": "not_expected" if expected == 0 else "invalid",
         "selector_output_status": "not_available",
@@ -202,17 +249,24 @@ def invocation_plan() -> list[dict[str, Any]]:
 
 
 def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
-    """Add an arm-specific host instruction without changing the user prompt."""
+    """Replace the production selector policy with one arm-specific contract."""
+    original = skill_path.read_text(encoding="utf-8")
+    start_marker = "For a substantial, low-risk, non-public standard or lecture response, inspect\n"
+    end_marker = "[voice-cards.json](references/voice-cards.json)."
+    if original.count(start_marker) != 1:
+        raise ValueError("expected exactly one production voice-card selector policy")
+    start = original.index(start_marker)
+    end = original.index(end_marker, start) + len(end_marker)
     scene_domain = envelope["fixed_tags"]
     if scene_domain is None:
         # Negative controls deliberately have no tags or card payload in any
         # arm. Keep this branch before the A/B formatting paths: controls are
         # interleaved with positive cases and must never dereference tags.
-        block = "\n\n## Fixed-tag ablation treatment\nVoice-card selection is inapplicable for this control. Do not inspect tags or load card data."
+        block = "Voice-card selection is inapplicable for this control. Do not inspect tags or load card data."
     elif envelope["arm"] == "A":
         block = (
-            "\n\n## Fixed-tag ablation treatment\n"
-            f"For this measured observation use the authoritative tags scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
+            "For this measured observation use the authoritative tags "
+            f"scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
             "Do not run --list-tags or infer replacement tags. Invoke exactly this command once and use its returned ordered id/use/anchor payload: "
             f"python .agents/skills/sovetwave/scripts/select_voice_cards.py --scene {scene_domain['scene']} --domain {scene_domain['domain']} --max 2 --json. "
             "This selector invocation is part of the measured turn."
@@ -220,18 +274,16 @@ def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
     elif envelope["arm"] == "B":
         payload = json.dumps(envelope["card_payload"], ensure_ascii=False, indent=2)
         block = (
-            "\n\n## Fixed-tag ablation treatment\n"
             f"The authoritative tags are scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
             "Do not run --list-tags or select_voice_cards.py. Use this exact ordered id/use/anchor payload as the voice-card context:\n\n"
             f"```json\n{payload}\n```"
         )
     else:
         block = (
-            "\n\n## Fixed-tag ablation treatment\n"
             f"The experiment metadata tags are scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
             "Voice cards are disabled for this observation. Do not run --list-tags, select_voice_cards.py, or load card data."
         )
-    skill_path.write_text(skill_path.read_text(encoding="utf-8") + block + "\n", encoding="utf-8")
+    skill_path.write_text(original[:start] + block + "\n\n" + original[end:], encoding="utf-8")
 
 
 def metadata(manifest: dict[str, Any], model: str, provider_overrides_sha256: str | None = None) -> dict[str, Any]:
@@ -267,7 +319,9 @@ def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, over
     started = time.monotonic()
     with runner.make_workspace(ROOT, True, None, False, None) as temporary:
         workspace = Path(temporary)
-        append_treatment(workspace / ".agents" / "skills" / "sovetwave" / "SKILL.md", envelope)
+        skill_copy = workspace / ".agents" / "skills" / "sovetwave" / "SKILL.md"
+        append_treatment(skill_copy, envelope)
+        effective_skill_sha256 = hashlib.sha256(skill_copy.read_bytes()).hexdigest()
         response_path = workspace / "last-message.txt"
         command = runner.command_for("codex", workspace, case["prompt"], True, model, response_path, overrides)
         base = {
@@ -283,6 +337,7 @@ def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, over
             "expected_selector_invocations": 1 if row.get("selector_eligible") and row["arm"] == "A" else 0,
             "requested_model": model,
             "provider_overrides_sha256": provider_overrides_sha256,
+            "effective_skill_sha256": effective_skill_sha256,
         }
         expected = base["expected_selector_invocations"]
         try:
@@ -309,7 +364,7 @@ def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, over
             "codex_usage": telemetry["usage"], "codex_usage_status": telemetry["usage_status"],
             "status": status, "process_status": process_status,
             "first_attempt_completion": process_status == "completed", "returncode": completed.returncode,
-            "response": response.strip(), "resolved_model": runner.resolved_model_from_stderr(completed.stderr or ""),
+            "response": response.strip(), "resolved_model": runner.resolved_model_from_stderr(completed.stderr or "") or _resolved_model_from_stream(completed.stdout or ""),
             "elapsed_seconds": round(time.monotonic() - started, 3)}
 
 
