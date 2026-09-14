@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import subprocess
 import sys
 import tempfile
@@ -249,6 +250,19 @@ class VoiceCardAblationTests(unittest.TestCase):
             ablation_runner._metadata_identity(left),
             ablation_runner._metadata_identity(right),
         )
+
+    def test_preflight_script_supports_design_only_mode(self) -> None:
+        script = ROOT / "scripts" / "run_voice_card_preflight.py"
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "preflight.json"
+            completed = subprocess.run(
+                [sys.executable, str(script), "--output", str(output)],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(payload["protocol_revision"], 2)
+        self.assertEqual(payload["arms"], ["A", "B", "C"])
 
 
 if __name__ == "__main__":

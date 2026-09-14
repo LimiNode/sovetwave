@@ -83,7 +83,7 @@ def run_arm(arm: str, model: str, timeout: int, overrides: list[str], provider_h
             "fixed_tags": envelope["fixed_tags"], "expected_selector_invocations": expected,
             "validation_oracle_payload": envelope["validation_oracle_payload"],
             "effective_skill_sha256": effective_skill_sha256,
-            "requested_model": model, "resolved_model": resolved(completed.stdout or "", completed.stderr or ""),
+            "requested_model": model, "resolved_model": resolved_model(completed.stdout or "", completed.stderr or ""),
             "provider_overrides_sha256": provider_hash, **trace,
             "codex_tool_calls": telemetry["tool_calls"], "codex_usage": telemetry["usage"],
             "codex_usage_status": telemetry["usage_status"], "status": process_status if treatment_status == "valid" else "invalid_treatment",
