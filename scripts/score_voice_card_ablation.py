@@ -46,10 +46,25 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {"total_observations": len(rows), "unique_paired_keys": len(keys), "arms": arms}
 
 
+def render_markdown(packet: dict[str, Any]) -> str:
+    summary = packet["operational_summary"]
+    lines = ["# Voice-card selector ablation scoring packet", "", "This packet is deterministic scaffolding; semantic fields are intentionally not scored.", "", f"Experiment: `{packet.get('experiment_id')}`", f"Protocol revision: `{packet.get('protocol_revision')}`", "", "## Operational summary", "", "| Arm | Observations | Causal-eligible | First attempts | Timeouts | Selector calls | Median input | Median uncached input | Median elapsed |", "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    for arm in ("A", "B", "C"):
+        row = summary["arms"][arm]
+        lines.append(f"| {arm} | {row['observations']} | {row['causal_eligible']} | {row['first_attempt_completed']} | {row['timeouts']} | {row['selector_invocations']} | {row['input_tokens']['median']} | {row['uncached_input_tokens']['median']} | {row['elapsed_seconds']['median']} |")
+    lines.extend(["", "## Observations", ""])
+    for index, row in enumerate(packet["observations"], 1):
+        lines.extend([f"### {index}. {row.get('case_id')} — arm {row.get('arm')}, repetition {row.get('repetition')}", "", f"Process: `{row.get('process_status')}`; first attempt: `{row.get('first_attempt_completion')}`; treatment: `{row.get('treatment_status')}`; causal eligible: `{row.get('causal_eligible')}`.", "", "#### Prompt", "", row.get("prompt", "") or "", "", "#### Assertions", ""])
+        lines.extend(f"- {assertion}" for assertion in (row.get("assertions") or []))
+        lines.extend(["", "#### Response", "", row.get("response", "") or "_No response recorded._", "", "#### Structured execution trace", "", "```json", json.dumps(row.get("selector_trace") or [], ensure_ascii=False, indent=2), "```", ""])
+    return "\n".join(lines)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=Path)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--markdown-output", type=Path)
     args = parser.parse_args()
     payload = json.loads(args.run.read_text(encoding="utf-8"))
     rows = observations(payload)
@@ -68,12 +83,15 @@ def main() -> int:
             "instructions": "A human/independent grader must fill these fields from responses and preregistered assertions; this adapter performs no semantic judgement.",
         },
         "observations": [
-            {key: row.get(key) for key in ("case_id", "arm", "repetition", "sequence", "response", "assertions", "applicable_axes", "process_status", "first_attempt_completion", "treatment_status", "causal_eligible", "codex_usage", "codex_usage_status", "codex_tool_calls", "elapsed_seconds", "selector_trace", "effective_skill_sha256", "resolved_model", "resolved_model_source")}
+            {key: row.get(key) for key in ("case_id", "arm", "repetition", "sequence", "prompt", "response", "assertions", "applicable_axes", "process_status", "first_attempt_completion", "treatment_status", "causal_eligible", "codex_usage", "codex_usage_status", "codex_tool_calls", "elapsed_seconds", "selector_trace", "effective_skill_sha256", "resolved_model", "resolved_model_source")}
             for row in rows
         ],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(packet, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.markdown_output:
+        args.markdown_output.parent.mkdir(parents=True, exist_ok=True)
+        args.markdown_output.write_text(render_markdown(packet), encoding="utf-8")
     print(f"Wrote deterministic scoring packet to {args.output}")
     return 0
 
