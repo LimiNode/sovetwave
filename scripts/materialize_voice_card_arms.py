@@ -94,7 +94,7 @@ def materialize(case_id: str, arm: str) -> dict[str, Any]:
         routing_instruction = (
             f"Use the fixed preregistered tags scene={scene!r}, domain={domain!r}. "
             "Do not infer replacement tags or run --list-tags. Invoke exactly this command once: "
-            f"python .agents/skills/sovetwave/scripts/select_voice_cards.py --scene {scene} --domain {domain} --max 2 --json. "
+            f"py -3 .agents/skills/sovetwave/scripts/select_voice_cards.py --scene {scene} --domain {domain} --max 2 --json. "
             "Use only the ordered id/use/anchor payload it returns."
         )
     elif eligible and arm == "B":

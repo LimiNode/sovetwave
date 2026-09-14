@@ -222,9 +222,10 @@ def validate_selector_trace(
         or maximum != "2"
         or "--json" not in tokens
         or "--list-tags" in tokens
-        or len(tokens) != 9
+        or len(tokens) not in {9, 10}
         or tokens[0].replace("\\", "/").rsplit("/", 1)[-1].lower() not in {"python", "python.exe", "python3", "python3.exe", "py", "py.exe"}
-        or tokens[1].replace("\\", "/").rsplit("/", 1)[-1].lower() != "select_voice_cards.py"
+        or (tokens[0].replace("\\", "/").rsplit("/", 1)[-1].lower() in {"py", "py.exe"} and tokens[1] != "-3")
+        or tokens[2 if tokens[0].replace("\\", "/").rsplit("/", 1)[-1].lower() in {"py", "py.exe"} else 1].replace("\\", "/").rsplit("/", 1)[-1].lower() != "select_voice_cards.py"
         or ";" in text
         or items[0].get("exit_code", items[0].get("exitCode")) != 0
     ):
@@ -290,7 +291,7 @@ def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
             "For this measured observation use the authoritative tags "
             f"scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
             "Do not run --list-tags or infer replacement tags. Invoke exactly this command once and use its returned ordered id/use/anchor payload: "
-            f"python .agents/skills/sovetwave/scripts/select_voice_cards.py --scene {scene_domain['scene']} --domain {scene_domain['domain']} --max 2 --json. "
+            f"py -3 .agents/skills/sovetwave/scripts/select_voice_cards.py --scene {scene_domain['scene']} --domain {scene_domain['domain']} --max 2 --json. "
             "Run it as a standalone shell invocation after any reference reads: do not batch it with another command and do not retry it. "
             "This selector invocation is part of the measured turn."
         )
