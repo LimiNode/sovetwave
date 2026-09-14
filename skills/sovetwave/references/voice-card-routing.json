@@ -4,564 +4,83 @@
   "source_sha256": "29f40deeb907bfc01e81f7a5aefa11b950f6752a5b50598b4fe3880d94463ab9",
   "selector_max": 2,
   "canonical_pairs": [
-    {
-      "scene": "acceptance",
-      "domain": "laboratory",
-      "card_ids": [
-        "chemistry-procedure"
-      ]
-    },
-    {
-      "scene": "acceptance",
-      "domain": "manufacturing",
-      "card_ids": [
-        "chemistry-procedure",
-        "engineering-transcript-assembly"
-      ]
-    },
-    {
-      "scene": "acceptance",
-      "domain": "reliability",
-      "card_ids": [
-        "museum-bench-and-operation"
-      ]
-    },
-    {
-      "scene": "acceptance",
-      "domain": "research",
-      "card_ids": [
-        "repin-report-and-work"
-      ]
-    },
-    {
-      "scene": "acceptance",
-      "domain": "systems",
-      "card_ids": [
-        "engineering-transcript-assembly",
-        "museum-bench-and-operation"
-      ]
-    },
-    {
-      "scene": "ambiguous-instruction",
-      "domain": "documentation",
-      "card_ids": [
-        "repin-ambiguous-order"
-      ]
-    },
-    {
-      "scene": "ambiguous-instruction",
-      "domain": "management",
-      "card_ids": [
-        "repin-ambiguous-order"
-      ]
-    },
-    {
-      "scene": "assembly",
-      "domain": "manufacturing",
-      "card_ids": [
-        "engineering-transcript-assembly"
-      ]
-    },
-    {
-      "scene": "assembly",
-      "domain": "systems",
-      "card_ids": [
-        "engineering-transcript-assembly"
-      ]
-    },
-    {
-      "scene": "classification",
-      "domain": "electronics",
-      "card_ids": [
-        "teacher-exam-classification"
-      ]
-    },
-    {
-      "scene": "classification",
-      "domain": "teaching",
-      "card_ids": [
-        "teacher-exam-classification"
-      ]
-    },
-    {
-      "scene": "contradiction",
-      "domain": "analysis",
-      "card_ids": [
-        "physics-folklore-requirement"
-      ]
-    },
-    {
-      "scene": "contradiction",
-      "domain": "requirements",
-      "card_ids": [
-        "physics-folklore-requirement"
-      ]
-    },
-    {
-      "scene": "debugging",
-      "domain": "electronics",
-      "card_ids": [
-        "folklore-component-and-interface",
-        "teacher-jump-no-zero"
-      ]
-    },
-    {
-      "scene": "debugging",
-      "domain": "programming",
-      "card_ids": [
-        "teacher-jump-no-zero",
-        "teacher-signal-path"
-      ]
-    },
-    {
-      "scene": "debugging",
-      "domain": "systems",
-      "card_ids": [
-        "folklore-component-and-interface"
-      ]
-    },
-    {
-      "scene": "diagnosis",
-      "domain": "radio",
-      "card_ids": [
-        "radio-propagation-context"
-      ]
-    },
-    {
-      "scene": "diagnosis",
-      "domain": "systems",
-      "card_ids": [
-        "radio-propagation-context"
-      ]
-    },
-    {
-      "scene": "environment",
-      "domain": "radio",
-      "card_ids": [
-        "radio-propagation-context"
-      ]
-    },
-    {
-      "scene": "environment",
-      "domain": "systems",
-      "card_ids": [
-        "radio-propagation-context"
-      ]
-    },
-    {
-      "scene": "evidence",
-      "domain": "history",
-      "card_ids": [
-        "source-provenance"
-      ]
-    },
-    {
-      "scene": "evidence",
-      "domain": "research",
-      "card_ids": [
-        "source-provenance"
-      ]
-    },
-    {
-      "scene": "exam",
-      "domain": "electronics",
-      "card_ids": [
-        "teacher-exam-classification"
-      ]
-    },
-    {
-      "scene": "exam",
-      "domain": "teaching",
-      "card_ids": [
-        "teacher-exam-classification"
-      ]
-    },
-    {
-      "scene": "handover",
-      "domain": "coordination",
-      "card_ids": [
-        "niitm-closed-context"
-      ]
-    },
-    {
-      "scene": "handover",
-      "domain": "documentation",
-      "card_ids": [
-        "repin-ambiguous-order"
-      ]
-    },
-    {
-      "scene": "handover",
-      "domain": "engineering",
-      "card_ids": [
-        "repin-rare-knowledge"
-      ]
-    },
-    {
-      "scene": "handover",
-      "domain": "management",
-      "card_ids": [
-        "repin-ambiguous-order",
-        "repin-rare-knowledge"
-      ]
-    },
-    {
-      "scene": "handover",
-      "domain": "microelectronics",
-      "card_ids": [
-        "niitm-closed-context"
-      ]
-    },
-    {
-      "scene": "handover",
-      "domain": "systems",
-      "card_ids": [
-        "museum-team-interface"
-      ]
-    },
-    {
-      "scene": "handover",
-      "domain": "teamwork",
-      "card_ids": [
-        "museum-team-interface"
-      ]
-    },
-    {
-      "scene": "historical-claim",
-      "domain": "history",
-      "card_ids": [
-        "source-provenance"
-      ]
-    },
-    {
-      "scene": "historical-claim",
-      "domain": "research",
-      "card_ids": [
-        "source-provenance"
-      ]
-    },
-    {
-      "scene": "integration",
-      "domain": "coordination",
-      "card_ids": [
-        "niitm-closed-context"
-      ]
-    },
-    {
-      "scene": "integration",
-      "domain": "electronics",
-      "card_ids": [
-        "folklore-component-and-interface",
-        "production-tolerance"
-      ]
-    },
-    {
-      "scene": "integration",
-      "domain": "manufacturing",
-      "card_ids": [
-        "production-tolerance"
-      ]
-    },
-    {
-      "scene": "integration",
-      "domain": "microelectronics",
-      "card_ids": [
-        "niitm-closed-context"
-      ]
-    },
-    {
-      "scene": "integration",
-      "domain": "systems",
-      "card_ids": [
-        "folklore-component-and-interface",
-        "museum-team-interface"
-      ]
-    },
-    {
-      "scene": "integration",
-      "domain": "teamwork",
-      "card_ids": [
-        "museum-team-interface"
-      ]
-    },
-    {
-      "scene": "lesson",
-      "domain": "electronics",
-      "card_ids": [
-        "teacher-jump-no-zero",
-        "teacher-signal-path"
-      ]
-    },
-    {
-      "scene": "lesson",
-      "domain": "mathematics",
-      "card_ids": [
-        "teacher-board-next-step"
-      ]
-    },
-    {
-      "scene": "lesson",
-      "domain": "programming",
-      "card_ids": [
-        "fuksman-prerequisite",
-        "teacher-jump-no-zero"
-      ]
-    },
-    {
-      "scene": "lesson",
-      "domain": "teaching",
-      "card_ids": [
-        "fuksman-prerequisite",
-        "teacher-board-next-step"
-      ]
-    },
-    {
-      "scene": "load-test",
-      "domain": "mechanics",
-      "card_ids": [
-        "engineering-transcript-load"
-      ]
-    },
-    {
-      "scene": "load-test",
-      "domain": "reliability",
-      "card_ids": [
-        "engineering-transcript-load"
-      ]
-    },
-    {
-      "scene": "low-risk-humour",
-      "domain": "analysis",
-      "card_ids": [
-        "kvant-observation-law"
-      ]
-    },
-    {
-      "scene": "low-risk-humour",
-      "domain": "testing",
-      "card_ids": [
-        "kvant-observation-law"
-      ]
-    },
-    {
-      "scene": "manufacturing",
-      "domain": "electronics",
-      "card_ids": [
-        "production-tolerance"
-      ]
-    },
-    {
-      "scene": "manufacturing",
-      "domain": "manufacturing",
-      "card_ids": [
-        "production-tolerance"
-      ]
-    },
-    {
-      "scene": "measurement",
-      "domain": "electronics",
-      "card_ids": [
-        "folklore-radio-adjustment"
-      ]
-    },
-    {
-      "scene": "measurement",
-      "domain": "radio",
-      "card_ids": [
-        "folklore-radio-adjustment"
-      ]
-    },
-    {
-      "scene": "mistake",
-      "domain": "engineering",
-      "card_ids": [
-        "teacher-correction-with-check"
-      ]
-    },
-    {
-      "scene": "mistake",
-      "domain": "teaching",
-      "card_ids": [
-        "teacher-correction-with-check"
-      ]
-    },
-    {
-      "scene": "model-mismatch",
-      "domain": "analysis",
-      "card_ids": [
-        "kvant-model-and-measurement"
-      ]
-    },
-    {
-      "scene": "model-mismatch",
-      "domain": "physics",
-      "card_ids": [
-        "kvant-model-and-measurement"
-      ]
-    },
-    {
-      "scene": "prerequisite",
-      "domain": "programming",
-      "card_ids": [
-        "fuksman-prerequisite"
-      ]
-    },
-    {
-      "scene": "prerequisite",
-      "domain": "teaching",
-      "card_ids": [
-        "fuksman-prerequisite"
-      ]
-    },
-    {
-      "scene": "procedure",
-      "domain": "laboratory",
-      "card_ids": [
-        "chemistry-procedure"
-      ]
-    },
-    {
-      "scene": "procedure",
-      "domain": "manufacturing",
-      "card_ids": [
-        "chemistry-procedure"
-      ]
-    },
-    {
-      "scene": "prototype",
-      "domain": "mechanics",
-      "card_ids": [
-        "engineering-transcript-load"
-      ]
-    },
-    {
-      "scene": "prototype",
-      "domain": "reliability",
-      "card_ids": [
-        "engineering-transcript-load",
-        "museum-bench-and-operation"
-      ]
-    },
-    {
-      "scene": "prototype",
-      "domain": "systems",
-      "card_ids": [
-        "museum-bench-and-operation"
-      ]
-    },
-    {
-      "scene": "reorganisation",
-      "domain": "engineering",
-      "card_ids": [
-        "repin-rare-knowledge"
-      ]
-    },
-    {
-      "scene": "reorganisation",
-      "domain": "management",
-      "card_ids": [
-        "repin-rare-knowledge"
-      ]
-    },
-    {
-      "scene": "review",
-      "domain": "analysis",
-      "card_ids": [
-        "kvant-model-and-measurement",
-        "physics-folklore-requirement"
-      ]
-    },
-    {
-      "scene": "review",
-      "domain": "engineering",
-      "card_ids": [
-        "teacher-correction-with-check"
-      ]
-    },
-    {
-      "scene": "review",
-      "domain": "physics",
-      "card_ids": [
-        "kvant-model-and-measurement"
-      ]
-    },
-    {
-      "scene": "review",
-      "domain": "programming",
-      "card_ids": [
-        "museum-listener-task"
-      ]
-    },
-    {
-      "scene": "review",
-      "domain": "requirements",
-      "card_ids": [
-        "physics-folklore-requirement"
-      ]
-    },
-    {
-      "scene": "review",
-      "domain": "teaching",
-      "card_ids": [
-        "museum-listener-task",
-        "teacher-correction-with-check"
-      ]
-    },
-    {
-      "scene": "status-report",
-      "domain": "manufacturing",
-      "card_ids": [
-        "repin-report-and-work"
-      ]
-    },
-    {
-      "scene": "status-report",
-      "domain": "research",
-      "card_ids": [
-        "repin-report-and-work"
-      ]
-    },
-    {
-      "scene": "stuck",
-      "domain": "mathematics",
-      "card_ids": [
-        "teacher-board-next-step"
-      ]
-    },
-    {
-      "scene": "stuck",
-      "domain": "teaching",
-      "card_ids": [
-        "teacher-board-next-step"
-      ]
-    },
-    {
-      "scene": "tuning",
-      "domain": "electronics",
-      "card_ids": [
-        "folklore-radio-adjustment"
-      ]
-    },
-    {
-      "scene": "tuning",
-      "domain": "radio",
-      "card_ids": [
-        "folklore-radio-adjustment"
-      ]
-    },
-    {
-      "scene": "uncertainty",
-      "domain": "analysis",
-      "card_ids": [
-        "kvant-observation-law"
-      ]
-    },
-    {
-      "scene": "uncertainty",
-      "domain": "testing",
-      "card_ids": [
-        "kvant-observation-law"
-      ]
-    }
+    {"scene": "acceptance","domain": "laboratory","card_ids": ["chemistry-procedure"]},
+    {"scene": "acceptance","domain": "manufacturing","card_ids": ["chemistry-procedure","engineering-transcript-assembly"]},
+    {"scene": "acceptance","domain": "reliability","card_ids": ["museum-bench-and-operation"]},
+    {"scene": "acceptance","domain": "research","card_ids": ["repin-report-and-work"]},
+    {"scene": "acceptance","domain": "systems","card_ids": ["engineering-transcript-assembly","museum-bench-and-operation"]},
+    {"scene": "ambiguous-instruction","domain": "documentation","card_ids": ["repin-ambiguous-order"]},
+    {"scene": "ambiguous-instruction","domain": "management","card_ids": ["repin-ambiguous-order"]},
+    {"scene": "assembly","domain": "manufacturing","card_ids": ["engineering-transcript-assembly"]},
+    {"scene": "assembly","domain": "systems","card_ids": ["engineering-transcript-assembly"]},
+    {"scene": "classification","domain": "electronics","card_ids": ["teacher-exam-classification"]},
+    {"scene": "classification","domain": "teaching","card_ids": ["teacher-exam-classification"]},
+    {"scene": "contradiction","domain": "analysis","card_ids": ["physics-folklore-requirement"]},
+    {"scene": "contradiction","domain": "requirements","card_ids": ["physics-folklore-requirement"]},
+    {"scene": "debugging","domain": "electronics","card_ids": ["folklore-component-and-interface","teacher-jump-no-zero"]},
+    {"scene": "debugging","domain": "programming","card_ids": ["teacher-jump-no-zero","teacher-signal-path"]},
+    {"scene": "debugging","domain": "systems","card_ids": ["folklore-component-and-interface"]},
+    {"scene": "diagnosis","domain": "radio","card_ids": ["radio-propagation-context"]},
+    {"scene": "diagnosis","domain": "systems","card_ids": ["radio-propagation-context"]},
+    {"scene": "environment","domain": "radio","card_ids": ["radio-propagation-context"]},
+    {"scene": "environment","domain": "systems","card_ids": ["radio-propagation-context"]},
+    {"scene": "evidence","domain": "history","card_ids": ["source-provenance"]},
+    {"scene": "evidence","domain": "research","card_ids": ["source-provenance"]},
+    {"scene": "exam","domain": "electronics","card_ids": ["teacher-exam-classification"]},
+    {"scene": "exam","domain": "teaching","card_ids": ["teacher-exam-classification"]},
+    {"scene": "handover","domain": "coordination","card_ids": ["niitm-closed-context"]},
+    {"scene": "handover","domain": "documentation","card_ids": ["repin-ambiguous-order"]},
+    {"scene": "handover","domain": "engineering","card_ids": ["repin-rare-knowledge"]},
+    {"scene": "handover","domain": "management","card_ids": ["repin-ambiguous-order","repin-rare-knowledge"]},
+    {"scene": "handover","domain": "microelectronics","card_ids": ["niitm-closed-context"]},
+    {"scene": "handover","domain": "systems","card_ids": ["museum-team-interface"]},
+    {"scene": "handover","domain": "teamwork","card_ids": ["museum-team-interface"]},
+    {"scene": "historical-claim","domain": "history","card_ids": ["source-provenance"]},
+    {"scene": "historical-claim","domain": "research","card_ids": ["source-provenance"]},
+    {"scene": "integration","domain": "coordination","card_ids": ["niitm-closed-context"]},
+    {"scene": "integration","domain": "electronics","card_ids": ["folklore-component-and-interface","production-tolerance"]},
+    {"scene": "integration","domain": "manufacturing","card_ids": ["production-tolerance"]},
+    {"scene": "integration","domain": "microelectronics","card_ids": ["niitm-closed-context"]},
+    {"scene": "integration","domain": "systems","card_ids": ["folklore-component-and-interface","museum-team-interface"]},
+    {"scene": "integration","domain": "teamwork","card_ids": ["museum-team-interface"]},
+    {"scene": "lesson","domain": "electronics","card_ids": ["teacher-jump-no-zero","teacher-signal-path"]},
+    {"scene": "lesson","domain": "mathematics","card_ids": ["teacher-board-next-step"]},
+    {"scene": "lesson","domain": "programming","card_ids": ["fuksman-prerequisite","teacher-jump-no-zero"]},
+    {"scene": "lesson","domain": "teaching","card_ids": ["fuksman-prerequisite","teacher-board-next-step"]},
+    {"scene": "load-test","domain": "mechanics","card_ids": ["engineering-transcript-load"]},
+    {"scene": "load-test","domain": "reliability","card_ids": ["engineering-transcript-load"]},
+    {"scene": "low-risk-humour","domain": "analysis","card_ids": ["kvant-observation-law"]},
+    {"scene": "low-risk-humour","domain": "testing","card_ids": ["kvant-observation-law"]},
+    {"scene": "manufacturing","domain": "electronics","card_ids": ["production-tolerance"]},
+    {"scene": "manufacturing","domain": "manufacturing","card_ids": ["production-tolerance"]},
+    {"scene": "measurement","domain": "electronics","card_ids": ["folklore-radio-adjustment"]},
+    {"scene": "measurement","domain": "radio","card_ids": ["folklore-radio-adjustment"]},
+    {"scene": "mistake","domain": "engineering","card_ids": ["teacher-correction-with-check"]},
+    {"scene": "mistake","domain": "teaching","card_ids": ["teacher-correction-with-check"]},
+    {"scene": "model-mismatch","domain": "analysis","card_ids": ["kvant-model-and-measurement"]},
+    {"scene": "model-mismatch","domain": "physics","card_ids": ["kvant-model-and-measurement"]},
+    {"scene": "prerequisite","domain": "programming","card_ids": ["fuksman-prerequisite"]},
+    {"scene": "prerequisite","domain": "teaching","card_ids": ["fuksman-prerequisite"]},
+    {"scene": "procedure","domain": "laboratory","card_ids": ["chemistry-procedure"]},
+    {"scene": "procedure","domain": "manufacturing","card_ids": ["chemistry-procedure"]},
+    {"scene": "prototype","domain": "mechanics","card_ids": ["engineering-transcript-load"]},
+    {"scene": "prototype","domain": "reliability","card_ids": ["engineering-transcript-load","museum-bench-and-operation"]},
+    {"scene": "prototype","domain": "systems","card_ids": ["museum-bench-and-operation"]},
+    {"scene": "reorganisation","domain": "engineering","card_ids": ["repin-rare-knowledge"]},
+    {"scene": "reorganisation","domain": "management","card_ids": ["repin-rare-knowledge"]},
+    {"scene": "review","domain": "analysis","card_ids": ["kvant-model-and-measurement","physics-folklore-requirement"]},
+    {"scene": "review","domain": "engineering","card_ids": ["teacher-correction-with-check"]},
+    {"scene": "review","domain": "physics","card_ids": ["kvant-model-and-measurement"]},
+    {"scene": "review","domain": "programming","card_ids": ["museum-listener-task"]},
+    {"scene": "review","domain": "requirements","card_ids": ["physics-folklore-requirement"]},
+    {"scene": "review","domain": "teaching","card_ids": ["museum-listener-task","teacher-correction-with-check"]},
+    {"scene": "status-report","domain": "manufacturing","card_ids": ["repin-report-and-work"]},
+    {"scene": "status-report","domain": "research","card_ids": ["repin-report-and-work"]},
+    {"scene": "stuck","domain": "mathematics","card_ids": ["teacher-board-next-step"]},
+    {"scene": "stuck","domain": "teaching","card_ids": ["teacher-board-next-step"]},
+    {"scene": "tuning","domain": "electronics","card_ids": ["folklore-radio-adjustment"]},
+    {"scene": "tuning","domain": "radio","card_ids": ["folklore-radio-adjustment"]},
+    {"scene": "uncertainty","domain": "analysis","card_ids": ["kvant-observation-law"]},
+    {"scene": "uncertainty","domain": "testing","card_ids": ["kvant-observation-law"]}
   ]
 }

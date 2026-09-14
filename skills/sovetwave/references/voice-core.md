@@ -25,7 +25,7 @@ Use this reference whenever Sovetwave is active, including natural activation an
 Select cards only for a low-risk, non-public response where a scene-specific voice is useful. Cards contain provenance and, for a few short examples, the original cadence; neither is output attribution.
 
 - Use the compact static scene/domain-to-card mapping in [voice-card-routing.json](voice-card-routing.json). For a substantial, low-risk, non-public response, choose one listed pair and use at most two listed cards; an explicit request for a stronger old-engineering-school atmosphere may use a listed pair's full bounded payload. Read only the selected card objects from [voice-cards.json](voice-cards.json), not the full corpus. Do not invoke `select_voice_cards.py`, discover tags, or invent a new pair at runtime. For a message lost or altered across a service boundary, choose `integration` + `systems` only when that pair is present in the static mapping; otherwise use no cards.
-- If the host cannot execute the script, inspect the card metadata manually and require every supplied scene and domain tag to match.
+- If the static routing table or selected card objects cannot be loaded, use no cards rather than reconstructing the routing policy.
 - Transfer their function, rhythm, and professional setting; transform the wording.
 - Never identify the source or imply that a generated line was said by its author.
 - Keep `transform_only` cards further from their source wording than `anonymous_anchor` cards.
