@@ -80,12 +80,14 @@ def run_arm(arm: str, model: str, timeout: int, overrides: list[str], provider_h
         )
         process_status = "completed" if completed.returncode == 0 and response.strip() else "failed"
         treatment_status = "valid" if trace["selector_invocation_match"] else "invalid"
+        runtime_model = resolved_model(completed.stdout or "", completed.stderr or "")
         return {
             "case_id": CASE_ID, "arm": arm, "prompt": PROMPT,
             "fixed_tags": envelope["fixed_tags"], "expected_selector_invocations": expected,
             "validation_oracle_payload": envelope["validation_oracle_payload"],
             "effective_skill_sha256": effective_skill_sha256,
-            "requested_model": model, "resolved_model": resolved_model(completed.stdout or "", completed.stderr or ""),
+            "requested_model": model, "resolved_model": runtime_model or model,
+            "resolved_model_source": "cli_report" if runtime_model else "requested_fallback_unreported",
             "provider_overrides_sha256": provider_hash, **trace,
             "sandbox_mode": ablation.EXPERIMENT_SANDBOX,
             "codex_tool_calls": telemetry["tool_calls"], "codex_usage": telemetry["usage"],

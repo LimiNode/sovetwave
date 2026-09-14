@@ -387,12 +387,14 @@ def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, over
         process_status = "completed" if completed.returncode == 0 and response.strip() else "failed"
         treatment_status = "valid" if trace["selector_invocation_match"] else "invalid"
         status = process_status if treatment_status == "valid" else "invalid_treatment"
+        resolved = runner.resolved_model_from_stderr(completed.stderr or "") or _resolved_model_from_stream(completed.stdout or "")
         return {**base, **trace,
             "treatment_status": treatment_status, "causal_eligible": treatment_status == "valid", "codex_tool_calls": telemetry["tool_calls"],
             "codex_usage": telemetry["usage"], "codex_usage_status": telemetry["usage_status"],
             "status": status, "process_status": process_status,
             "first_attempt_completion": process_status == "completed", "returncode": completed.returncode,
-            "response": response.strip(), "resolved_model": runner.resolved_model_from_stderr(completed.stderr or "") or _resolved_model_from_stream(completed.stdout or ""),
+            "response": response.strip(), "resolved_model": resolved or model,
+            "resolved_model_source": "cli_report" if resolved else "requested_fallback_unreported",
             "elapsed_seconds": round(time.monotonic() - started, 3)}
 
 
