@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import re
 import shlex
 import subprocess
 import sys
@@ -25,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "evals" / "experiments" / "voice-card-selector-ablation.json"
 PLANNER_PATH = ROOT / "scripts" / "plan_voice_card_ablation.py"
 MATERIALIZER_PATH = ROOT / "scripts" / "materialize_voice_card_arms.py"
+EXPERIMENT_SANDBOX = "workspace-write"
 
 
 def load_module(name: str, path: Path):
@@ -77,6 +79,23 @@ def selector_invocations(stream: str) -> int:
 def _command_text(item: dict[str, Any]) -> str:
     fields = [item.get(key) for key in ("command", "cmd", "input", "arguments")]
     return " ".join(value if isinstance(value, str) else json.dumps(value, ensure_ascii=False) for value in fields if value is not None)
+
+
+def _selector_command_body(command: str) -> str:
+    match = re.search(r"\s-Command\s+(['\"])(.*)\1\s*$", command, re.DOTALL)
+    return match.group(2) if match else command
+
+
+def selector_capable_command(command: list[str]) -> list[str]:
+    """Use the same ephemeral sandbox for every arm while allowing the selector."""
+    result = list(command)
+    if result.count("--sandbox") != 1:
+        raise ValueError("expected exactly one Codex --sandbox option")
+    index = result.index("--sandbox") + 1
+    if index >= len(result) or result[index] != "read-only":
+        raise ValueError("expected the behavioral runner read-only sandbox")
+    result[index] = EXPERIMENT_SANDBOX
+    return result
 
 
 def _selector_output(item: dict[str, Any]) -> Any | None:
@@ -140,8 +159,9 @@ def validate_selector_trace(
     traces: list[dict[str, Any]] = []
     for item in items:
         command = _command_text(item).replace("\\", "/")
+        body = _selector_command_body(command)
         try:
-            item_tokens = [token.strip("'\"") for token in shlex.split(command, posix=False)]
+            item_tokens = [token.strip("'\"") for token in shlex.split(body, posix=False)]
         except ValueError:
             item_tokens = command.split()
         if "--list-tags" in item_tokens:
@@ -181,7 +201,7 @@ def validate_selector_trace(
     if len(items) != 1 or not fixed_tags:
         result["selector_trace_status"] = "wrong_invocation_count" if len(items) != 1 else "missing_fixed_tags"
         return result
-    text = _command_text(items[0]).replace("\\", "/")
+    text = _selector_command_body(_command_text(items[0]).replace("\\", "/"))
     try:
         tokens = [token.strip("'\"") for token in shlex.split(text, posix=False)]
     except ValueError:
@@ -205,6 +225,8 @@ def validate_selector_trace(
         or len(tokens) != 9
         or tokens[0].replace("\\", "/").rsplit("/", 1)[-1].lower() not in {"python", "python.exe", "python3", "python3.exe", "py", "py.exe"}
         or tokens[1].replace("\\", "/").rsplit("/", 1)[-1].lower() != "select_voice_cards.py"
+        or ";" in text
+        or items[0].get("exit_code", items[0].get("exitCode")) != 0
     ):
         result["selector_trace_status"] = "wrong_selector_args"
         return result
@@ -269,6 +291,7 @@ def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
             f"scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
             "Do not run --list-tags or infer replacement tags. Invoke exactly this command once and use its returned ordered id/use/anchor payload: "
             f"python .agents/skills/sovetwave/scripts/select_voice_cards.py --scene {scene_domain['scene']} --domain {scene_domain['domain']} --max 2 --json. "
+            "Run it as a standalone shell invocation after any reference reads: do not batch it with another command and do not retry it. "
             "This selector invocation is part of the measured turn."
         )
     elif envelope["arm"] == "B":
@@ -295,6 +318,7 @@ def metadata(manifest: dict[str, Any], model: str, provider_overrides_sha256: st
         "requested_model": model,
         "resolved_model": None,
         "provider_overrides_sha256": provider_overrides_sha256,
+        "sandbox_mode": EXPERIMENT_SANDBOX,
         "case_ids": manifest["pilot"]["case_ids"],
         "repetitions": manifest["pilot"]["repetitions"],
         "provenance": planner.git_provenance(),
@@ -323,7 +347,9 @@ def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, over
         append_treatment(skill_copy, envelope)
         effective_skill_sha256 = hashlib.sha256(skill_copy.read_bytes()).hexdigest()
         response_path = workspace / "last-message.txt"
-        command = runner.command_for("codex", workspace, case["prompt"], True, model, response_path, overrides)
+        command = selector_capable_command(
+            runner.command_for("codex", workspace, case["prompt"], True, model, response_path, overrides)
+        )
         base = {
             "case_id": row["case_id"],
             "variant": f"voice_card_{row['arm']}",
@@ -337,6 +363,7 @@ def execute_one(runner: Any, row: dict[str, Any], model: str, timeout: int, over
             "expected_selector_invocations": 1 if row.get("selector_eligible") and row["arm"] == "A" else 0,
             "requested_model": model,
             "provider_overrides_sha256": provider_overrides_sha256,
+            "sandbox_mode": EXPERIMENT_SANDBOX,
             "effective_skill_sha256": effective_skill_sha256,
         }
         expected = base["expected_selector_invocations"]

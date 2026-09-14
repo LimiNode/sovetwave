@@ -136,7 +136,7 @@ class VoiceCardAblationTests(unittest.TestCase):
     def test_selector_trace_requires_exact_command_and_command_execution(self) -> None:
         stream = "\n".join([
             '{"type":"item.completed","item":{"id":"read-1","type":"file_read","command":"py select_voice_cards.py --scene review"}}',
-            '{"type":"item.completed","item":{"id":"cmd-1","type":"command_execution","command":"python .agents/skills/sovetwave/scripts/select_voice_cards.py --scene review --domain analysis --max 2 --json"}}',
+            '{"type":"item.completed","item":{"id":"cmd-1","type":"command_execution","command":"python .agents/skills/sovetwave/scripts/select_voice_cards.py --scene review --domain analysis --max 2 --json","exit_code":0}}',
         ])
         checked = ablation_runner.validate_selector_trace(
             stream, expected=1, fixed_tags={"scene": "review", "domain": "analysis"}, oracle_payload=None,
@@ -166,7 +166,7 @@ class VoiceCardAblationTests(unittest.TestCase):
 
     def test_selector_trace_compares_exposed_stdout_with_oracle(self) -> None:
         payload = [{"id": "card", "use": "teach", "anchor": "anchor"}]
-        stream = '{"item":{"id":"cmd","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 2 --json","aggregated_output":"[{\\"id\\":\\"card\\",\\"use\\":\\"teach\\",\\"anchor\\":\\"anchor\\"}]"}}'
+        stream = '{"item":{"id":"cmd","type":"command_execution","command":"python select_voice_cards.py --scene review --domain analysis --max 2 --json","exit_code":0,"aggregated_output":"[{\\"id\\":\\"card\\",\\"use\\":\\"teach\\",\\"anchor\\":\\"anchor\\"}]"}}'
         checked = ablation_runner.validate_selector_trace(
             stream, expected=1, fixed_tags={"scene": "review", "domain": "analysis"}, oracle_payload=payload,
         )

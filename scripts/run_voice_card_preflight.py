@@ -58,7 +58,9 @@ def run_arm(arm: str, model: str, timeout: int, overrides: list[str], provider_h
         ablation.append_treatment(skill_copy, envelope)
         effective_skill_sha256 = hashlib.sha256(skill_copy.read_bytes()).hexdigest()
         response_path = workspace / "last-message.txt"
-        command = runtime.command_for("codex", workspace, PROMPT, True, model, response_path, overrides)
+        command = ablation.selector_capable_command(
+            runtime.command_for("codex", workspace, PROMPT, True, model, response_path, overrides)
+        )
         expected = 1 if arm == "A" else 0
         try:
             completed = runtime.execute_command("codex", command, cwd=workspace, timeout=timeout)
@@ -85,6 +87,7 @@ def run_arm(arm: str, model: str, timeout: int, overrides: list[str], provider_h
             "effective_skill_sha256": effective_skill_sha256,
             "requested_model": model, "resolved_model": resolved_model(completed.stdout or "", completed.stderr or ""),
             "provider_overrides_sha256": provider_hash, **trace,
+            "sandbox_mode": ablation.EXPERIMENT_SANDBOX,
             "codex_tool_calls": telemetry["tool_calls"], "codex_usage": telemetry["usage"],
             "codex_usage_status": telemetry["usage_status"], "status": process_status if treatment_status == "valid" else "invalid_treatment",
             "process_status": process_status, "treatment_status": treatment_status,
@@ -116,6 +119,7 @@ def main() -> int:
     payload = {
         "protocol_revision": 2, "status": "completed" if all(row.get("treatment_status") == "valid" for row in observations) else "failed_preflight",
         "case_id": CASE_ID, "requested_model": args.model, "provider_overrides_sha256": provider_hash,
+        "sandbox_mode": ablation.EXPERIMENT_SANDBOX,
         "provenance": ablation.planner.git_provenance(), "observations": observations,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
