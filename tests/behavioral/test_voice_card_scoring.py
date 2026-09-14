@@ -47,6 +47,9 @@ def test_canonical_content_is_restored_when_raw_row_omits_it() -> None:
     assert positive["applicable_axes"]
     assert positive["case_group"] == "selector-positive"
     assert positive["selector_eligible"] is True
+    cpp = next(row for row in packet["observations"] if row["case_id"] == "cpp-architecture-event-flow")
+    assert cpp["applicable_axes"] is None
+    assert cpp["voice_language_axes"]
 
 
 def test_prompt_mismatch_fails_closed() -> None:
@@ -63,6 +66,18 @@ def test_packet_snapshots_manifest_gates() -> None:
     assert packet["preregistered"]["decision_criteria"] == manifest["decision_criteria"]
 
 
+def test_packet_contains_canonical_rubric_and_hashes() -> None:
+    packet = scorer.build_packet(pilot_payload())
+    rubric = json.loads((ROOT / "evals/behavioral/rubric.json").read_text(encoding="utf-8"))
+    assert packet["preregistered"]["canonical_rubric"] == rubric
+    assert packet["rubric_sha256"]
+    assert packet["source_sha256"] is None
+    voice = packet["preregistered"]["voice_language_scoring"]
+    assert voice["scale_min"] == 0 and voice["scale_max"] == 4
+    assert voice["positive_case_denominator"] == 12
+    assert "None means" in voice["none_applicable_axes"]
+
+
 def test_timeout_is_censored_and_renderer_does_not_score_it() -> None:
     payload = pilot_payload()
     timeout_row = payload["observations"][0]
@@ -74,4 +89,3 @@ def test_timeout_is_censored_and_renderer_does_not_score_it() -> None:
     markdown = scorer.render_markdown(packet)
     assert "censored (timeout; semantic outcome not observed)" in markdown
     assert "semantic fields are intentionally not scored" in markdown
-
