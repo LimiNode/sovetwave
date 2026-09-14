@@ -223,6 +223,7 @@ class VoiceCardAblationTests(unittest.TestCase):
         finally:
             runtime.execute_command = original_execute
         self.assertEqual(len(results), 54)
+        self.assertTrue(all(result["sandbox_mode"] == "danger-full-access" for result in results))
         controls = [result for result in results if result["fixed_tags"] is None]
         self.assertEqual(len(controls), 18)
         self.assertTrue(all(result["process_status"] == "completed" for result in controls))

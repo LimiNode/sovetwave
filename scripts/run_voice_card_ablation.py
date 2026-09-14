@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "evals" / "experiments" / "voice-card-selector-ablation.json"
 PLANNER_PATH = ROOT / "scripts" / "plan_voice_card_ablation.py"
 MATERIALIZER_PATH = ROOT / "scripts" / "materialize_voice_card_arms.py"
-EXPERIMENT_SANDBOX = "workspace-write"
+EXPERIMENT_SANDBOX = "danger-full-access"
 
 
 def load_module(name: str, path: Path):

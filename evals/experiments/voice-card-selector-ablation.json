@@ -11,6 +11,7 @@
     "inference": "A must invoke the runtime selector with these exact tags; B uses the same pair; C receives the same tags as metadata but no card payload.",
     "excluded_costs": ["tag inference", "--list-tags vocabulary discovery"]
   },
+  "execution_sandbox": "danger-full-access for every arm inside an isolated temporary workspace; required for the bundled Python selector preflight",
   "arms": [
     {
       "id": "A",

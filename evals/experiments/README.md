@@ -65,7 +65,10 @@ py -3 scripts/run_voice_card_preflight.py --output <preflight.json> --execute --
 
 The preflight is a diagnostic outside the pilot dataset. It must establish
 one `fixed_select` for A and zero selector calls for B and C before the pilot
-is frozen and started.
+is frozen and started. All three arms use `danger-full-access` inside the same
+isolated temporary-workspace boundary because Codex blocks bundled Python
+scripts in its restricted sandboxes; the sandbox mode is recorded in every
+observation and in run metadata.
 
 The measured runner is opt-in and keeps the A oracle out of the A input:
 
