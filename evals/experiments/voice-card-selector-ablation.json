@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "experiment_id": "voice-card-selector-ablation-fixed-tag-v2",
+  "protocol_revision": 2,
+  "status": "design_only",
+  "base_revision": "0d2b35e645520e4e62513cefd6c93f5995c94b73",
+  "purpose": "Separate the cost of runtime card selection from the marginal value of selected voice cards.",
+  "tag_policy": {
+    "mode": "fixed_preregistered_tags",
+    "authoritative_source": "Each selector-positive case's scene/domain fields below.",
+    "inference": "A must invoke the runtime selector with these exact tags; B uses the same pair; C receives the same tags as metadata but no card payload.",
+    "excluded_costs": ["tag inference", "--list-tags vocabulary discovery"]
+  },
+  "execution_sandbox": "danger-full-access for every arm inside an isolated temporary workspace; required for the bundled Python selector preflight",
+  "arms": [
+    {
+      "id": "A",
+      "name": "dynamic",
+      "mechanism": "Invoke select_voice_cards.py once at runtime with the fixed preregistered scene/domain pair and include its ordered id/use/anchor payload; do not run --list-tags or infer tags."
+    },
+    {
+      "id": "B",
+      "name": "static-equivalent",
+      "mechanism": "Lookup the fixed scene/domain pair in the committed static map; include the exact same ordered id/use/anchor payload as A without a selector subprocess."
+    },
+    {
+      "id": "C",
+      "name": "no-cards",
+      "mechanism": "Use the same prompt, slim kernel, routed domain references, and fixed tags as metadata while explicitly disabling selector invocation and omitting all card payload."
+    }
+  ],
+  "contrasts": {
+    "A_vs_B": "Runtime selector and tool-round-trip cost, holding the full ordered id/use/anchor card payload constant.",
+    "B_vs_C": "Marginal semantic and voice value of the cards without selector cost.",
+    "A_vs_C": "Cost and value of the complete current card package."
+  },
+  "pilot": {
+    "repetitions": 3,
+    "expected_observations": 54,
+    "order": "For 1-based repetition r and zero-based case index i, rotate [A, B, C] by (r - 1 + i) mod 3.",
+    "case_ids": [
+      "russian-rag-capacity-analysis",
+      "cpp-architecture-event-flow",
+      "voice-card-selector-diagnosis",
+      "voice-card-selector-teaching-explanation",
+      "russian-pr-status-report",
+      "code-economy-noexcept-is-contract"
+    ]
+  },
+  "cases": [
+    {
+      "id": "russian-rag-capacity-analysis",
+      "group": "selector-positive",
+      "selector_eligible": true,
+      "scene": "review",
+      "domain": "analysis",
+      "reason": "Substantial Russian technical explanation."
+    },
+    {
+      "id": "cpp-architecture-event-flow",
+      "group": "selector-positive",
+      "selector_eligible": true,
+      "scene": "review",
+      "domain": "engineering",
+      "reason": "Architecture review where a concise corrective voice may help."
+    },
+    {
+      "id": "voice-card-selector-diagnosis",
+      "group": "selector-positive",
+      "selector_eligible": true,
+      "scene": "diagnosis",
+      "domain": "systems",
+      "reason": "Substantial low-risk diagnosis with an explicit uncertainty boundary."
+    },
+    {
+      "id": "voice-card-selector-teaching-explanation",
+      "group": "selector-positive",
+      "selector_eligible": true,
+      "scene": "lesson",
+      "domain": "teaching",
+      "reason": "Развёрнутое, low-risk teaching/explanation response."
+    },
+    {
+      "id": "russian-pr-status-report",
+      "group": "negative-control",
+      "selector_eligible": false,
+      "scene": null,
+      "domain": null,
+      "reason": "Short factual/status response; selector should not materially participate."
+    },
+    {
+      "id": "code-economy-noexcept-is-contract",
+      "group": "negative-control",
+      "selector_eligible": false,
+      "scene": null,
+      "domain": null,
+      "reason": "Short precise language-contract answer; selector should not materially participate."
+    }
+  ],
+  "static_map": "evals/experiments/voice-card-static-routing.json",
+  "metrics": {
+    "primary": ["full_observation_pass", "first_attempt_completion"],
+    "secondary": ["pointwise_assertion_pass_rate", "applicable_voice_language_axes", "input_tokens", "cached_input_tokens", "uncached_input_tokens", "output_tokens", "reasoning_output_tokens", "tool_calls", "elapsed_time_ms"],
+    "definitions": {
+      "full_observation_pass": "An observation passes only when every assertion for its case passes.",
+      "pointwise_assertion_pass_rate": "The fraction of individual assertions passed, reported separately from full-observation pass.",
+      "voice_language_axes": ["native_russian", "english_intrusion", "sovetwave_voice", "concision"],
+      "voice_language_aggregation": "For each observation, macro-average scores over only its applicable listed axes; then average those observation scores over the 12 selector-positive observations. Report controls separately."
+    },
+    "reporting": "Report completion and censoring separately; compare paired observations by case, repetition, and arm order."
+  },
+  "decision_criteria": {
+    "semantic_assertions": "For 18 observations per arm, allow at most one additional failed observation for the comparator; any new repeated error class is a blocker.",
+    "first_attempt_completion": "Allow at most one fewer completed first attempt than the comparator; any systematic timeout or tool failure is a blocker regardless of averages.",
+    "voice_language_positive_cases": "On the four selector-positive cases, allow at most a 5 percentage-point aggregate drop in applicable voice/language axes.",
+    "static_replacement": "Prefer B over A only if the full-observation, completion, and positive-case voice gates pass, B removes one selector tool call per selector-positive observation by construction, and median elapsed time or uncached input on the 12 positive observations falls by at least 10%.",
+    "remove_cards": "Prefer C over B only if no full-observation, pointwise, or applicable voice/language gate shows material degradation on positive cases and at least one meaningful positive-subset cost metric falls by 10%; otherwise retain cards.",
+    "negative_controls": "A, B, and C should not diverge systematically on the two ineligible controls; systematic divergence is an infrastructure blocker.",
+    "interpretation": "The 18-observation pilot is an engineering gate, not a formal non-inferiority test; report censoring and completion separately."
+  },
+  "provenance": {
+    "runner": "scripts/run_voice_card_ablation.py",
+    "requirements": ["record protocol revision, Git HEAD, and dirty-state", "checkpoint one observation at a time", "reject resume on provenance mismatch", "record requested and resolved model", "record effective ephemeral skill SHA256", "record structured selector trace"],
+    "model_runs": "not_started"
+  }
+}

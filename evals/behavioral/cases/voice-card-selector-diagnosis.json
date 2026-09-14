@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "suite": "voice-card-selector-diagnosis",
+  "applicable_axes": ["technical_correctness", "causal_calibration", "native_russian", "sovetwave_voice", "concision"],
+  "cases": [
+    {
+      "id": "voice-card-selector-diagnosis",
+      "prompt": "Разбери следующий безопасный диагностический пример для коллеги: в журнале пакетного обработчика виден рост времени одного этапа, но трасса не показывает, где именно образовалась задержка. Дай развёрнутое, но практичное русское объяснение: отдели наблюдение от гипотез, предложи минимальную проверку с измеримым сигналом и укажи, какие выводы пока делать нельзя.",
+      "assertions": [
+        "separates the observed timing signal from unverified causal hypotheses",
+        "proposes a minimal diagnostic measurement with an explicit success signal",
+        "keeps the example low-risk and does not invent repository-specific facts",
+        "states which stronger conclusions remain unsupported"
+      ]
+    }
+  ]
+}
