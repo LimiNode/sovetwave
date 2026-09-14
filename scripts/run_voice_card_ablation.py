@@ -204,7 +204,12 @@ def invocation_plan() -> list[dict[str, Any]]:
 def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
     """Add an arm-specific host instruction without changing the user prompt."""
     scene_domain = envelope["fixed_tags"]
-    if envelope["arm"] == "A":
+    if scene_domain is None:
+        # Negative controls deliberately have no tags or card payload in any
+        # arm. Keep this branch before the A/B formatting paths: controls are
+        # interleaved with positive cases and must never dereference tags.
+        block = "\n\n## Fixed-tag ablation treatment\nVoice-card selection is inapplicable for this control. Do not inspect tags or load card data."
+    elif envelope["arm"] == "A":
         block = (
             "\n\n## Fixed-tag ablation treatment\n"
             f"For this measured observation use the authoritative tags scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
@@ -225,7 +230,7 @@ def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
             "\n\n## Fixed-tag ablation treatment\n"
             f"The experiment metadata tags are scene={scene_domain['scene']!r}, domain={scene_domain['domain']!r}. "
             "Voice cards are disabled for this observation. Do not run --list-tags, select_voice_cards.py, or load card data."
-        ) if scene_domain else "\n\n## Fixed-tag ablation treatment\nVoice-card selection is inapplicable for this control. Do not inspect tags or load card data."
+        )
     skill_path.write_text(skill_path.read_text(encoding="utf-8") + block + "\n", encoding="utf-8")
 
 

@@ -1,5 +1,6 @@
 import importlib.util
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -180,6 +181,49 @@ class VoiceCardAblationTests(unittest.TestCase):
             rendered = skill.read_text(encoding="utf-8")
         self.assertIn("select_voice_cards.py", rendered)
         self.assertIn("--max 2 --json", rendered)
+
+    def test_controls_append_treatment_without_tags_or_cards(self) -> None:
+        manifest = materializer.read_json(materializer.MANIFEST)
+        controls = [case for case in manifest["cases"] if not case["selector_eligible"]]
+        for case in controls:
+            rendered: dict[str, str] = {}
+            for arm in ("A", "B", "C"):
+                envelope = materializer.materialize(case["id"], arm)
+                with tempfile.TemporaryDirectory() as directory:
+                    skill = Path(directory) / "SKILL.md"
+                    skill.write_text("kernel\n", encoding="utf-8")
+                    ablation_runner.append_treatment(skill, envelope)
+                    rendered[arm] = skill.read_text(encoding="utf-8")
+            self.assertEqual(rendered["A"], rendered["B"])
+            self.assertEqual(rendered["B"], rendered["C"])
+            self.assertNotIn("scene=", rendered["A"])
+            self.assertNotIn("domain=", rendered["A"])
+            self.assertNotIn("select_voice_cards.py", rendered["A"])
+            self.assertNotIn("card_payload", rendered["A"])
+
+    def test_all_54_rows_reach_treatment_and_command_construction(self) -> None:
+        scripts_dir = str(ROOT / "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        runtime = ablation_runner.load_module("dry_path_runner", ROOT / "scripts" / "run_model_evals.py")
+        original_execute = runtime.execute_command
+
+        def fake_execute(provider, command, *, cwd, timeout):
+            (Path(cwd) / "last-message.txt").write_text("mock response\n", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        runtime.execute_command = fake_execute
+        try:
+            results = [
+                ablation_runner.execute_one(runtime, row, "test-model", 1, [], "hash")
+                for row in ablation_runner.invocation_plan()
+            ]
+        finally:
+            runtime.execute_command = original_execute
+        self.assertEqual(len(results), 54)
+        controls = [result for result in results if result["fixed_tags"] is None]
+        self.assertEqual(len(controls), 18)
+        self.assertTrue(all(result["process_status"] == "completed" for result in controls))
 
     def test_timeout_is_a_persistable_first_attempt_failure(self) -> None:
         # Use the real workspace helper while making the model invocation fail
