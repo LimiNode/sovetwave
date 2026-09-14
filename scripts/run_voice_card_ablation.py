@@ -312,7 +312,8 @@ def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
 
 def metadata(manifest: dict[str, Any], model: str, provider_overrides_sha256: str | None = None) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
+        "protocol_revision": manifest.get("protocol_revision", 2),
         "experiment_id": manifest["experiment_id"],
         "manifest_sha256": hashlib.sha256(MANIFEST.read_bytes()).hexdigest(),
         "model": model,
