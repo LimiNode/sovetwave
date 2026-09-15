@@ -174,11 +174,10 @@ class BehavioralHarnessTests(unittest.TestCase):
             "history-and-sources.md", "pedagogy-and-dialogue.md", "anti-patterns.md",
         ):
             self.assertIn(f"](references/{reference})", skill)
-        self.assertIn('select_voice_cards.py" --list-tags --json', skill)
-        self.assertIn('python3 "<skill-directory>/scripts/select_voice_cards.py"', skill)
-        self.assertIn("--scene <canonical-scene>", skill)
-        self.assertIn("--domain", skill)
-        self.assertIn("--max 2", skill)
+        self.assertIn("voice-card-routing.json", skill)
+        self.assertIn("select_voice_cards.py", skill)
+        self.assertIn("discover tags at runtime", skill)
+        self.assertIn("canonical scene/domain pair", skill)
 
     def test_capability_routes_are_registered_for_selective_ablation(self) -> None:
         self.assertTrue({

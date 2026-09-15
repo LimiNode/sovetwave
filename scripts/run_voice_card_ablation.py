@@ -274,12 +274,12 @@ def invocation_plan() -> list[dict[str, Any]]:
 def append_treatment(skill_path: Path, envelope: dict[str, Any]) -> None:
     """Replace the production selector policy with one arm-specific contract."""
     original = skill_path.read_text(encoding="utf-8")
-    start_marker = "For a substantial, low-risk, non-public standard or lecture response, inspect\n"
-    end_marker = "[voice-cards.json](references/voice-cards.json)."
-    if original.count(start_marker) != 1:
+    start_marker = "For a substantial, low-risk, non-public standard or lecture response,"
+    end_marker = "\n## Engineering procedure"
+    if original.count(start_marker) != 1 or original.count(end_marker) != 1:
         raise ValueError("expected exactly one production voice-card selector policy")
     start = original.index(start_marker)
-    end = original.index(end_marker, start) + len(end_marker)
+    end = original.index(end_marker, start)
     scene_domain = envelope["fixed_tags"]
     if scene_domain is None:
         # Negative controls deliberately have no tags or card payload in any
