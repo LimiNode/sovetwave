@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.5.0-beta.1 — 2026-09-15
+
+- Replaced runtime voice-card selection with deterministic static scene/domain routing, preserving the validated card corpus without a tool round-trip.
+- Added project-documentation guidance for contracts, ADRs, plans, research notes, runbooks, documentation drift, and proportional change impact.
+- Added behavioral coverage for documentation ownership, epistemic status facets, lifecycle, and public API documentation impact.
+- Expanded low-risk technical humour with provenance-aware transform-only patterns and bounded original asides while preserving literal language in critical contexts.
+- Updated the public README and Claude plugin metadata for the current beta package.
+- GitHub-hosted CI was unavailable because of account billing restrictions; local validation and installer smoke checks were run for this release candidate.
+
 ## v0.4.0 — 2026-08-11
 
 - Hardened behavioral rules for evidence-based diagnosis: static defects, delivery guarantees, and API shapes now remain conditional when the project contract is unknown.

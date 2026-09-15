@@ -38,7 +38,7 @@ def main() -> int:
             plugin_version = json.loads(plugin.read_text(encoding="utf-8")).get("version")
         except (OSError, json.JSONDecodeError):
             plugin_version = None
-        heading = re.search(r"^## v(\d+\.\d+\.\d+)\b", changelog.read_text(encoding="utf-8"), re.MULTILINE)
+        heading = re.search(r"^## v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\b", changelog.read_text(encoding="utf-8"), re.MULTILINE)
         if not isinstance(plugin_version, str) or heading is None or plugin_version != heading.group(1):
             print("Plugin version must match the newest CHANGELOG.md release heading", file=sys.stderr)
             errors += 1
