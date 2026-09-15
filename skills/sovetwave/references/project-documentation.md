@@ -52,16 +52,26 @@ that will outlive the change.
 
 ## Mark epistemic status explicitly
 
-Keep lifecycle and truth status separate. Use these statuses when a claim can
-be mistaken for an implementation fact:
+Keep lifecycle and truth status separate. The labels below are non-exclusive
+facets, not one enum: a claim may be `contractual`, `implemented`, and
+`verified` at the same time.
+
+Evidence:
 
 - `implemented` — supported by the current code path;
-- `verified` — supported by a named check, test, or observed operation;
-- `contractual` — a normative external or cross-component promise;
-- `intended` — stated in a plan, proposal, or ADR but not established as done;
-- `stale-suspected` — conflicts with an observed system and needs resolution;
-- `superseded` — explicitly replaced by a newer decision or contract;
+- `verified` — supported by an observed relevant passing check, test, or
+  operation at the stated revision and setup;
 - `unknown` — current applicability or truth has not been established.
+
+Authority or intent:
+
+- `contractual` — a normative external or cross-component promise;
+- `intended` — stated in a plan, proposal, or ADR but not established as done.
+
+Currency:
+
+- `stale-suspected` — conflicts with an observed system and needs resolution;
+- `superseded` — explicitly replaced by a newer decision or contract.
 
 Do not collapse `unknown` into `implemented`, and do not present a README or
 active plan as proof that behaviour exists. When status matters, name the
@@ -69,8 +79,11 @@ source, revision or review date, and the check that supports `verified`.
 
 For durable documents, use a lifecycle such as `draft`, `active`,
 `superseded`, or `archived`. For an ADR, master plan, long-lived contract, or
-runbook, record at least `scope`, `owner`, `last-reviewed`, and `review-trigger`.
-Do not impose those fields on every short note when they add no decision value.
+runbook, preserve enough metadata to establish its scope, current
+authority/currency, responsible owner or owning boundary when the repository
+uses one, and the condition under which it should be reviewed or superseded.
+Follow the repository's established template and field names; do not impose a
+new metadata schema on every short note when it adds no decision value.
 
 ## Include documentation in change impact proportionally
 

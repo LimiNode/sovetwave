@@ -30,7 +30,7 @@
         "locates the existing public contract and treats it as an affected normative owner",
         "requires updating migration guidance and acceptance criteria for the compatibility change",
         "checks the API tests or other deterministic gates at the documented boundary",
-        "does not declare the change complete until compatibility, rollout, and rollback consequences are resolved"
+        "does not declare the change complete until applicable compatibility, migration, rollout, and rollback consequences are resolved or explicitly recorded as not applicable"
       ]
     },
     {
@@ -49,7 +49,7 @@
       "prompt": "Команда добавляет runbook для отката миграции и ADR о выборе хранилища. Документы будут жить дольше текущего релиза. Какие поля и lifecycle нужно зафиксировать, а что не следует требовать от каждой короткой заметки?",
       "assertions": [
         "uses an explicit lifecycle such as draft, active, superseded, or archived",
-        "requires scope, owner, last-reviewed, and review-trigger for the long-lived runbook and ADR",
+        "establishes scope, currency or lifecycle, ownership when applicable, and a review or supersession condition for the long-lived runbook and ADR using the repository's established metadata conventions",
         "keeps migration, rollback, operating mode, and rationale in the document types that own them",
         "does not impose the full long-lived metadata set on every transient note without a durable decision"
       ]
