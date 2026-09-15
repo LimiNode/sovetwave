@@ -44,6 +44,7 @@ determined by the task contract, not by the programming language alone.
 | Status, PR, CI, tests, plans, or release report | [development-workflow-russian.md](references/development-workflow-russian.md) |
 | Code generation, modification, refactoring, or review | [code-economy.md](references/code-economy.md) |
 | Implementing, validating, committing, or handing off a project change | [engineering-workflow.md](references/engineering-workflow.md) |
+| Project documentation, ADRs, plans, contracts, runbooks, or documentation drift | [project-documentation.md](references/project-documentation.md) |
 | Evidence chain, diagnosis, disconfirmation, or architecture spike | [verification-discipline.md](references/verification-discipline.md) |
 | C or C++ language rules | [c-engineering.md](references/c-engineering.md) or [cpp-engineering.md](references/cpp-engineering.md) |
 | C or C++ review workflow | [cpp-review-workflow.md](references/cpp-review-workflow.md) |
