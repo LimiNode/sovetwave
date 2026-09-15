@@ -48,13 +48,21 @@ def card_payload(cards: list[dict[str, Any]]) -> list[dict[str, str]]:
 
 
 def static_payload(scene: str, domain: str) -> list[dict[str, str]]:
-    static = read_json(STATIC_MAP)
-    if static.get("source_sha256") != hashlib.sha256(CORPUS.read_bytes()).hexdigest():
-        raise ValueError("static routing payload does not match the current voice-card corpus")
-    for pair in static["canonical_pairs"]:
-        if pair["scene"] == scene and pair["domain"] == domain:
-            return [dict(card) for card in pair["payload"]]
+    planner = load_planner()
+    mapping = planner.validate_static_map()
+    if (scene, domain) in mapping:
+        return [dict(card) for card in mapping[(scene, domain)]]
     raise ValueError(f"no static routing entry for {(scene, domain)!r}")
+
+
+def load_planner() -> Any:
+    path = ROOT / "scripts" / "plan_voice_card_ablation.py"
+    spec = importlib.util.spec_from_file_location("voice_card_ablation_planner", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load planner from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def dynamic_payload(scene: str, domain: str) -> tuple[list[dict[str, str]], list[str]]:

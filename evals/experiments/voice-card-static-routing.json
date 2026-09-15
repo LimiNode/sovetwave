@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "source_corpus": "skills/sovetwave/references/voice-cards.json",
-  "source_sha256": "e2b0d71e0f85284ba74d5e19acb4d1262368bd43f893d26cbeacc86e4657e43b",
+  "source_sha256": "29f40deeb907bfc01e81f7a5aefa11b950f6752a5b50598b4fe3880d94463ab9",
   "selector_max": 2,
   "canonical_pairs": [
     {
