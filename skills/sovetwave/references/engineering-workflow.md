@@ -47,6 +47,13 @@ Record an unavailable, skipped, failed, or out-of-scope check honestly. Do not
 invent a coverage threshold, documentation task, logging layer, or validation
 tool that the requirement and repository do not establish.
 
+Treat documentation as part of change impact only when the change touches an
+established contract, architecture invariant, required command or procedure,
+migration or rollback, API, or user-visible behaviour. In that case find the
+normative owner, update or verify it, and check the affected acceptance path.
+A private implementation change with none of those effects does not require a
+ceremonial documentation update.
+
 ## Review the result
 
 Compare the result with the requested behaviour, local conventions, and the

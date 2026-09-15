@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "suite": "project-documentation",
+  "execution_mode": "prompt_only",
+  "cases": [
+    {
+      "id": "project-documentation-conflicting-sources",
+      "prompt": "В проекте ADR утверждает, что все события проходят через durable outbox. Текущий код отправляет одно событие напрямую, а тесты закрепляют именно прямую отправку. README повторяет ADR. Проведи review перед изменением.",
+      "assertions": [
+        "explicitly identifies the conflict between the ADR, implementation, tests, and README instead of silently selecting one source",
+        "distinguishes current implementation evidence and tested expectation from the contractual or intended claim",
+        "names or asks to establish the normative owner for the event-delivery rule",
+        "proposes a bounded resolution check and does not rewrite the code or ADR as if the intended behaviour were already established"
+      ]
+    },
+    {
+      "id": "project-documentation-no-ceremonial-adr",
+      "prompt": "Нужно переименовать одну private-функцию внутри модуля. Изменение обратимо, public API, архитектура, миграция и пользовательское поведение не меняются. В команде предлагают обязательно создать ADR и master plan. Что должно попасть в change plan?",
+      "assertions": [
+        "does not create an ADR or master plan merely because the change exists",
+        "checks the local naming convention and focused tests or static checks that cover the rename",
+        "states why there is no durable architectural decision, contract, migration, or user-visible documentation impact",
+        "keeps a path for documentation if new constraints or a durable decision emerge"
+      ]
+    },
+    {
+      "id": "project-documentation-public-api-impact",
+      "prompt": "Публичный API меняет формат ответа и добавляет обязательное поле. В репозитории есть contract.md, migration guide и acceptance tests, но план изменения упоминает только исходный код. Составь порядок работы.",
+      "assertions": [
+        "locates the existing public contract and treats it as an affected normative owner",
+        "requires updating migration guidance and acceptance criteria for the compatibility change",
+        "checks the API tests or other deterministic gates at the documented boundary",
+        "does not declare the change complete until compatibility, rollout, and rollback consequences are resolved"
+      ]
+    },
+    {
+      "id": "project-documentation-stale-readme-plan",
+      "prompt": "README обещает поддержку двух режимов, active-plan описывает третий как будущий, а код и проверка конфигурации поддерживают только первый. Разложи утверждения по эпистемическим статусам и предложи следующий шаг.",
+      "assertions": [
+        "classifies code-supported behaviour as implemented and a named passing check as verified only when that check is actually available",
+        "keeps the active plan's future mode as intended rather than treating it as implemented",
+        "marks the README claim that conflicts with code as stale-suspected and does not use the README as proof",
+        "uses contractual, superseded, or unknown only when a normative source or explicit replacement establishes that status",
+        "proposes reconciling the normative owner and updating the stale documentation instead of silently choosing a source"
+      ]
+    },
+    {
+      "id": "project-documentation-runbook-lifecycle",
+      "prompt": "Команда добавляет runbook для отката миграции и ADR о выборе хранилища. Документы будут жить дольше текущего релиза. Какие поля и lifecycle нужно зафиксировать, а что не следует требовать от каждой короткой заметки?",
+      "assertions": [
+        "uses an explicit lifecycle such as draft, active, superseded, or archived",
+        "requires scope, owner, last-reviewed, and review-trigger for the long-lived runbook and ADR",
+        "keeps migration, rollback, operating mode, and rationale in the document types that own them",
+        "does not impose the full long-lived metadata set on every transient note without a durable decision"
+      ]
+    }
+  ]
+}
