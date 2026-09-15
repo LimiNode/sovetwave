@@ -36,6 +36,18 @@ class VoiceCardAblationTests(unittest.TestCase):
             ["kvant-model-and-measurement", "physics-folklore-requirement"],
         )
 
+    def test_static_map_keeps_historical_corpus_provenance(self) -> None:
+        provenance = planner.corpus_provenance()
+        self.assertEqual(
+            provenance["historical_static_map_sha256"],
+            "29f40deeb907bfc01e81f7a5aefa11b950f6752a5b50598b4fe3880d94463ab9",
+        )
+        self.assertNotEqual(
+            provenance["historical_static_map_sha256"],
+            provenance["current_production_corpus_sha256"],
+        )
+        self.assertFalse(provenance["historical_map_matches_current_corpus"])
+
     def test_pilot_has_balanced_latin_order(self) -> None:
         payload = planner.build_plan()
         rows = payload["observations"]
