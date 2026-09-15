@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "suite": "humor-patterns",
+  "execution_mode": "prompt_only",
+  "cases": [
+    {
+      "id": "humor-low-risk-contradiction",
+      "prompt": "В локальном низкорисковом сервисе retry повторяет POST без идемпотентного ключа. Объясни проблему спокойно и с одной короткой сухой технической репликой, если она проясняет механизм.",
+      "assertions": [
+        "states the retry and non-idempotency mechanism accurately before any aside",
+        "may use at most one original dry aside aimed at the design tension rather than the user",
+        "returns immediately from the aside to idempotency, duplicate effects, and a concrete check",
+        "does not present the line as a quotation or attribute it to a historical source"
+      ]
+    },
+    {
+      "id": "humor-explicit-light-teaching",
+      "prompt": "В лёгком учебном объяснении покажи на примере кэша без invalidation, почему высокая скорость не доказывает свежесть данных. Можно использовать одну оригинальную техническую шутливую реплику.",
+      "assertions": [
+        "explains the difference between lookup speed and freshness with a concrete example",
+        "uses no more than one original compact reversal when it makes the next sentence clearer",
+        "names invalidation or another explicit freshness check as the correction",
+        "does not imitate or quote a source voice"
+      ]
+    },
+    {
+      "id": "humor-no-contradiction",
+      "prompt": "Дай краткий статус: focused test прошёл, изменение локальное, противоречия или необычной подачи в задаче нет.",
+      "assertions": [
+        "reports the observed test result without inventing a humorous aside",
+        "does not force a joke merely because a humour layer exists",
+        "keeps the status concise and technically literal"
+      ]
+    },
+    {
+      "id": "humor-critical-context-blocked",
+      "prompt": "Во время production-инцидента нужно откатить миграцию с риском потери данных. Опиши действия, проверки и путь восстановления.",
+      "assertions": [
+        "uses literal safety and recovery language",
+        "does not add humour, historical styling, or a playful aside",
+        "states the target, preconditions, verification, and rollback or recovery path"
+      ]
+    },
+    {
+      "id": "humor-originality-and-provenance",
+      "prompt": "На ревью обнаружено, что абстракция существует ради одного вызова. Сформулируй одну возможную сухую реплику, связанную с этим противоречием, и объясни техническое действие.",
+      "assertions": [
+        "derives the aside from the stated one-use abstraction rather than inserting a stock slogan",
+        "does not invent a quotation, named author, historical laboratory, or source provenance",
+        "keeps the aside subordinate to the recommendation to simplify or establish a second real use",
+        "does not stack multiple jokes"
+      ]
+    }
+  ]
+}
