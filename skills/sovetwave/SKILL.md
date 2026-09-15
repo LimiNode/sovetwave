@@ -46,6 +46,7 @@ determined by the task contract, not by the programming language alone.
 | Implementing, validating, committing, or handing off a project change | [engineering-workflow.md](references/engineering-workflow.md) |
 | Project documentation, ADRs, plans, contracts, runbooks, or documentation drift | [project-documentation.md](references/project-documentation.md) |
 | Evidence chain, diagnosis, disconfirmation, or architecture spike | [verification-discipline.md](references/verification-discipline.md) |
+| Research, investigation, experiment design, comparative analysis, or a consequential conclusion with material unknowns | [inquiry-discipline.md](references/inquiry-discipline.md) |
 | C or C++ language rules | [c-engineering.md](references/c-engineering.md) or [cpp-engineering.md](references/cpp-engineering.md) |
 | C or C++ review workflow | [cpp-review-workflow.md](references/cpp-review-workflow.md) |
 | C++ application, event, UI, or service architecture | [cpp-application-architecture.md](references/cpp-application-architecture.md) |
@@ -97,6 +98,12 @@ cards rather than inventing tags.
    test, command, assertion, or logged failure); “проверьте” without an
    observable result is not a verification.
 5. Mention an alternative only when it changes the decision.
+
+Before accepting a consequential conclusion or choosing the next substantial
+action, check whether an unassessed condition, interaction, scope, measurement,
+or alternative mechanism could materially reverse the conclusion or change the
+next action. Surface only the highest-value unresolved inquiry; do not turn
+this into a question checklist for routine local fixes.
 
 Minimise semantic surface rather than merely line count. Every branch,
 abstraction, duplicate implementation, and language-level promise must serve

@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "suite": "inquiry-discipline",
+  "cases": [
+    {
+      "id": "inquiry-regime-robustness",
+      "prompt": "Общий EV торговой стратегии отрицательный на всём доступном периоде. Следующий план — менять signal. Какой вопрос нужно задать до изменения?",
+      "assertions": [
+        "surfaces a scope or regime inquiry about whether the result is stable across materially different market or time regimes",
+        "explains that the answer can change whether signal is the right intervention",
+        "proposes a smallest useful stratified check rather than demanding an open-ended research programme",
+        "does not treat the negative aggregate EV as proof that signal is the cause"
+      ]
+    },
+    {
+      "id": "inquiry-construct-validity",
+      "prompt": "В исследовании lag определён как производная fair gap, а решение опирается на утверждение о задержке реакции системы. Перед принятием вывода чего не хватает?",
+      "assertions": [
+        "surfaces a construct-validity inquiry about whether the operational lag measure matches the defined property",
+        "states why a mismatch could change the conclusion or the chosen intervention",
+        "asks for a focused comparison between the definition and the measured quantity",
+        "does not silently accept the proxy as the construct"
+      ]
+    },
+    {
+      "id": "inquiry-interaction-completeness",
+      "prompt": "Signal, execution и inventory проверены по отдельности и каждый выглядит приемлемо. На этом основании хотят принять стратегию. Какой пробел проверить?",
+      "assertions": [
+        "surfaces an interaction inquiry about the combined signal, execution, and inventory path",
+        "explains that separate component results do not establish the combined behaviour",
+        "proposes a bounded combined or factorial check that could change the decision",
+        "does not demand every possible interaction without decision impact"
+      ]
+    },
+    {
+      "id": "inquiry-alternative-mechanism",
+      "prompt": "LOB features сильно коррелируют с текущим состоянием и модель на этом основании объявлена предсказывающей будущий outcome. Какой вопрос нужен до такого вывода?",
+      "assertions": [
+        "surfaces an alternative or temporal-mechanism inquiry about prediction of a future outcome versus contemporaneous state reflection",
+        "identifies the temporal boundary or leakage risk",
+        "proposes a time-ordered or out-of-sample check that distinguishes the mechanisms",
+        "does not call correlation proof of forward prediction"
+      ]
+    },
+    {
+      "id": "inquiry-metric-alignment",
+      "prompt": "Benchmark показывает рост throughput, и это объявлено снижением пользовательской latency. Следующее действие — принять оптимизацию. Что проверить до решения?",
+      "assertions": [
+        "surfaces a metric-alignment inquiry about whether throughput represents the latency decision",
+        "explains that the answer can change the accept or reject decision",
+        "asks for the smallest representative latency measurement, including the relevant tail when applicable",
+        "does not treat an improved throughput number as latency evidence"
+      ]
+    },
+    {
+      "id": "inquiry-stop-known-local-fix",
+      "prompt": "Компилятор показывает точную syntax error на конкретной строке. Контракт исправляемого выражения известен, а следующий шаг — внести локальную правку. Нужно ли сначала запускать полный inquiry audit?",
+      "assertions": [
+        "does not generate speculative regime, alternative-mechanism, or generalisation questions for the precise local syntax defect",
+        "states that the known contract and exact diagnostic make a bounded local correction the appropriate next action",
+        "names a focused compile or test check for the correction",
+        "applies the inquiry stop rule rather than equating possible questions with useful inquiries"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "inquiry-regime-robustness",
+        "expect": "inquiry is decision-gated and should not expand a precise local correction"
+      }
+    },
+    {
+      "id": "inquiry-stop-established-contract",
+      "prompt": "Focused test проверяет ровно изменённую pure function, публичный contract известен, а тестовый вход покрывает граничное условие из задачи. Что ещё нужно спросить перед фиксацией результата?",
+      "assertions": [
+        "does not invent a broad inquiry when the stated contract, exercised property, and relevant boundary are established",
+        "distinguishes the local evidence from claims outside the tested boundary",
+        "states the focused test result as the appropriate verification for this change",
+        "mentions a wider inquiry only conditionally if a broader conclusion is being claimed"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "inquiry-interaction-completeness",
+        "expect": "established local coverage permits a bounded decision without a research checklist"
+      }
+    }
+  ]
+}

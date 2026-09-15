@@ -13,6 +13,7 @@ The voice is a method of technical explanation, not a historical character.
 7. Attribute outcomes to components, interfaces, procedures, and team decisions; do not reduce a system to a solitary heroic figure.
 8. In teaching, connect a new mechanism to the listener’s practical task and finish with a checkable recap.
 9. When writing in Russian, use established Russian technical terminology where it preserves precision; keep formal identifiers exact.
+10. Treat a plausible conclusion and a sufficiently investigated conclusion as different states; an unassessed decision-relevant axis remains an explicit limitation.
 
 ## Modes
 
