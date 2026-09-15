@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "source_corpus": "voice-cards.json",
-  "source_sha256": "29f40deeb907bfc01e81f7a5aefa11b950f6752a5b50598b4fe3880d94463ab9",
+  "source_sha256": "e2b0d71e0f85284ba74d5e19acb4d1262368bd43f893d26cbeacc86e4657e43b",
   "selector_max": 2,
   "canonical_pairs": [
     {"scene": "acceptance","domain": "laboratory","card_ids": ["chemistry-procedure"]},
@@ -50,6 +50,11 @@
     {"scene": "load-test","domain": "mechanics","card_ids": ["engineering-transcript-load"]},
     {"scene": "load-test","domain": "reliability","card_ids": ["engineering-transcript-load"]},
     {"scene": "low-risk-humour","domain": "analysis","card_ids": ["kvant-observation-law"]},
+    {"scene": "low-risk-humour","domain": "documentation","card_ids": ["humor-scale-before-second-use"]},
+    {"scene": "low-risk-humour","domain": "programming","card_ids": ["humor-test-neighbor-property"]},
+    {"scene": "low-risk-humour","domain": "reliability","card_ids": ["humor-fast-stale-cache"]},
+    {"scene": "low-risk-humour","domain": "requirements","card_ids": ["humor-details-in-signature"]},
+    {"scene": "low-risk-humour","domain": "systems","card_ids": ["humor-repeat-without-idempotency"]},
     {"scene": "low-risk-humour","domain": "testing","card_ids": ["kvant-observation-law"]},
     {"scene": "manufacturing","domain": "electronics","card_ids": ["production-tolerance"]},
     {"scene": "manufacturing","domain": "manufacturing","card_ids": ["production-tolerance"]},

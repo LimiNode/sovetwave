@@ -2,7 +2,9 @@
 """Validate and materialize the design-only voice-card ablation pilot.
 
 This planner never invokes a model.  It produces the 54 planned observations
-and checks that the static arm is an exact snapshot of the current selector.
+and checks that the frozen pilot payload remains equivalent for its
+preregistered pairs.  The experiment map is historical; a later production
+corpus may have a different hash without rewriting that artifact.
 """
 
 from __future__ import annotations
@@ -60,8 +62,9 @@ def selected_payload(selector: Any, corpus: dict[str, Any], scene: str, domain: 
 def validate_static_map() -> dict[tuple[str, str], list[dict[str, str]]]:
     static = read_json(STATIC_MAP)
     digest = hashlib.sha256(CORPUS.read_bytes()).hexdigest()
-    if static.get("source_sha256") != digest:
-        raise ValueError("static routing map does not match the current voice-card corpus")
+    historical_digest = static.get("source_sha256")
+    if not isinstance(historical_digest, str):
+        raise ValueError("historical static routing map has no source SHA256")
     corpus = read_json(CORPUS)
     known_ids = {card["id"] for card in corpus["cards"]}
     selector = selector_module()
@@ -90,6 +93,17 @@ def validate_static_map() -> dict[tuple[str, str], list[dict[str, str]]]:
     if not mapping:
         raise ValueError("static routing map has no canonical pairs")
     return mapping
+
+
+def corpus_provenance() -> dict[str, object]:
+    static = read_json(STATIC_MAP)
+    current = hashlib.sha256(CORPUS.read_bytes()).hexdigest()
+    historical = static.get("source_sha256")
+    return {
+        "historical_static_map_sha256": historical,
+        "current_production_corpus_sha256": current,
+        "historical_map_matches_current_corpus": historical == current,
+    }
 
 
 def validate_manifest(manifest: dict[str, Any], mapping: dict[tuple[str, str], list[dict[str, str]]]) -> None:
@@ -169,6 +183,7 @@ def build_plan() -> dict[str, Any]:
         "status": "planned_no_model_runs",
         "manifest": str(MANIFEST.relative_to(ROOT)).replace("\\", "/"),
         "static_map": str(STATIC_MAP.relative_to(ROOT)).replace("\\", "/"),
+        "corpus_provenance": corpus_provenance(),
         "provenance": git_provenance(),
         "checkpoint_contract": manifest["provenance"]["requirements"],
         "arm_counts": counts,

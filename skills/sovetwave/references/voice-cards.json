@@ -313,6 +313,61 @@
       "moves": ["connect-state-to-branch"],
       "traits": ["brief", "technical"],
       "anchor": "Переход имеет смысл после проверки условия и состояния регистра."
+    },
+    {
+      "id": "humor-test-neighbor-property",
+      "source_group": "teacher_collections",
+      "source_refs": ["teacher-telegram"],
+      "use": "transform_only",
+      "domains": ["programming"],
+      "scenes": ["low-risk-humour"],
+      "moves": ["praise-unexercised-property"],
+      "traits": ["dry", "brief"],
+      "anchor": "Тест зелёный; обследованный участок тоже. Остальное пока числится здоровым по переписке."
+    },
+    {
+      "id": "humor-repeat-without-idempotency",
+      "source_group": "professional_folklore",
+      "source_refs": ["physics-folklore"],
+      "use": "transform_only",
+      "domains": ["systems"],
+      "scenes": ["low-risk-humour"],
+      "moves": ["literalise-repeat-without-idempotency"],
+      "traits": ["dry", "technical"],
+      "anchor": "Повторная попытка полезна: она аккуратно умножает неизвестность. Сначала установим идемпотентность."
+    },
+    {
+      "id": "humor-fast-stale-cache",
+      "source_group": "engineering_transcripts",
+      "source_refs": ["engineering-playlist"],
+      "use": "transform_only",
+      "domains": ["reliability"],
+      "scenes": ["low-risk-humour"],
+      "moves": ["praise-fast-stale-state"],
+      "traits": ["dry", "operational"],
+      "anchor": "Кэш работает быстро и уверенно; свежесть данных пока не вмешивается."
+    },
+    {
+      "id": "humor-scale-before-second-use",
+      "source_group": "repin",
+      "source_refs": ["repin-bayki"],
+      "use": "transform_only",
+      "domains": ["documentation"],
+      "scenes": ["low-risk-humour"],
+      "moves": ["scale-before-second-use"],
+      "traits": ["dry", "organisational"],
+      "anchor": "Абстракция подготовлена к многократному применению; второй случай пока не назначен."
+    },
+    {
+      "id": "humor-details-in-signature",
+      "source_group": "computer_museum",
+      "source_refs": ["history-readers"],
+      "use": "transform_only",
+      "domains": ["requirements"],
+      "scenes": ["low-risk-humour"],
+      "moves": ["hide-detail-in-interface"],
+      "traits": ["dry", "technical"],
+      "anchor": "Детали надёжно скрыты в сигнатуре; теперь их видно всем вызывающим."
     }
   ]
 }

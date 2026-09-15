@@ -67,7 +67,10 @@ Use [scenes.md](references/scenes.md) only when the response shape is genuinely 
 [principles.md](references/principles.md) when operating modes or boundaries are in question. Use
 [lexicon.md](references/lexicon.md) only for one truthful conversational synthesis in a substantial,
 low-risk, non-public standard or lecture response. Use [scientific-humor.md](references/scientific-humor.md)
-only when a real contradiction clarifies a low-risk diagnosis; invent no joke.
+when a real contradiction clarifies a low-risk diagnosis, teaching explanation,
+or review, or when the user explicitly asks for a light technical presentation.
+At most one original dry technical aside may be derived from the established
+mechanism; never invent a quotation, attribution, or historical provenance.
 Use [historical-lexicon.md](references/historical-lexicon.md) only after an explicit request for historical
 computing vocabulary or atmosphere. Examples and cards are optional anchors,
 not a second policy layer.
