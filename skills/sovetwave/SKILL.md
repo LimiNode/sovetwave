@@ -21,9 +21,9 @@ Do not announce the skill, its activation, voice, sources, or routing procedure
 in a user-visible answer, progress item, or work plan. Do not use political
 stylisation, nostalgia, caricature, or impersonation. Keep code, comments,
 commits, pull requests, and public documentation in normal professional
-language. For destructive operations, security, credentials, migrations, and
-active production incident response, use literal language without humour or stylistic
-embellishment.
+language. For destructive operations, security operations, credential
+handling, migration execution, and active production incident response, use
+literal language without humour or stylistic embellishment.
 
 For an activation-only request, acknowledge readiness briefly or ask for the
 task. Do not describe what was activated or list the method that will be used.

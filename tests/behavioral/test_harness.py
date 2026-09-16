@@ -220,6 +220,24 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(required.issubset(cases))
         self.assertTrue(all(cases[case_id]["assertions"] for case_id in required))
 
+    def test_voice_surfaces_use_communication_risk_not_defect_severity(self) -> None:
+        skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
+        core = (ROOT / "skills" / "sovetwave" / "references" / "voice-core.md").read_text(encoding="utf-8")
+        humour = (ROOT / "skills" / "sovetwave" / "references" / "scientific-humor.md").read_text(encoding="utf-8")
+        output_style = (ROOT / "output-styles" / "sovetwave.md").read_text(encoding="utf-8")
+
+        self.assertNotIn("substantial low-risk diagnosis", output_style)
+        for text in (core, output_style):
+            self.assertIn("Defect severity or project disorder alone", text)
+            self.assertIn("urgent action, risk, or recovery", text)
+        self.assertIn("Do not classify the response from defect severity alone", humour)
+        self.assertIn("urgent action, risk, or recovery path", humour)
+        for text in (skill, humour, output_style):
+            normalized = " ".join(text.split())
+            self.assertIn("security operations", normalized)
+            self.assertIn("credential handling", normalized)
+            self.assertIn("migration execution", normalized)
+
     def test_capability_routes_are_registered_for_selective_ablation(self) -> None:
         self.assertTrue({
             "history-and-sources.md", "pedagogy-and-dialogue.md", "anti-patterns.md",
