@@ -80,6 +80,28 @@ class BehavioralHarnessTests(unittest.TestCase):
             "verification-confirmed-local-reproducer",
         }.issubset(cases))
 
+    def test_inquiry_discipline_reference_and_cases_are_routable(self) -> None:
+        self.assertIn("inquiry-discipline.md", THEMATIC_REFERENCES)
+        reference = ROOT / "skills" / "sovetwave" / "references" / "inquiry-discipline.md"
+        self.assertTrue(reference.is_file())
+        text = reference.read_text(encoding="utf-8")
+        for phrase in ("Decision-impact filter", "not_assessed", "stop rule", "verification"):
+            self.assertIn(phrase, text)
+        cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
+        self.assertTrue({
+            "inquiry-regime-robustness",
+            "inquiry-construct-validity",
+            "inquiry-interaction-completeness",
+            "inquiry-alternative-mechanism",
+            "inquiry-metric-alignment",
+            "inquiry-natural-regime-initiative",
+            "inquiry-natural-construct-initiative",
+            "inquiry-natural-interaction-initiative",
+            "inquiry-natural-alternative-initiative",
+            "inquiry-stop-known-local-fix",
+            "inquiry-stop-established-contract",
+        }.issubset(cases))
+
     def test_verification_contract_holdouts_are_distinct_from_skill_example(self) -> None:
         skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
         self.assertNotIn("call `parse` with", skill)

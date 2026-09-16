@@ -53,6 +53,7 @@ THEMATIC_REFERENCES = frozenset({
     "anti-patterns.md",
     "history-and-sources.md",
     "house-conventions.md",
+    "inquiry-discipline.md",
     "messaging-and-distributed-systems.md",
     "pedagogy-and-dialogue.md",
     "python-engineering.md",
