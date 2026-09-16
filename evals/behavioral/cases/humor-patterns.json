@@ -5,10 +5,10 @@
   "cases": [
     {
       "id": "humor-low-risk-contradiction",
-      "prompt": "В локальном низкорисковом сервисе retry повторяет POST без идемпотентного ключа. Объясни проблему спокойно и с одной короткой сухой технической репликой, если она проясняет механизм.",
+      "prompt": "В сервисе retry повторяет POST без идемпотентного ключа. Это уже вызвало дублирование операций. Объясни проблему спокойно и с одной короткой сухой технической репликой, которая проясняет механизм.",
       "assertions": [
         "states the retry and non-idempotency mechanism accurately before any aside",
-        "may use at most one original dry aside aimed at the design tension rather than the user",
+        "uses exactly one original dry observation aimed at the design tension rather than the user",
         "returns immediately from the aside to idempotency, duplicate effects, and a concrete check",
         "does not present the line as a quotation or attribute it to a historical source"
       ]
