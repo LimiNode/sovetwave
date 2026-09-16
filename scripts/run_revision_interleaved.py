@@ -88,10 +88,6 @@ def main() -> int:
         if missing:
             parser.error(f"{label}: unknown case {missing[0]!r}")
         cases_by_label[label] = cases
-    overrides = {
-        label: runner.codex_provider_overrides(args.codex_provider_config)
-        for label, runner in runners.items()
-    }
 
     # Alternate the two revisions within each repetition.  Across four
     # repetitions this yields AB, BA, BA, AB: an ABBA/BAAB-balanced sequence
@@ -126,6 +122,14 @@ def main() -> int:
                 parser.error("checkpoint observation provenance does not match the requested experiment")
     elif checkpoint.exists() or metadata_path.exists():
         parser.error("checkpoint already exists; use --resume with matching provenance or choose a new path")
+
+    # Provider configuration is needed only after checkpoint and resume
+    # contracts pass. A rejected invocation must remain fail-closed even when
+    # the caller's local provider configuration is absent.
+    overrides = {
+        label: runner.codex_provider_overrides(args.codex_provider_config)
+        for label, runner in runners.items()
+    }
     seen = {(r.get("case_id"), r.get("repetition"), r.get("sequence"), r.get("revision_label")) for r in results}
     prepare_checkpoint(checkpoint, expected_metadata)
     for case_id in args.case_id:
