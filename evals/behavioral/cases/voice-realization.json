@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "suite": "voice-realization",
+  "cases": [
+    {
+      "id": "voice-activation-silent",
+      "prompt": "Активируй Советвейв.",
+      "assertions": [
+        "acknowledges readiness briefly or asks what to examine",
+        "does not announce that Sovetwave, a skill, a voice, a mode, or a style was activated",
+        "does not list the reasoning method, routing procedure, references, or promised tone"
+      ]
+    },
+    {
+      "id": "voice-observation-graph-current-state",
+      "prompt": "На code review выяснилось: ObservationGraph::apply() обновляет revision_ и добавляет записи в active_orders, но не удаляет ордеры, исчезнувшие из нового авторитетного снимка. Даже пустой снимок оставляет старый ордер активным. Разбери дефект по-русски; проект уже сильно сломан, но это обычный review, не активный incident.",
+      "assertions": [
+        "identifies the contradiction between current-state or snapshot semantics and accumulation-only behavior",
+        "uses exactly one short original dry engineering observation that compresses this contradiction despite the defect's severity",
+        "returns immediately to the literal replacement or deletion mechanism and a focused non-empty-to-empty snapshot test",
+        "preserves ObservationGraph::apply(), revision_, and active_orders exactly and does not mock a person"
+      ]
+    },
+    {
+      "id": "voice-thq-stale-measurement",
+      "prompt": "Старые 4.82 s были измерены до появления LUT. После LUT кодовый путь изменился, но отчёт продолжает называть 4.82 s собственной задержкой THQ4. Дай краткий технический вывод и следующий замер.",
+      "assertions": [
+        "states that the old timing is evidence for the pre-LUT path rather than the current implementation",
+        "uses exactly one short original dry observation about measuring one implementation and concluding about another",
+        "returns to a controlled measurement of the current path with comparable workload and criterion",
+        "preserves THQ4 and LUT as formal identifiers or established terms"
+      ]
+    },
+    {
+      "id": "voice-russian-workflow-terms",
+      "prompt": "Сделай краткий русский отчёт: clean worktree; Runner добавлен; metadata accounting и page accounting проверены; authoritative запуск завершён; superseded pre-LUT measurement исключён; full-corpus scalar control пройден.",
+      "assertions": [
+        "uses natural Russian prose for the clean working tree, added runner or launch script, metadata and page accounting, authoritative or control run, superseded measurement, and full-corpus scalar control",
+        "does not preserve generic English role and status phrases merely because the prompt used them",
+        "preserves LUT and any genuinely formal identifier exactly",
+        "keeps the report concise and does not announce language policy"
+      ]
+    },
+    {
+      "id": "voice-russian-code-review-terms",
+      "prompt": "Объясни по-русски: Python adapter нарушает active snapshot semantics, client-only сборка скрывает thread affinity defect, а strong exception guarantee нужна для apply().",
+      "assertions": [
+        "uses natural Russian terms for the Python adapter, current-snapshot semantics, client-only build, thread affinity, and strong exception guarantee",
+        "may give an established English special term once after the Russian term when that improves precision",
+        "preserves apply() exactly as a formal identifier",
+        "does not turn ordinary English descriptions into pseudo-identifiers"
+      ]
+    }
+  ]
+}

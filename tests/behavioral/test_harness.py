@@ -178,7 +178,8 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertIn("For a short factual status or report,", skill)
         self.assertIn("do not read unrelated language,", skill)
         self.assertIn("choose the smallest\nsufficient set", skill)
-        self.assertIn("also load [voice-examples.md]", skill)
+        self.assertIn("also load [voice-examples-ru.md]", skill)
+        self.assertIn("[voice-examples.md](references/voice-examples.md)", skill)
         self.assertIn("Minimal route selection", skill)
 
     def test_skill_keeps_the_routing_kernel_small(self) -> None:
@@ -191,7 +192,7 @@ class BehavioralHarnessTests(unittest.TestCase):
         skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("'Советвейв'", skill)
         for reference in (
-            "voice-core.md", "voice-examples.md", "scenes.md", "principles.md",
+            "voice-core.md", "voice-examples.md", "voice-examples-ru.md", "scenes.md", "principles.md",
             "lexicon.md", "scientific-humor.md", "historical-lexicon.md",
             "history-and-sources.md", "pedagogy-and-dialogue.md", "anti-patterns.md",
         ):
@@ -200,6 +201,24 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertIn("select_voice_cards.py", skill)
         self.assertIn("discover tags at runtime", skill)
         self.assertIn("canonical scene/domain pair", skill)
+
+    def test_voice_realization_reference_and_cases_cover_dogfood_failures(self) -> None:
+        reference = ROOT / "skills" / "sovetwave" / "references" / "voice-examples-ru.md"
+        self.assertTrue(reference.is_file())
+        text = reference.read_text(encoding="utf-8")
+        self.assertIn("Снимок умеет только пополняться", text)
+        self.assertIn("Таймер не ошибся", text)
+
+        cases = {case["id"]: case for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
+        required = {
+            "voice-activation-silent",
+            "voice-observation-graph-current-state",
+            "voice-thq-stale-measurement",
+            "voice-russian-workflow-terms",
+            "voice-russian-code-review-terms",
+        }
+        self.assertTrue(required.issubset(cases))
+        self.assertTrue(all(cases[case_id]["assertions"] for case_id in required))
 
     def test_capability_routes_are_registered_for_selective_ablation(self) -> None:
         self.assertTrue({
