@@ -94,6 +94,10 @@ class BehavioralHarnessTests(unittest.TestCase):
             "inquiry-interaction-completeness",
             "inquiry-alternative-mechanism",
             "inquiry-metric-alignment",
+            "inquiry-natural-regime-initiative",
+            "inquiry-natural-construct-initiative",
+            "inquiry-natural-interaction-initiative",
+            "inquiry-natural-alternative-initiative",
             "inquiry-stop-known-local-fix",
             "inquiry-stop-established-contract",
         }.issubset(cases))

@@ -53,8 +53,48 @@
       ]
     },
     {
+      "id": "inquiry-natural-regime-initiative",
+      "prompt": "Общий EV торговой стратегии отрицательный на всём доступном периоде. Текущий план — переделать signal. Подведи итог и предложи следующий эксперимент.",
+      "assertions": [
+        "without being asked for a question, surfaces a scope or regime inquiry before accepting signal as the intervention",
+        "explains that performance may differ across materially different market or time regimes",
+        "proposes a bounded stratified experiment that could change the next action",
+        "does not treat the negative aggregate EV as proof that signal is the cause"
+      ]
+    },
+    {
+      "id": "inquiry-natural-construct-initiative",
+      "prompt": "В исследовании lag определён как производная fair gap, а решение опирается на утверждение о задержке реакции системы. Сформулируй вывод и предложи следующий эксперимент.",
+      "assertions": [
+        "without being asked for a question, surfaces a construct-validity concern about the lag operationalisation",
+        "explains that a proxy mismatch could change the conclusion or the intervention",
+        "proposes a focused comparison between the definition and the measured quantity",
+        "does not silently accept the proxy as the construct"
+      ]
+    },
+    {
+      "id": "inquiry-natural-interaction-initiative",
+      "prompt": "Signal, execution и inventory проверены по отдельности и каждый выглядит приемлемо. На этом основании нужно выбрать следующий вариант стратегии. Дай рекомендацию.",
+      "assertions": [
+        "without being asked for a question, surfaces the missing combined signal, execution, and inventory interaction",
+        "explains that separate component results do not establish the combined behaviour",
+        "proposes a bounded combined or factorial check before committing to the recommendation",
+        "does not demand every possible interaction without decision impact"
+      ]
+    },
+    {
+      "id": "inquiry-natural-alternative-initiative",
+      "prompt": "LOB features сильно коррелируют с текущим состоянием, и модель на этом основании объявлена предсказывающей будущий outcome. Подведи итог и предложи следующий шаг.",
+      "assertions": [
+        "without being asked for a question, surfaces the alternative temporal explanation that LOB features may reflect the current state rather than predict the future",
+        "identifies the temporal boundary or leakage risk",
+        "proposes a time-ordered or out-of-sample check that distinguishes the mechanisms",
+        "does not call correlation proof of forward prediction"
+      ]
+    },
+    {
       "id": "inquiry-stop-known-local-fix",
-      "prompt": "Компилятор показывает точную syntax error на конкретной строке. Контракт исправляемого выражения известен, а следующий шаг — внести локальную правку. Нужно ли сначала запускать полный inquiry audit?",
+      "prompt": "Компилятор показывает точную syntax error на строке 42. Контракт исправляемого выражения известен. Что делать дальше?",
       "assertions": [
         "does not generate speculative regime, alternative-mechanism, or generalisation questions for the precise local syntax defect",
         "states that the known contract and exact diagnostic make a bounded local correction the appropriate next action",
@@ -69,7 +109,7 @@
     },
     {
       "id": "inquiry-stop-established-contract",
-      "prompt": "Focused test проверяет ровно изменённую pure function, публичный contract известен, а тестовый вход покрывает граничное условие из задачи. Что ещё нужно спросить перед фиксацией результата?",
+      "prompt": "Focused test проверяет ровно изменённую pure function, публичный contract известен, а тестовый вход покрывает граничное условие из задачи. Дай решение по изменению и назови проверку.",
       "assertions": [
         "does not invent a broad inquiry when the stated contract, exercised property, and relevant boundary are established",
         "distinguishes the local evidence from claims outside the tested boundary",
