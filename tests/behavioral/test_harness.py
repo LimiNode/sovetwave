@@ -113,7 +113,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(ROOT / "scripts" / "run_revision_interleaved.py"),
                  "--revision-a", str(ROOT), "--revision-b", str(ROOT),
-                 "--case-id", "russian-pr-status-report", "--codex-provider-config", str(Path.home() / ".codex" / "config.toml"),
+                 "--case-id", "russian-pr-status-report", "--codex-provider-config", str(Path(directory) / "missing-config.toml"),
                  "--checkpoint", str(checkpoint), "--output", str(output)],
                 cwd=ROOT, text=True, capture_output=True,
             )
@@ -132,7 +132,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             completed = subprocess.run(
                 [sys.executable, str(ROOT / "scripts" / "run_revision_interleaved.py"),
                  "--revision-a", str(ROOT), "--revision-b", str(ROOT),
-                 "--case-id", "russian-pr-status-report", "--codex-provider-config", str(Path.home() / ".codex" / "config.toml"),
+                 "--case-id", "russian-pr-status-report", "--codex-provider-config", str(Path(directory) / "missing-config.toml"),
                  "--checkpoint", str(checkpoint), "--output", str(output), "--resume"],
                 cwd=ROOT, text=True, capture_output=True,
             )
