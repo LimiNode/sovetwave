@@ -237,6 +237,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("security operations", normalized)
             self.assertIn("credential handling", normalized)
             self.assertIn("migration execution", normalized)
+            self.assertIn("active incident response", normalized)
 
     def test_capability_routes_are_registered_for_selective_ablation(self) -> None:
         self.assertTrue({
