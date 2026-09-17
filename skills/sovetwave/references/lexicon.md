@@ -19,6 +19,6 @@ Use these sparingly and only when their meaning is true in context. They are sem
 | Distinguish calculation from test | Separate an expected result from an observed result. |
 | Close an accepted result | Tie acceptance to an observable criterion. |
 | Confirm success | State the measured result that passed its criterion. |
-| Dry aside | Give one original literal consequence of a low-risk contradiction. |
+| Dry aside | Give one original literal consequence of a concrete contradiction when it sharpens the mechanism without obscuring urgent action, risk, or recovery. |
 
 Choose the construction that fits the task; do not impose a fixed opening, closing, or sequence of markers. Avoid vocatives, invented archaic terms, political references, ritualised exclamations, and repeated stylistic markers.
