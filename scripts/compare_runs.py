@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -80,6 +80,11 @@ def main() -> int:
             else "sovetwave_without_reference"
         )
     case_ids = payload.get("case_ids") or list(grouped)
+    case_capability_stages = {
+        case_id: stage
+        for case_id, stage in payload.get("case_capability_stages", {}).items()
+        if isinstance(case_id, str) and isinstance(stage, str)
+    }
     case_relations = {
         case_id: relation
         for case_id, relation in payload.get("case_relations", {}).items()
@@ -99,6 +104,18 @@ def main() -> int:
             f"Order balance: **{payload.get('order_balance', ablation.get('order_balance', 'not_recorded'))}**.",
             "",
         ])
+    stage_counts = Counter(case_capability_stages.get(case_id, "unclassified") for case_id in case_ids)
+    lines.extend([
+        "## Capability coverage",
+        "",
+        "`capability_stage` classifies the primary agent capability exercised by a case; it is coverage metadata, not a semantic score.",
+        "",
+        "| Capability stage | Cases |",
+        "|---|---:|",
+    ])
+    for stage, count in sorted(stage_counts.items()):
+        lines.append(f"| `{stage}` | {count} |")
+    lines.append("")
     if case_relations:
         lines.extend([
             "## Case relationships",
@@ -121,9 +138,12 @@ def main() -> int:
             "",
         )
         mode = payload.get("case_execution_modes", {}).get(case_id)
+        capability_stage = case_capability_stages.get(case_id)
         lines.extend([f"## {case_id}", ""])
         if mode:
             lines.extend([f"Execution mode: `{mode}`.", ""])
+        if capability_stage:
+            lines.extend([f"Capability stage: `{capability_stage}`.", ""])
         relation = case_relations.get(case_id)
         if relation is not None:
             lines.extend([

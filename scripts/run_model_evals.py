@@ -18,7 +18,7 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from eval_schema import rubric_axis_ids, validate_applicable_axes
+from eval_schema import rubric_axis_ids, validate_applicable_axes, validate_capability_stage
 from urllib.parse import urlsplit
 
 
@@ -122,11 +122,13 @@ def load_cases(case_dir: Path) -> list[dict[str, Any]]:
         if not isinstance(suite.get("cases"), list):
             raise ValueError(f"{path}: cases must be an array")
         suite_axes = suite.get("applicable_axes")
+        suite_capability_stage = suite.get("capability_stage")
         suite_execution_mode = suite.get("execution_mode", "prompt_only")
         if suite_execution_mode not in EXECUTION_MODES:
             raise ValueError(f"{path}: unsupported execution_mode {suite_execution_mode!r}")
         try:
             validate_applicable_axes(suite_axes, allowed=RUBRIC_AXES)
+            validate_capability_stage(suite_capability_stage)
         except ValueError as error:
             raise ValueError(f"{path}: {error}") from error
         for case in suite["cases"]:
@@ -137,6 +139,7 @@ def load_cases(case_dir: Path) -> list[dict[str, Any]]:
             ):
                 raise ValueError(f"{path}: every case needs non-empty string assertions")
             applicable_axes = case.get("applicable_axes", suite_axes)
+            capability_stage = case.get("capability_stage", suite_capability_stage)
             execution_mode = case.get("execution_mode", suite_execution_mode)
             if execution_mode not in EXECUTION_MODES:
                 raise ValueError(f"{path}: unsupported execution_mode for {case['id']!r}: {execution_mode!r}")
@@ -152,10 +155,13 @@ def load_cases(case_dir: Path) -> list[dict[str, Any]]:
                     raise ValueError(f"{path}: fixture directory does not exist for {case['id']!r}: {fixture_path}")
             try:
                 validate_applicable_axes(applicable_axes, allowed=RUBRIC_AXES)
+                validate_capability_stage(capability_stage)
             except ValueError as error:
                 raise ValueError(f"{path}: {error}") from error
             if "applicable_axes" not in case and suite_axes is not None:
                 case["applicable_axes"] = list(suite_axes)
+            if "capability_stage" not in case and suite_capability_stage is not None:
+                case["capability_stage"] = suite_capability_stage
             case["execution_mode"] = execution_mode
             if fixture is not None:
                 case["fixture"] = fixture
@@ -838,6 +844,7 @@ def run_variant(
             "prompt": redact_secrets(case["prompt"]),
             "assertions": case.get("assertions", []),
             "applicable_axes": case.get("applicable_axes"),
+            "capability_stage": case.get("capability_stage"),
             "command": redact_command(command),
             "provider": provider,
             "requested_model": model,
@@ -1103,13 +1110,18 @@ def main() -> int:
     resume_keys = {result_key(result) for result in results}
     partial_path = output.with_suffix(".partial.json")
     partial_metadata = {
-        "schema_version": "1.5",
+        "schema_version": "1.6",
         "provider": args.provider,
         "model": args.model,
         "dry_run": args.dry_run,
         "repetitions": args.repetitions,
         "variant_set": "claude_three_arm" if use_claude_arms else "claude_two_arm" if args.provider == "claude" else "codex_two_arm",
         "case_ids": [case["id"] for case in cases],
+        "case_capability_stages": {
+            case["id"]: case["capability_stage"]
+            for case in cases
+            if case.get("capability_stage") is not None
+        },
         "variant_orders": variant_orders,
         "checkpoint": str(checkpoint),
     }
@@ -1193,7 +1205,7 @@ def main() -> int:
         except (OSError, subprocess.TimeoutExpired):
             cli_version = "unavailable"
     payload = {
-        "schema_version": "1.5",
+        "schema_version": "1.6",
         "created_at": datetime.now(UTC).isoformat(),
         "provider": args.provider,
         "model": args.model,
@@ -1212,6 +1224,11 @@ def main() -> int:
         "claude_settings_isolated": args.claude_settings is not None,
         "variant_set": "claude_three_arm" if use_claude_arms else "claude_two_arm" if args.provider == "claude" else "codex_two_arm",
         "case_execution_modes": {case["id"]: case.get("execution_mode", "prompt_only") for case in cases},
+        "case_capability_stages": {
+            case["id"]: case["capability_stage"]
+            for case in cases
+            if case.get("capability_stage") is not None
+        },
         "case_ids": [case["id"] for case in cases],
         "case_relations": {
             case["id"]: case["relation"]

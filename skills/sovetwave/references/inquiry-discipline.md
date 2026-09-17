@@ -58,6 +58,24 @@ These states do not mean that the claim is true or false. Keep
 `confirmed`, `disproved`, `not reproduced`, and `not checked` for evidence
 status in the verification process.
 
+## Operational prerequisites
+
+Before executing a consequential operational instruction, inspect the facts it
+quietly assumes. Ask what must already be true for the instruction to have a
+defined meaning: the applicable path or environment, required tools, users,
+flags, services, configuration, baseline or source of truth, and the expected
+observable result. This is a precondition inquiry, not a request for every
+possible piece of context.
+
+If a prerequisite can change the action or the interpretation of its result,
+surface one bounded question or obtain the fact from an authorized repository
+source before acting. If it cannot be established, mark the operation blocked
+or the check not checked; do not replace an unknown baseline with “works as
+before”, “normal checks”, or “production-like” as if those phrases were
+executable contracts. When the task supplies a concrete path, command,
+configuration, and success signal, proceed with that bounded contract and do
+not invent a broader inquiry.
+
 ## Decision-impact filter and stop rule
 
 Prefer the question that could reverse the decision. Next prefer one that

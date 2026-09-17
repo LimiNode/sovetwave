@@ -73,7 +73,7 @@ def retryable_rows(source_rows: list[dict]) -> list[dict]:
 
 def verify_case_snapshot(previous: dict, case: dict) -> None:
     """Refuse a retry when the current case no longer matches its observation."""
-    for field in ("prompt", "assertions", "execution_mode", "fixture"):
+    for field in ("prompt", "assertions", "execution_mode", "fixture", "capability_stage"):
         if previous.get(field) != case.get(field):
             raise ValueError(f"case {previous.get('case_id')!r} changed field {field!r} since the observation")
 

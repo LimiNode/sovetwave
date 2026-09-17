@@ -9,7 +9,7 @@ import re
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from eval_schema import rubric_axis_ids, validate_applicable_axes
+from eval_schema import rubric_axis_ids, validate_applicable_axes, validate_capability_stage
 
 
 REQUIRED_SUITE_FIELDS = {"version": str, "suite": str, "cases": list}
@@ -41,6 +41,11 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
         return errors + 1
     try:
         validate_applicable_axes(suite.get("applicable_axes"), allowed=RUBRIC_AXES)
+    except ValueError as error:
+        fail(f"{path}: {error}")
+        errors += 1
+    try:
+        validate_capability_stage(suite.get("capability_stage"))
     except ValueError as error:
         fail(f"{path}: {error}")
         errors += 1
@@ -92,6 +97,12 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
             validate_applicable_axes(applicable_axes, allowed=RUBRIC_AXES)
         except ValueError as error:
             fail(f"{path}: {error}")
+            errors += 1
+        capability_stage = case.get("capability_stage", suite.get("capability_stage"))
+        try:
+            validate_capability_stage(capability_stage)
+        except ValueError as error:
+            fail(f"{path}: case {case_id!r}: {error}")
             errors += 1
         checks = case.get("checks", {})
         if not isinstance(checks, dict):

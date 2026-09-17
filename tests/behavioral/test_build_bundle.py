@@ -7,8 +7,10 @@ class BuildBundleTests(unittest.TestCase):
     def test_legacy_missing_telemetry_is_preserved_as_unknown(self):
         row = sanitize_result("run", "rev", {
             "case_id": "case", "variant": "baseline", "process_status": "timeout",
+            "capability_stage": "inquiry",
             "stderr": "", "response": "",
         })
+        self.assertEqual(row["capability_stage"], "inquiry")
         self.assertIsNone(row["material_inputs_dirty"])
         self.assertIsNone(row["attempt"])
         self.assertIsNone(row["recovered"])

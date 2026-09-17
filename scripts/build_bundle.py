@@ -93,6 +93,7 @@ def sanitize_result(experiment: str, revision: str, row: dict) -> dict:
         "prompt": row.get("prompt"),
         "assertions": row.get("assertions") or [],
         "applicable_axes": row.get("applicable_axes"),
+        "capability_stage": row.get("capability_stage"),
         "process_status": process_status,
         "semantic_status": row.get("semantic_status"),
         "semantic_class": row.get("semantic_class"),

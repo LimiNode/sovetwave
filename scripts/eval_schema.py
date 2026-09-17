@@ -9,6 +9,17 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 RUBRIC = ROOT / "evals" / "behavioral" / "rubric.json"
+CAPABILITY_STAGES = frozenset({
+    "instruction_interpretation",
+    "grounding",
+    "inquiry",
+    "action_selection",
+    "implementation",
+    "verification_selection",
+    "evidence_interpretation",
+    "reporting",
+    "voice_realization",
+})
 
 
 def rubric_axis_ids(path: Path = RUBRIC) -> frozenset[str]:
@@ -26,3 +37,12 @@ def validate_applicable_axes(value: Any, *, allowed: frozenset[str]) -> None:
     unknown = [axis for axis in value if axis not in allowed]
     if unknown:
         raise ValueError(f"applicable_axes contains unknown rubric axis: {unknown[0]!r}")
+
+
+def validate_capability_stage(value: Any) -> None:
+    """Validate an optional primary capability classification for an eval case."""
+    if value is None:
+        return
+    if not isinstance(value, str) or value not in CAPABILITY_STAGES:
+        allowed = ", ".join(sorted(CAPABILITY_STAGES))
+        raise ValueError(f"capability_stage must be one of: {allowed}")
