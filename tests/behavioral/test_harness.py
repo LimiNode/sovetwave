@@ -23,6 +23,8 @@ from run_model_evals import (
     classify_semantic_response,
     validate_applicable_axes,
     validate_capability_stage,
+    validate_decision_impact,
+    validate_evidence_access,
     load_cases,
     make_workspace,
     load_checkpoint,
@@ -36,7 +38,7 @@ from run_model_evals import (
     summarize_ablation,
     variant_plan,
 )
-from compare_runs import resolve_capability_stages
+from compare_runs import resolve_capability_stages, resolve_decision_impacts, resolve_evidence_access
 from retry_failed_evals import main as retry_failed_main, retry_parameters, retryable_rows, verify_case_snapshot
 from run_revision_interleaved import git_provenance, interleaved_orders, prepare_checkpoint
 
@@ -297,6 +299,82 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertEqual(cases["instruction-hidden-normal-checks"]["capability_stage"], "inquiry")
         self.assertEqual(cases["instruction-explicit-check-contract"]["capability_stage"], "action_selection")
 
+    def test_diagnostic_metadata_uses_closed_vocabularies(self) -> None:
+        validate_decision_impact("high")
+        validate_evidence_access("repository_inferable")
+        with self.assertRaisesRegex(ValueError, "decision_impact"):
+            validate_decision_impact("urgent")
+        with self.assertRaisesRegex(ValueError, "evidence_access"):
+            validate_evidence_access("guessable")
+
+    def test_diagnostic_metadata_inherits_from_suite_and_allows_case_override(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            case_dir = Path(directory)
+            (case_dir / "suite.json").write_text(json.dumps({
+                "version": "1.0",
+                "suite": "diagnostic-metadata",
+                "decision_impact": "medium",
+                "evidence_access": "repository_inferable",
+                "cases": [
+                    {"id": "inherited", "prompt": "P", "assertions": ["A"]},
+                    {"id": "overridden", "prompt": "P", "assertions": ["A"],
+                     "decision_impact": "high", "evidence_access": "executable"},
+                ],
+            }), encoding="utf-8")
+            cases = {case["id"]: case for case in load_cases(case_dir)}
+            self.assertEqual(cases["inherited"]["decision_impact"], "medium")
+            self.assertEqual(cases["inherited"]["evidence_access"], "repository_inferable")
+            self.assertEqual(cases["overridden"]["decision_impact"], "high")
+            self.assertEqual(cases["overridden"]["evidence_access"], "executable")
+
+    def test_diagnostic_metadata_is_recorded_and_rendered_as_coverage(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            case_dir = Path(directory) / "cases"
+            case_dir.mkdir()
+            (case_dir / "suite.json").write_text(json.dumps({
+                "version": "1.0",
+                "suite": "diagnostic-metadata",
+                "decision_impact": "medium",
+                "evidence_access": "repository_inferable",
+                "cases": [
+                    {"id": "inherited", "prompt": "P", "assertions": ["A"]},
+                    {"id": "overridden", "prompt": "P", "assertions": ["A"],
+                     "decision_impact": "high", "evidence_access": "executable"},
+                ],
+            }), encoding="utf-8")
+            output = Path(directory) / "run.json"
+            subprocess.run([
+                sys.executable, str(RUNNER), "--provider", "codex", "--dry-run",
+                "--case-dir", str(case_dir), "--output", str(output),
+            ], cwd=ROOT, text=True, capture_output=True, check=True)
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(run["schema_version"], "1.7")
+            self.assertEqual(run["case_decision_impacts"], {"inherited": "medium", "overridden": "high"})
+            self.assertEqual(run["case_evidence_access"], {"inherited": "repository_inferable", "overridden": "executable"})
+            self.assertEqual(
+                {(row["decision_impact"], row["evidence_access"]) for row in run["results"]},
+                {("medium", "repository_inferable"), ("high", "executable")},
+            )
+            sheet = Path(directory) / "comparison.md"
+            subprocess.run([sys.executable, str(COMPARE), str(output), "--output", str(sheet)], cwd=ROOT, check=True)
+            content = sheet.read_text(encoding="utf-8")
+            self.assertIn("## Decision impact coverage", content)
+            self.assertIn("| `high` | 1 |", content)
+            self.assertIn("## Evidence access coverage", content)
+            self.assertIn("Evidence access: `executable`.", content)
+
+    def test_activation_cases_keep_active_and_post_incident_boundaries_explicit(self) -> None:
+        suite = json.loads((ROOT / "evals" / "activation.json").read_text(encoding="utf-8"))
+        cases = {case["id"]: case for case in suite["cases"]}
+        active = cases["safety-continuation-suppresses-style"]
+        self.assertIn("активный production incident", active["prompt"])
+        self.assertEqual(active["decision_impact"], "high")
+        self.assertEqual(active["evidence_access"], "direct")
+        post = cases["post-incident-review"]
+        self.assertIn("Вчера был устранён production-инцидент", post["prompt"])
+        self.assertEqual(post["decision_impact"], "medium")
+        self.assertEqual(post["evidence_access"], "direct")
+
     def test_capability_stage_is_recorded_in_dry_run_and_comparison_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "run.json"
@@ -309,7 +387,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 ], cwd=ROOT, text=True, capture_output=True, check=True,
             )
             run = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(run["schema_version"], "1.6")
+            self.assertEqual(run["schema_version"], "1.7")
             self.assertEqual(run["case_capability_stages"], {
                 "instruction-hidden-normal-checks": "inquiry",
                 "instruction-explicit-check-contract": "action_selection",
@@ -337,6 +415,27 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertEqual(
             resolve_capability_stages(payload, ["same", "mixed", "missing"]),
             {"same": "inquiry", "mixed": "mixed / revision-dependent"},
+        )
+
+    def test_interleaved_diagnostic_metadata_coverage_comes_from_observations(self) -> None:
+        payload = {
+            "variant_set": "sovetwave_revision_interleaved",
+            "case_decision_impacts": {"same": "low"},
+            "case_evidence_access": {"same": "unavailable"},
+            "results": [
+                {"case_id": "same", "decision_impact": "high", "evidence_access": "direct"},
+                {"case_id": "same", "decision_impact": "high", "evidence_access": "direct"},
+                {"case_id": "mixed", "decision_impact": "low", "evidence_access": "direct"},
+                {"case_id": "mixed", "decision_impact": "high", "evidence_access": "external_required"},
+            ],
+        }
+        self.assertEqual(
+            resolve_decision_impacts(payload, ["same", "mixed", "missing"]),
+            {"same": "high", "mixed": "mixed / revision-dependent"},
+        )
+        self.assertEqual(
+            resolve_evidence_access(payload, ["same", "mixed", "missing"]),
+            {"same": "direct", "mixed": "mixed / revision-dependent"},
         )
 
     def test_language_only_suite_excludes_semantic_economy(self) -> None:
@@ -490,7 +589,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 cwd=ROOT, text=True, capture_output=True, check=True,
             )
             run = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(run["schema_version"], "1.6")
+            self.assertEqual(run["schema_version"], "1.7")
             self.assertEqual(
                 run["case_ids"],
                 ["c-small-fixed-temporary-buffer", "c-small-temporary-invariance"],
@@ -693,6 +792,28 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "id": "sample", "prompt": "P", "assertions": ["A"],
                 "execution_mode": "prompt_only", "fixture": None,
                 "capability_stage": "inquiry",
+            })
+        diagnostic = {
+            **previous,
+            "decision_impact": "medium",
+            "evidence_access": "direct",
+        }
+        verify_case_snapshot(diagnostic, {
+            "id": "sample", "prompt": "P", "assertions": ["A"],
+            "execution_mode": "prompt_only", "fixture": None,
+            "decision_impact": "medium", "evidence_access": "direct",
+        })
+        with self.assertRaisesRegex(ValueError, "changed field 'decision_impact'"):
+            verify_case_snapshot(diagnostic, {
+                "id": "sample", "prompt": "P", "assertions": ["A"],
+                "execution_mode": "prompt_only", "fixture": None,
+                "decision_impact": "high", "evidence_access": "direct",
+            })
+        with self.assertRaisesRegex(ValueError, "changed field 'evidence_access'"):
+            verify_case_snapshot(diagnostic, {
+                "id": "sample", "prompt": "P", "assertions": ["A"],
+                "execution_mode": "prompt_only", "fixture": None,
+                "decision_impact": "medium", "evidence_access": "unavailable",
             })
 
     def test_retry_refuses_source_output_alias_and_existing_output(self) -> None:

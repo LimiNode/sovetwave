@@ -10,6 +10,12 @@ or unknown axis list is invalid.
 case exercises. It is not a score, failure verdict, or permission to ignore the
 case assertions. Do not infer that unclassified legacy cases test no capability.
 
+`decision_impact` and `evidence_access` are optional coverage metadata. They
+describe the consequence of the case's decision and how its relevant evidence
+can be obtained; they do not affect scoring, semantic verdicts, or assertion
+applicability. Do not infer either value from a response, and do not use these
+fields as a substitute for an assertion or evidence note.
+
 Treat `process_status` and `semantic_status` separately. A completed CLI
 process with non-empty text is still `semantic_status: unrated` until the
 assertions have been checked. Classify plan-only, premise-refusal, empty, and

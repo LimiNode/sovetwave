@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "suite": "activation",
   "cases": [
     {
@@ -68,8 +68,17 @@
           "expected_state": "Sovetwave active for the current technical topic"
         }
       ],
-      "prompt": "В production сервис возвращает HTTP 500. Что делать?",
-      "assertions": ["suspends voice cards, historical vocabulary, humour, and teacherly atmosphere", "retains causal reasoning, explicit uncertainty, verification, and recovery checks", "uses literal incident language"]
+      "prompt": "Сейчас идёт активный production incident: массовые HTTP 500, оператор выбирает между rollback и продолжением rollout. Что делать?",
+      "decision_impact": "high",
+      "evidence_access": "direct",
+      "assertions": ["treats the situation as an active incident requiring immediate recovery decisions", "uses literal incident communication with recovery checks and no humour or historical styling", "does not invent a root cause and keeps rollback or continued rollout conditional on observed evidence"]
+    },
+    {
+      "id": "post-incident-review",
+      "prompt": "Вчера был устранён production-инцидент с HTTP 500. Проведи post-incident review дефекта конструкции и, если это проясняет механизм, используй одну короткую оригинальную сухую реплику.",
+      "decision_impact": "medium",
+      "evidence_access": "direct",
+      "assertions": ["distinguishes a completed incident from an active response and reviews the design mechanism", "uses at most one short original dry observation only when it sharpens the mechanism", "returns immediately from any observation to evidence, corrective action, and a focused verification without inventing facts"]
     },
     {
       "id": "ordinary-debug",

@@ -137,6 +137,34 @@ hide a revision difference, the renderer derives the stage from observation
 rows: one unique value is used, conflicting values are shown as
 `mixed / revision-dependent`, and absent values remain `unclassified`.
 
+## Diagnostic coverage metadata
+
+Suites and cases may also declare two optional diagnostic fields:
+
+```json
+{
+  "decision_impact": "high",
+  "evidence_access": "repository_inferable"
+}
+```
+
+`decision_impact` uses the closed vocabulary `low`, `medium`, `high`.
+`evidence_access` uses `direct`, `repository_inferable`, `executable`,
+`external_required`, or `unavailable`. A case-level value overrides its suite
+default. Both fields are optional; legacy cases remain unclassified until they
+receive an explicit review rather than acquiring subjective labels
+automatically.
+
+The runner records the resolved values on each observation and in the
+top-level `case_decision_impacts` and `case_evidence_access` maps. The review
+bundle and `observations.csv` retain the same fields. `compare_runs.py` renders
+separate coverage sections for capability stage, decision impact, and evidence
+access. Coverage is metadata about what was exercised and how evidence is
+available; it is not a model score, semantic verdict, or assertion replacement.
+For revision-interleaved runs, the renderer resolves these fields from the
+observation rows: one unique value is used, conflicting values are shown as
+`mixed / revision-dependent`, and missing values remain `unclassified`.
+
 The `cpp-insertion-contrast` suite contains a paired `emplace`/`try_emplace`
 case. The pair is deliberately about the library contract: `emplace` may
 construct a mapped value for an existing key and may move a supplied rvalue;

@@ -20,6 +20,14 @@ CAPABILITY_STAGES = frozenset({
     "reporting",
     "voice_realization",
 })
+DECISION_IMPACTS = frozenset({"low", "medium", "high"})
+EVIDENCE_ACCESS_LEVELS = frozenset({
+    "direct",
+    "repository_inferable",
+    "executable",
+    "external_required",
+    "unavailable",
+})
 
 
 def rubric_axis_ids(path: Path = RUBRIC) -> frozenset[str]:
@@ -46,3 +54,21 @@ def validate_capability_stage(value: Any) -> None:
     if not isinstance(value, str) or value not in CAPABILITY_STAGES:
         allowed = ", ".join(sorted(CAPABILITY_STAGES))
         raise ValueError(f"capability_stage must be one of: {allowed}")
+
+
+def validate_decision_impact(value: Any) -> None:
+    """Validate optional metadata describing the consequence of a decision."""
+    if value is None:
+        return
+    if not isinstance(value, str) or value not in DECISION_IMPACTS:
+        allowed = ", ".join(sorted(DECISION_IMPACTS))
+        raise ValueError(f"decision_impact must be one of: {allowed}")
+
+
+def validate_evidence_access(value: Any) -> None:
+    """Validate optional metadata describing how evidence can be obtained."""
+    if value is None:
+        return
+    if not isinstance(value, str) or value not in EVIDENCE_ACCESS_LEVELS:
+        allowed = ", ".join(sorted(EVIDENCE_ACCESS_LEVELS))
+        raise ValueError(f"evidence_access must be one of: {allowed}")
