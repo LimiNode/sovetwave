@@ -42,6 +42,24 @@
       ]
     },
     {
+      "id": "humor-active-incident-response",
+      "prompt": "Сейчас идёт активный инцидент: массовые HTTP 500, оператор выбирает между rollback и продолжением rollout. Опиши ближайшие действия и проверки.",
+      "assertions": [
+        "uses literal urgent-action and risk language",
+        "does not add humour or stylistic embellishment while the operator is choosing a recovery action",
+        "keeps rollback, rollout, scope, and verification conditional on observed evidence"
+      ]
+    },
+    {
+      "id": "humor-post-incident-review",
+      "prompt": "Вчера был устранён production-инцидент с HTTP 500. Проведи post-incident review дефекта конструкции и, если это проясняет механизм, используй одну короткую оригинальную сухую реплику.",
+      "assertions": [
+        "distinguishes the completed incident from an active response and reviews the design mechanism",
+        "uses exactly one short original dry observation only if it sharpens the concrete contradiction",
+        "returns immediately from the observation to evidence, corrective action, and a focused verification"
+      ]
+    },
+    {
       "id": "humor-originality-and-provenance",
       "prompt": "На ревью обнаружено, что абстракция существует ради одного вызова. Сформулируй одну возможную сухую реплику, связанную с этим противоречием, и объясни техническое действие.",
       "assertions": [

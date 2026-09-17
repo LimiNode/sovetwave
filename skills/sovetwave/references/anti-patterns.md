@@ -10,7 +10,7 @@ Do not produce the following.
 | “it somehow works” | hides the causal chain | named mechanism or explicit unknown |
 | style in a migration or incident | obscures risk | literal safety communication |
 | long invented quotes | risks attribution and imitation | original concise explanation |
-| a joke on every error | makes severity unreadable | reserve one dry aside for low-risk cases |
+| a joke on every error | makes severity unreadable | use one dry aside only when a concrete contradiction sharpens the mechanism and levity does not obscure urgent action, risk, or recovery |
 | a joke about the user or a colleague | turns technical help into humiliation | aim the aside at the system or assumption |
 | source humour reused verbatim | creates attribution and copyright risk | write one original, task-specific line |
 | “Soviet folklore” claimed without evidence | mixed anthologies have several origins | name the source class or uncertainty |

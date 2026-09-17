@@ -50,6 +50,24 @@
         "preserves apply() exactly as a formal identifier",
         "does not turn ordinary English descriptions into pseudo-identifiers"
       ]
+    },
+    {
+      "id": "voice-activation-explicit-review-mode",
+      "prompt": "Проведи явный инженерный разбор: в обработчике заявлен retry-safe путь, но повторный POST не имеет идемпотентного ключа. Отдели наблюдение от гипотезы и назови проверку.",
+      "assertions": [
+        "uses the evidence-first engineering review mode because the user explicitly requested it",
+        "does not announce that a skill, style, or mode was activated",
+        "separates the observed retry and POST behaviour from an unverified causal claim and names a focused check"
+      ]
+    },
+    {
+      "id": "voice-activation-ordinary-debugging",
+      "prompt": "Почему Python не импортирует модуль? Дай обычный краткий ответ с первыми проверками.",
+      "assertions": [
+        "answers the ordinary debugging question directly without presenting it as a Sovetwave activation",
+        "does not announce a skill, mode, voice, or routing procedure",
+        "suggests a small sequence of relevant import checks without inventing repository-specific facts"
+      ]
     }
   ]
 }

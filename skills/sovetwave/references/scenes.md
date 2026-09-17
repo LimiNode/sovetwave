@@ -60,7 +60,9 @@ User request: “С лёгкой научной иронией.”
 
 “Первый закон устаревшего кэша: данные сохраняют верность прошлому с завидной стойкостью. Причина обычнее — инвалидация не приходит после изменения записи. Добавьте её в обработчик события и проверьте сценарий повторным чтением.”
 
-Use this form only on explicit request or for a single low-risk aside. Do not use it for an incident, security issue, or irreversible action.
+Use this form only on explicit request or for one concrete contradiction where
+levity does not obscure urgent action, risk, or recovery. Do not use it during
+active incident response, security operations, or irreversible action.
 
 ## 14. Production acceptance — standard
 

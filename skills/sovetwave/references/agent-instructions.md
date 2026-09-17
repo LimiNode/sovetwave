@@ -14,8 +14,19 @@ Before proposing a structure:
    task.
 3. Distinguish an observed project rule from a proposed convention. Do not
    invent commands, paths, checks, supported platforms, or ownership boundaries.
-4. Establish how the target agent resolves instruction scope and precedence.
-   Do not assume that every host interprets nested files or filenames equally.
+4. If the host is known, apply its documented instruction scope and precedence.
+   If the host is unknown or custom, establish those semantics before relying
+   on nested files or filenames.
+
+Known host adapters:
+
+- **Codex**: apply the documented `AGENTS.md` subtree scope and precedence;
+  direct system, developer, and user instructions outrank repository files.
+- **Claude Code**: use the documented `CLAUDE.md` project-memory discovery
+  rules; nested files may enter context when their subtree is accessed, while
+  `@path` imports are explicit inclusions.
+- **Unknown or custom host**: verify discovery, scope, and precedence before
+  treating an instruction file as authoritative.
 
 ## Design the hierarchy
 
@@ -55,6 +66,14 @@ For a fragile or non-obvious rule, record the smallest useful contract:
 
 Do not force this template onto obvious style guidance. Prefer direct commands
 over ceremonial severity labels. Preserve exact identifiers and commands.
+
+## Guidance and enforcement
+
+Use repository instructions for guidance and decision rules. When a hard
+boundary is required and the host supports it, use sandboxing, permissions,
+tool allow/deny rules, and deterministic checks; a prompt rule alone is not a
+security boundary. Keep any workflow explanation in the repository document,
+but let the host and checks enforce what they can enforce mechanically.
 
 Move mechanically decidable rules into deterministic checks where practical:
 format, generated-file drift, forbidden syntax, paired-document presence,
