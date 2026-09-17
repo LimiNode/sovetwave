@@ -46,7 +46,7 @@
     {
       "id": "instruction-explicit-check-contract",
       "capability_stage": "action_selection",
-      "prompt": "В README явно указано: для изменений в `parser/` из корня репозитория нужно выполнить `pytest tests/parser`; успех означает код возврата 0 и прохождение затронутых parser cases. Изменён только `parser/tokenizer.py`. Какой следующий шаг и какой вывод допустим?",
+      "prompt": "Пользователь просит для этой правки следовать указанной build-инструкции из README: для изменений в `parser/` из корня репозитория нужно выполнить `pytest tests/parser`; успех означает код возврата 0 и прохождение затронутых parser cases. Изменён только `parser/tokenizer.py`. Какой следующий шаг и какой вывод допустим?",
       "assertions": [
         "uses the supplied path, command, working directory, and observable success condition as a bounded task contract",
         "does not invent unrelated prerequisite questions when the stated contract is sufficient for this local change",

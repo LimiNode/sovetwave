@@ -1,4 +1,13 @@
+import csv
+import json
+import subprocess
+import sys
+import tempfile
 import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 from scripts.build_bundle import sanitize_result, statistics_rows
 
@@ -15,6 +24,26 @@ class BuildBundleTests(unittest.TestCase):
         self.assertIsNone(row["attempt"])
         self.assertIsNone(row["recovered"])
         self.assertIsNone(row["original_process_status"])
+
+    def test_observations_csv_keeps_capability_stage_and_case_metadata(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "run.json"
+            output = root / "bundle"
+            source.write_text(json.dumps({"results": [{
+                "case_id": "case", "variant": "baseline", "process_status": "completed",
+                "execution_mode": "prompt_only", "applicable_axes": ["technical_correctness"],
+                "capability_stage": "inquiry", "response": "answer",
+            }]}), encoding="utf-8")
+            subprocess.run([
+                sys.executable, str(ROOT / "scripts" / "build_bundle.py"),
+                "--output-dir", str(output), "--run", f"experiment=rev={source}",
+            ], cwd=ROOT, check=True, capture_output=True, text=True)
+            with (output / "observations.csv").open(encoding="utf-8-sig", newline="") as stream:
+                row = next(csv.DictReader(stream))
+            self.assertEqual(row["capability_stage"], "inquiry")
+            self.assertEqual(row["execution_mode"], "prompt_only")
+            self.assertEqual(json.loads(row["applicable_axes"]), ["technical_correctness"])
 
     def test_recovery_metadata_and_completed_token_scope(self):
         common = {

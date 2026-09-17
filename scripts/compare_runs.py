@@ -42,6 +42,30 @@ def result_text(result: dict[str, Any]) -> str:
     return text_or_placeholder(result.get("response"))
 
 
+def resolve_capability_stages(payload: dict[str, Any], case_ids: list[str]) -> dict[str, str]:
+    """Resolve stage coverage, including interleaved runs without a top-level map."""
+    declared = payload.get("case_capability_stages")
+    declared = declared if isinstance(declared, dict) else {}
+    observed: dict[str, set[str]] = defaultdict(set)
+    for result in payload.get("results", []):
+        case_id = result.get("case_id") if isinstance(result, dict) else None
+        stage = result.get("capability_stage") if isinstance(result, dict) else None
+        if isinstance(case_id, str) and isinstance(stage, str):
+            observed[case_id].add(stage)
+    resolved: dict[str, str] = {}
+    for case_id in case_ids:
+        stage = declared.get(case_id)
+        if isinstance(stage, str):
+            resolved[case_id] = stage
+            continue
+        candidates = observed.get(case_id, set())
+        if len(candidates) == 1:
+            resolved[case_id] = next(iter(candidates))
+        elif len(candidates) > 1:
+            resolved[case_id] = "mixed / revision-dependent"
+    return resolved
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=Path)
@@ -80,11 +104,7 @@ def main() -> int:
             else "sovetwave_without_reference"
         )
     case_ids = payload.get("case_ids") or list(grouped)
-    case_capability_stages = {
-        case_id: stage
-        for case_id, stage in payload.get("case_capability_stages", {}).items()
-        if isinstance(case_id, str) and isinstance(stage, str)
-    }
+    case_capability_stages = resolve_capability_stages(payload, case_ids)
     case_relations = {
         case_id: relation
         for case_id, relation in payload.get("case_relations", {}).items()

@@ -36,6 +36,7 @@ from run_model_evals import (
     summarize_ablation,
     variant_plan,
 )
+from compare_runs import resolve_capability_stages
 from retry_failed_evals import main as retry_failed_main, retry_parameters, retryable_rows, verify_case_snapshot
 from run_revision_interleaved import git_provenance, interleaved_orders, prepare_checkpoint
 
@@ -323,6 +324,20 @@ class BehavioralHarnessTests(unittest.TestCase):
             self.assertIn("## Capability coverage", content)
             self.assertIn("| `inquiry` | 1 |", content)
             self.assertIn("Capability stage: `action_selection`.", content)
+
+    def test_interleaved_stage_coverage_comes_from_observations(self) -> None:
+        payload = {
+            "results": [
+                {"case_id": "same", "capability_stage": "inquiry", "revision_label": "revision_a"},
+                {"case_id": "same", "capability_stage": "inquiry", "revision_label": "revision_b"},
+                {"case_id": "mixed", "capability_stage": "inquiry", "revision_label": "revision_a"},
+                {"case_id": "mixed", "capability_stage": "grounding", "revision_label": "revision_b"},
+            ],
+        }
+        self.assertEqual(
+            resolve_capability_stages(payload, ["same", "mixed", "missing"]),
+            {"same": "inquiry", "mixed": "mixed / revision-dependent"},
+        )
 
     def test_language_only_suite_excludes_semantic_economy(self) -> None:
         suite = json.loads((ROOT / "evals" / "behavioral" / "cases" / "russian-test-results.json").read_text(encoding="utf-8"))

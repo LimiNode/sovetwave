@@ -132,7 +132,10 @@ review.
 Run output records the resolved classification on each observation and in the
 top-level `case_capability_stages` map. `compare_runs.py` reports classified
 coverage separately from model quality, including an explicit `unclassified`
-count.
+count. For revision-interleaved runs, where one top-level classification could
+hide a revision difference, the renderer derives the stage from observation
+rows: one unique value is used, conflicting values are shown as
+`mixed / revision-dependent`, and absent values remain `unclassified`.
 
 The `cpp-insertion-contrast` suite contains a paired `emplace`/`try_emplace`
 case. The pair is deliberately about the library contract: `emplace` may
