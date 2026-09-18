@@ -7,11 +7,12 @@ an ordinary answer that needs no tool, do not load it.
 
 ## Select the narrowest available tool
 
-1. Prefer a typed host-native tool when the host exposes the needed operation
-   with structured arguments, a working-directory field, and status metadata.
-2. Prefer a repository-specific tool when it owns the operation or its
-   validation. Do not imitate that interface by putting command text into an
-   unrelated shell argument.
+1. Prefer the most specific structured tool whose contract directly owns the
+   requested operation. A purpose-built repository tool outranks a generic
+   command runner when it provides the operation and its validation.
+2. Otherwise prefer a typed host-native tool when the host exposes the needed
+   operation with structured arguments and, when relevant, explicit
+   working-directory and status fields.
 3. Use a direct shell command for a simple operation when no more specific
    tool exists. Do not prescribe a structured API that the current host does
    not provide.
@@ -63,10 +64,11 @@ Keep three signals separate:
   holds.
 
 Absence of textual output is not itself a failure signal. A successful command
-may be intentionally silent. Conversely, useful output with a non-zero exit
-status still requires classifying the failed operation; it is not a successful
-verification by default. Claim success only from the signal that proves the
-requested property.
+may be intentionally silent. Interpret exit codes and structured statuses
+according to the documented contract of the particular tool: a non-zero
+status may represent a negative predicate result, a partial result, or an
+execution failure. Do not infer success or failure from stdout or stderr alone.
+Claim success only from the signal that proves the requested property.
 
 ## Classify failure before retrying
 

@@ -124,6 +124,8 @@ class BehavioralHarnessTests(unittest.TestCase):
             "workdir",
             "do not transfer quoting by analogy",
             "Absence of textual output is not itself a failure signal",
+            "most specific structured tool",
+            "negative predicate result",
             "Never repeat an unchanged failed call",
             "not a score, gate, or runtime metric",
         ):
