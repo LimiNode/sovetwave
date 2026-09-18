@@ -17,9 +17,13 @@ class BuildBundleTests(unittest.TestCase):
         row = sanitize_result("run", "rev", {
             "case_id": "case", "variant": "baseline", "process_status": "timeout",
             "capability_stage": "inquiry",
+            "decision_impact": "high",
+            "evidence_access": "direct",
             "stderr": "", "response": "",
         })
         self.assertEqual(row["capability_stage"], "inquiry")
+        self.assertEqual(row["decision_impact"], "high")
+        self.assertEqual(row["evidence_access"], "direct")
         self.assertIsNone(row["material_inputs_dirty"])
         self.assertIsNone(row["attempt"])
         self.assertIsNone(row["recovered"])
@@ -34,6 +38,7 @@ class BuildBundleTests(unittest.TestCase):
                 "case_id": "case", "variant": "baseline", "process_status": "completed",
                 "execution_mode": "prompt_only", "applicable_axes": ["technical_correctness"],
                 "capability_stage": "inquiry", "response": "answer",
+                "decision_impact": "high", "evidence_access": "direct",
             }]}), encoding="utf-8")
             subprocess.run([
                 sys.executable, str(ROOT / "scripts" / "build_bundle.py"),
@@ -42,8 +47,32 @@ class BuildBundleTests(unittest.TestCase):
             with (output / "observations.csv").open(encoding="utf-8-sig", newline="") as stream:
                 row = next(csv.DictReader(stream))
             self.assertEqual(row["capability_stage"], "inquiry")
+            self.assertEqual(row["decision_impact"], "high")
+            self.assertEqual(row["evidence_access"], "direct")
             self.assertEqual(row["execution_mode"], "prompt_only")
             self.assertEqual(json.loads(row["applicable_axes"]), ["technical_correctness"])
+
+    def test_review_bundle_retains_top_level_diagnostic_maps(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "run.json"
+            output = root / "bundle"
+            source.write_text(json.dumps({
+                "case_decision_impacts": {"case": "high"},
+                "case_evidence_access": {"case": "direct"},
+                "results": [{
+                    "case_id": "case", "variant": "baseline", "process_status": "completed",
+                    "decision_impact": "high", "evidence_access": "direct", "response": "answer",
+                }],
+            }), encoding="utf-8")
+            subprocess.run([
+                sys.executable, str(ROOT / "scripts" / "build_bundle.py"),
+                "--output-dir", str(output), "--run", f"experiment=rev={source}",
+            ], cwd=ROOT, check=True, capture_output=True, text=True)
+            bundle = json.loads((output / "review-bundle.json").read_text(encoding="utf-8"))
+            self.assertEqual(bundle["runs"][0]["case_decision_impacts"], {"case": "high"})
+            self.assertEqual(bundle["runs"][0]["case_evidence_access"], {"case": "direct"})
+            self.assertEqual(bundle["observations"][0]["evidence_access"], "direct")
 
     def test_recovery_metadata_and_completed_token_scope(self):
         common = {

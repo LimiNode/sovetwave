@@ -42,21 +42,29 @@ def result_text(result: dict[str, Any]) -> str:
     return text_or_placeholder(result.get("response"))
 
 
-def resolve_capability_stages(payload: dict[str, Any], case_ids: list[str]) -> dict[str, str]:
-    """Resolve stage coverage, including interleaved runs without a top-level map."""
-    declared = payload.get("case_capability_stages")
+def _resolve_case_metadata(
+    payload: dict[str, Any],
+    case_ids: list[str],
+    *,
+    declared_key: str,
+    row_key: str,
+) -> dict[str, str]:
+    """Resolve case metadata, falling back to observation rows for interleaved runs."""
+    declared = payload.get(declared_key)
     declared = declared if isinstance(declared, dict) else {}
+    if payload.get("variant_set") == "sovetwave_revision_interleaved":
+        declared = {}
     observed: dict[str, set[str]] = defaultdict(set)
     for result in payload.get("results", []):
         case_id = result.get("case_id") if isinstance(result, dict) else None
-        stage = result.get("capability_stage") if isinstance(result, dict) else None
-        if isinstance(case_id, str) and isinstance(stage, str):
-            observed[case_id].add(stage)
+        value = result.get(row_key) if isinstance(result, dict) else None
+        if isinstance(case_id, str) and isinstance(value, str):
+            observed[case_id].add(value)
     resolved: dict[str, str] = {}
     for case_id in case_ids:
-        stage = declared.get(case_id)
-        if isinstance(stage, str):
-            resolved[case_id] = stage
+        value = declared.get(case_id)
+        if isinstance(value, str):
+            resolved[case_id] = value
             continue
         candidates = observed.get(case_id, set())
         if len(candidates) == 1:
@@ -64,6 +72,27 @@ def resolve_capability_stages(payload: dict[str, Any], case_ids: list[str]) -> d
         elif len(candidates) > 1:
             resolved[case_id] = "mixed / revision-dependent"
     return resolved
+
+
+def resolve_capability_stages(payload: dict[str, Any], case_ids: list[str]) -> dict[str, str]:
+    """Resolve stage coverage, including interleaved runs without a top-level map."""
+    return _resolve_case_metadata(
+        payload, case_ids, declared_key="case_capability_stages", row_key="capability_stage"
+    )
+
+
+def resolve_decision_impacts(payload: dict[str, Any], case_ids: list[str]) -> dict[str, str]:
+    """Resolve decision-impact coverage from run metadata or observation rows."""
+    return _resolve_case_metadata(
+        payload, case_ids, declared_key="case_decision_impacts", row_key="decision_impact"
+    )
+
+
+def resolve_evidence_access(payload: dict[str, Any], case_ids: list[str]) -> dict[str, str]:
+    """Resolve evidence-access coverage from run metadata or observation rows."""
+    return _resolve_case_metadata(
+        payload, case_ids, declared_key="case_evidence_access", row_key="evidence_access"
+    )
 
 
 def main() -> int:
@@ -105,6 +134,8 @@ def main() -> int:
         )
     case_ids = payload.get("case_ids") or list(grouped)
     case_capability_stages = resolve_capability_stages(payload, case_ids)
+    case_decision_impacts = resolve_decision_impacts(payload, case_ids)
+    case_evidence_access = resolve_evidence_access(payload, case_ids)
     case_relations = {
         case_id: relation
         for case_id, relation in payload.get("case_relations", {}).items()
@@ -136,6 +167,32 @@ def main() -> int:
     for stage, count in sorted(stage_counts.items()):
         lines.append(f"| `{stage}` | {count} |")
     lines.append("")
+    for title, field, description, values in (
+        (
+            "Decision impact coverage",
+            "Decision impact",
+            "`decision_impact` describes the consequence of a decision; it is coverage metadata, not a semantic score.",
+            case_decision_impacts,
+        ),
+        (
+            "Evidence access coverage",
+            "Evidence access",
+            "`evidence_access` describes how the relevant evidence can be obtained; it is coverage metadata, not a semantic score.",
+            case_evidence_access,
+        ),
+    ):
+        counts = Counter(values.get(case_id, "unclassified") for case_id in case_ids)
+        lines.extend([
+            f"## {title}",
+            "",
+            description,
+            "",
+            f"| {field} | Cases |",
+            "|---|---:|",
+        ])
+        for value, count in sorted(counts.items()):
+            lines.append(f"| `{value}` | {count} |")
+        lines.append("")
     if case_relations:
         lines.extend([
             "## Case relationships",
@@ -159,11 +216,17 @@ def main() -> int:
         )
         mode = payload.get("case_execution_modes", {}).get(case_id)
         capability_stage = case_capability_stages.get(case_id)
+        decision_impact = case_decision_impacts.get(case_id)
+        evidence_access = case_evidence_access.get(case_id)
         lines.extend([f"## {case_id}", ""])
         if mode:
             lines.extend([f"Execution mode: `{mode}`.", ""])
         if capability_stage:
             lines.extend([f"Capability stage: `{capability_stage}`.", ""])
+        if decision_impact:
+            lines.extend([f"Decision impact: `{decision_impact}`.", ""])
+        if evidence_access:
+            lines.extend([f"Evidence access: `{evidence_access}`.", ""])
         relation = case_relations.get(case_id)
         if relation is not None:
             lines.extend([

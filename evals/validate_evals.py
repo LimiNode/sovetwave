@@ -9,7 +9,13 @@ import re
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from eval_schema import rubric_axis_ids, validate_applicable_axes, validate_capability_stage
+from eval_schema import (
+    rubric_axis_ids,
+    validate_applicable_axes,
+    validate_capability_stage,
+    validate_decision_impact,
+    validate_evidence_access,
+)
 
 
 REQUIRED_SUITE_FIELDS = {"version": str, "suite": str, "cases": list}
@@ -46,6 +52,16 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
         errors += 1
     try:
         validate_capability_stage(suite.get("capability_stage"))
+    except ValueError as error:
+        fail(f"{path}: {error}")
+        errors += 1
+    try:
+        validate_decision_impact(suite.get("decision_impact"))
+    except ValueError as error:
+        fail(f"{path}: {error}")
+        errors += 1
+    try:
+        validate_evidence_access(suite.get("evidence_access"))
     except ValueError as error:
         fail(f"{path}: {error}")
         errors += 1
@@ -101,6 +117,18 @@ def validate_suite(path: Path, seen_ids: set[str]) -> int:
         capability_stage = case.get("capability_stage", suite.get("capability_stage"))
         try:
             validate_capability_stage(capability_stage)
+        except ValueError as error:
+            fail(f"{path}: case {case_id!r}: {error}")
+            errors += 1
+        decision_impact = case.get("decision_impact", suite.get("decision_impact"))
+        try:
+            validate_decision_impact(decision_impact)
+        except ValueError as error:
+            fail(f"{path}: case {case_id!r}: {error}")
+            errors += 1
+        evidence_access = case.get("evidence_access", suite.get("evidence_access"))
+        try:
+            validate_evidence_access(evidence_access)
         except ValueError as error:
             fail(f"{path}: case {case_id!r}: {error}")
             errors += 1

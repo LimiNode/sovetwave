@@ -94,6 +94,8 @@ def sanitize_result(experiment: str, revision: str, row: dict) -> dict:
         "assertions": row.get("assertions") or [],
         "applicable_axes": row.get("applicable_axes"),
         "capability_stage": row.get("capability_stage"),
+        "decision_impact": row.get("decision_impact"),
+        "evidence_access": row.get("evidence_access"),
         "process_status": process_status,
         "semantic_status": row.get("semantic_status"),
         "semantic_class": row.get("semantic_class"),
@@ -220,6 +222,9 @@ def main() -> int:
             "observations": len(rows),
             "cli_version": run.get("cli_version"),
             "variant_orders": run.get("variant_orders"),
+            "case_capability_stages": run.get("case_capability_stages"),
+            "case_decision_impacts": run.get("case_decision_impacts"),
+            "case_evidence_access": run.get("case_evidence_access"),
             "order_balance": run.get("order_balance"),
             "provider": run.get("provider"),
             "material_inputs_dirty": run.get("material_inputs_dirty"),
@@ -240,7 +245,7 @@ def main() -> int:
     json_path.write_text(json.dumps(bundle, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     fields = [
         "experiment", "revision", "case_id", "variant", "repetition", "sequence",
-        "execution_mode", "applicable_axes", "capability_stage",
+        "execution_mode", "applicable_axes", "capability_stage", "decision_impact", "evidence_access",
         "process_status", "semantic_status", "semantic_class", "requested_model",
         "resolved_model", "reported_tokens", "elapsed_seconds", "skill_revision",
         "material_inputs_dirty", "attempt", "recovered", "original_process_status",
