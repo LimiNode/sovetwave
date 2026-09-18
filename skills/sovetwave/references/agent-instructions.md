@@ -58,14 +58,36 @@ precedence to hide them.
 For a fragile or non-obvious rule, record the smallest useful contract:
 
 - **scope and trigger**: what files or tasks it governs;
+- **preconditions**: what must already be true for the rule to have a defined meaning;
 - **invariant**: the behaviour that must remain true;
 - **reason**: the concrete failure it prevents;
 - **approved path**: the normal alternative to a forbidden pattern;
-- **proof**: the focused test, build, static check, or inspection that verifies it;
+- **proof**: the focused test, build, static check, or inspection, with an observable success condition;
 - **exception owner**: who or what evidence may justify deviation, if applicable.
 
 Do not force this template onto obvious style guidance. Prefer direct commands
 over ceremonial severity labels. Preserve exact identifiers and commands.
+
+Do not encode tacit knowledge that exists only in the instruction author's
+head. Before accepting a rule such as “run the normal checks”, identify the
+working directory, trigger, required tools or services, relevant configuration
+and baseline, the bounded action, and the observable result that counts as
+success. Obtain those facts from the repository or the authorized task context;
+do not guess them. If a prerequisite, source of truth, or expected result is
+unknown, record the rule as conditional and ask the smallest decision-relevant
+question or report the check as unavailable. “Works correctly” is not an
+observable proof by itself.
+
+For a complex operational rule, perform a brief contract pass before saving it:
+
+```text
+scope → trigger → preconditions → required action → allowed variation
+→ observable success → blocked/failure condition → authority for exception
+```
+
+This is a quality check on the instruction, not a requirement that users write
+YAML or expose private reasoning. A rule whose preconditions or success signal
+remain unresolved is not made precise by adding more prose around it.
 
 ## Guidance and enforcement
 

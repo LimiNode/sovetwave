@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "suite": "operational-prerequisites",
+  "capability_stage": "inquiry",
+  "cases": [
+    {
+      "id": "instruction-hidden-normal-checks",
+      "prompt": "В корневом `AGENTS.md` написано: «После изменений в `parser/` запусти обычные проверки». Точного списка команд, рабочего каталога и критерия успеха в репозитории не видно. Как оценить это правило и что должен сделать агент перед изменением `parser/tokenizer.py`?",
+      "assertions": [
+        "identifies `normal checks` as an implicit prerequisite and an undefined success contract",
+        "names the missing working directory, command or tool, relevant scope, and observable success facts",
+        "rewrites the rule with a concrete command only when repository evidence supplies it, otherwise keeps it conditional and asks the smallest useful question",
+        "does not claim that a check was performed or passed merely because the instruction names it"
+      ]
+    },
+    {
+      "id": "instruction-missing-baseline",
+      "prompt": "В задаче сказано: «Убедись, что после изменения всё работает как раньше». Baseline, список поддерживаемых конфигураций и сравниваемые наблюдения не указаны. Что проверить до действия и как сформулировать границу вывода?",
+      "assertions": [
+        "identifies the missing baseline, configuration or scope as a hidden prerequisite",
+        "does not invent a baseline or equate an arbitrary passing test with unchanged behaviour",
+        "asks for or locates a bounded source of truth and names an observable comparison criterion",
+        "keeps the conclusion conditional or blocked when the required comparison cannot be established"
+      ]
+    },
+    {
+      "id": "instruction-snapshot-authority",
+      "prompt": "В инструкции сказано: «Обнови snapshot и проверь результат». В репозитории есть несколько snapshot-файлов, но не указаны генератор, нормативный источник, конфигурация и причина ожидаемого изменения. Как действовать?",
+      "assertions": [
+        "does not update an arbitrary snapshot before identifying its source of truth and generation contract",
+        "checks whether the expected diff is an authorized behaviour change rather than a masked regression",
+        "names the required generator, configuration, comparison target, and observable check or asks for the missing authority",
+        "reports the operation as blocked or not checked when those prerequisites remain unavailable"
+      ]
+    },
+    {
+      "id": "instruction-undefined-production-like-config",
+      "prompt": "В плане проверки есть пункт: «Проверь в production-like конфигурации». Не определены сама конфигурация, feature flags, внешние сервисы, учетная запись и допустимый результат. Как разобрать этот пункт без выдумывания контекста?",
+      "assertions": [
+        "identifies `production-like` as an undefined environment contract rather than an executable check",
+        "surfaces the required configuration, flags, external dependencies, credentials or user role, and observable acceptance signal",
+        "does not claim production-like coverage from a local default configuration",
+        "keeps the check conditional or blocked until an authorized configuration and success criterion are available"
+      ]
+    },
+    {
+      "id": "instruction-explicit-check-contract",
+      "capability_stage": "action_selection",
+      "prompt": "Пользователь просит для этой правки следовать указанной build-инструкции из README: для изменений в `parser/` из корня репозитория нужно выполнить `pytest tests/parser`; успех означает код возврата 0 и прохождение затронутых parser cases. Изменён только `parser/tokenizer.py`. Какой следующий шаг и какой вывод допустим?",
+      "assertions": [
+        "uses the supplied path, command, working directory, and observable success condition as a bounded task contract",
+        "does not invent unrelated prerequisite questions when the stated contract is sufficient for this local change",
+        "runs or proposes exactly `pytest tests/parser` and reports the command as not checked if it is unavailable",
+        "limits a successful conclusion to the affected parser cases and does not generalize beyond the tested boundary"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "instruction-hidden-normal-checks",
+        "expect": "an explicit command and success signal permit bounded action without tacit-context inquiry"
+      }
+    }
+  ]
+}

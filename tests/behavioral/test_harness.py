@@ -22,6 +22,7 @@ from run_model_evals import (
     command_for,
     classify_semantic_response,
     validate_applicable_axes,
+    validate_capability_stage,
     load_cases,
     make_workspace,
     load_checkpoint,
@@ -35,6 +36,7 @@ from run_model_evals import (
     summarize_ablation,
     variant_plan,
 )
+from compare_runs import resolve_capability_stages
 from retry_failed_evals import main as retry_failed_main, retry_parameters, retryable_rows, verify_case_snapshot
 from run_revision_interleaved import git_provenance, interleaved_orders, prepare_checkpoint
 
@@ -255,6 +257,9 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertIn("**Claude Code**", reference)
         self.assertIn("Unknown or custom host", reference)
         self.assertIn("a prompt rule alone is not a", reference)
+        self.assertIn("preconditions", reference)
+        self.assertIn("observable success", reference)
+        self.assertIn("tacit knowledge", reference)
         self.assertNotIn("higher-level context", reference)
 
     def test_humour_references_use_communication_risk_boundary(self) -> None:
@@ -274,6 +279,7 @@ class BehavioralHarnessTests(unittest.TestCase):
         contract = (ROOT / "evals" / "behavioral" / "graders" / "grader-contract.md").read_text(encoding="utf-8")
         self.assertIn('"score": 0', contract)
         self.assertIn("Associate each pointwise result with its arm outside", contract)
+        self.assertIn("`capability_stage` is coverage metadata", contract)
         self.assertNotIn('"baseline": 0, "sovetwave": 0', contract)
 
     def test_applicable_axes_reject_duplicate_axis_ids(self) -> None:
@@ -282,6 +288,56 @@ class BehavioralHarnessTests(unittest.TestCase):
                 ["technical_correctness", "technical_correctness"],
                 allowed=frozenset({"technical_correctness"}),
             )
+
+    def test_capability_stage_uses_closed_vocabulary_and_suite_inheritance(self) -> None:
+        validate_capability_stage("inquiry")
+        with self.assertRaisesRegex(ValueError, "capability_stage"):
+            validate_capability_stage("invented_stage")
+        cases = {case["id"]: case for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
+        self.assertEqual(cases["instruction-hidden-normal-checks"]["capability_stage"], "inquiry")
+        self.assertEqual(cases["instruction-explicit-check-contract"]["capability_stage"], "action_selection")
+
+    def test_capability_stage_is_recorded_in_dry_run_and_comparison_coverage(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run.json"
+            subprocess.run(
+                [
+                    sys.executable, str(RUNNER), "--provider", "codex", "--dry-run",
+                    "--case-id", "instruction-hidden-normal-checks",
+                    "--case-id", "instruction-explicit-check-contract",
+                    "--output", str(output),
+                ], cwd=ROOT, text=True, capture_output=True, check=True,
+            )
+            run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(run["schema_version"], "1.6")
+            self.assertEqual(run["case_capability_stages"], {
+                "instruction-hidden-normal-checks": "inquiry",
+                "instruction-explicit-check-contract": "action_selection",
+            })
+            self.assertEqual(
+                {row["capability_stage"] for row in run["results"]},
+                {"inquiry", "action_selection"},
+            )
+            sheet = Path(directory) / "comparison.md"
+            subprocess.run([sys.executable, str(COMPARE), str(output), "--output", str(sheet)], cwd=ROOT, check=True)
+            content = sheet.read_text(encoding="utf-8")
+            self.assertIn("## Capability coverage", content)
+            self.assertIn("| `inquiry` | 1 |", content)
+            self.assertIn("Capability stage: `action_selection`.", content)
+
+    def test_interleaved_stage_coverage_comes_from_observations(self) -> None:
+        payload = {
+            "results": [
+                {"case_id": "same", "capability_stage": "inquiry", "revision_label": "revision_a"},
+                {"case_id": "same", "capability_stage": "inquiry", "revision_label": "revision_b"},
+                {"case_id": "mixed", "capability_stage": "inquiry", "revision_label": "revision_a"},
+                {"case_id": "mixed", "capability_stage": "grounding", "revision_label": "revision_b"},
+            ],
+        }
+        self.assertEqual(
+            resolve_capability_stages(payload, ["same", "mixed", "missing"]),
+            {"same": "inquiry", "mixed": "mixed / revision-dependent"},
+        )
 
     def test_language_only_suite_excludes_semantic_economy(self) -> None:
         suite = json.loads((ROOT / "evals" / "behavioral" / "cases" / "russian-test-results.json").read_text(encoding="utf-8"))
@@ -434,7 +490,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 cwd=ROOT, text=True, capture_output=True, check=True,
             )
             run = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(run["schema_version"], "1.5")
+            self.assertEqual(run["schema_version"], "1.6")
             self.assertEqual(
                 run["case_ids"],
                 ["c-small-fixed-temporary-buffer", "c-small-temporary-invariance"],
@@ -631,6 +687,12 @@ class BehavioralHarnessTests(unittest.TestCase):
             verify_case_snapshot(previous, {
                 "id": "sample", "prompt": "P", "assertions": ["A"],
                 "execution_mode": "prompt_only", "fixture": "repository-a",
+            })
+        with self.assertRaisesRegex(ValueError, "changed field 'capability_stage'"):
+            verify_case_snapshot(previous, {
+                "id": "sample", "prompt": "P", "assertions": ["A"],
+                "execution_mode": "prompt_only", "fixture": None,
+                "capability_stage": "inquiry",
             })
 
     def test_retry_refuses_source_output_alias_and_existing_output(self) -> None:

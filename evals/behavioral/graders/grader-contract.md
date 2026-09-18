@@ -6,6 +6,10 @@ Cases may declare `applicable_axes` when an axis has no meaningful interpretatio
 for that task. Omitted metadata means all rubric axes remain applicable; an empty
 or unknown axis list is invalid.
 
+`capability_stage` is coverage metadata naming the primary agent capability a
+case exercises. It is not a score, failure verdict, or permission to ignore the
+case assertions. Do not infer that unclassified legacy cases test no capability.
+
 Treat `process_status` and `semantic_status` separately. A completed CLI
 process with non-empty text is still `semantic_status: unrated` until the
 assertions have been checked. Classify plan-only, premise-refusal, empty, and

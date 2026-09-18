@@ -112,6 +112,31 @@ base case implicitly: select both IDs when the measurement needs both
 responses. Determining whether an invariance, directional, or contrast claim
 holds remains evaluator or human work over the responses.
 
+## Capability stages
+
+A suite or individual case may declare one primary `capability_stage`:
+
+```json
+"capability_stage": "inquiry"
+```
+
+The closed vocabulary is `instruction_interpretation`, `grounding`, `inquiry`,
+`action_selection`, `implementation`, `verification_selection`,
+`evidence_interpretation`, `reporting`, and `voice_realization`. A case-level
+value overrides the suite default. The field classifies the principal agent
+capability exercised by the case; it is not a semantic score and does not say
+that earlier or later stages are irrelevant. Existing unclassified cases remain
+valid so historical fixtures do not acquire retrospective labels without
+review.
+
+Run output records the resolved classification on each observation and in the
+top-level `case_capability_stages` map. `compare_runs.py` reports classified
+coverage separately from model quality, including an explicit `unclassified`
+count. For revision-interleaved runs, where one top-level classification could
+hide a revision difference, the renderer derives the stage from observation
+rows: one unique value is used, conflicting values are shown as
+`mixed / revision-dependent`, and absent values remain `unclassified`.
+
 The `cpp-insertion-contrast` suite contains a paired `emplace`/`try_emplace`
 case. The pair is deliberately about the library contract: `emplace` may
 construct a mapped value for an existing key and may move a supplied rvalue;

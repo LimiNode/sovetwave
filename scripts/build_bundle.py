@@ -93,6 +93,7 @@ def sanitize_result(experiment: str, revision: str, row: dict) -> dict:
         "prompt": row.get("prompt"),
         "assertions": row.get("assertions") or [],
         "applicable_axes": row.get("applicable_axes"),
+        "capability_stage": row.get("capability_stage"),
         "process_status": process_status,
         "semantic_status": row.get("semantic_status"),
         "semantic_class": row.get("semantic_class"),
@@ -239,6 +240,7 @@ def main() -> int:
     json_path.write_text(json.dumps(bundle, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     fields = [
         "experiment", "revision", "case_id", "variant", "repetition", "sequence",
+        "execution_mode", "applicable_axes", "capability_stage",
         "process_status", "semantic_status", "semantic_class", "requested_model",
         "resolved_model", "reported_tokens", "elapsed_seconds", "skill_revision",
         "material_inputs_dirty", "attempt", "recovered", "original_process_status",
@@ -248,7 +250,13 @@ def main() -> int:
         "codex_cache_write_input_tokens", "codex_output_tokens",
         "codex_reasoning_output_tokens", "codex_anonymous_tool_items",
     ]
-    write_csv(out / "observations.csv", observations, fields)
+    csv_observations = []
+    for row in observations:
+        csv_row = dict(row)
+        if isinstance(csv_row.get("applicable_axes"), list):
+            csv_row["applicable_axes"] = json.dumps(csv_row["applicable_axes"], ensure_ascii=False)
+        csv_observations.append(csv_row)
+    write_csv(out / "observations.csv", csv_observations, fields)
     write_csv(out / "statistics.csv", stats, list(stats[0]) if stats else [])
 
     response_lines = ["# Ответы live-проверки", ""]
