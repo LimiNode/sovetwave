@@ -104,6 +104,15 @@ Keep semantic decisions in review: ownership, compatibility, rollback,
 concurrency, and whether two similar implementations really share one contract.
 A grep gate is evidence about text, not proof of runtime semantics.
 
+When repository instructions describe a tool or command used by agents, keep
+the tool contract explicit rather than relying on a prose prohibition. The
+tool author or maintainer should provide a typed schema where the host allows
+one, descriptions for required and optional arguments, validation of allowed
+values and paths, explicit success/error/status reporting, and bounded output
+or pagination. State the working-directory and interpreter assumptions when
+they are part of the operation. The caller still selects an available tool;
+this section does not require a host to expose an API it does not have.
+
 ## Review an instruction hierarchy
 
 Review it as executable project infrastructure:

@@ -112,6 +112,38 @@ class BehavioralHarnessTests(unittest.TestCase):
             "inquiry-stop-established-contract",
         }.issubset(cases))
 
+    def test_tool_use_discipline_reference_and_cases_are_routable(self) -> None:
+        self.assertIn("tool-use-discipline.md", THEMATIC_REFERENCES)
+        skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("[tool-use-discipline.md](references/tool-use-discipline.md)", skill)
+        reference = ROOT / "skills" / "sovetwave" / "references" / "tool-use-discipline.md"
+        self.assertTrue(reference.is_file())
+        text = reference.read_text(encoding="utf-8")
+        for phrase in (
+            "typed host-native tool",
+            "workdir",
+            "do not transfer quoting by analogy",
+            "Absence of textual output is not itself a failure signal",
+            "Never repeat an unchanged failed call",
+            "not a score, gate, or runtime metric",
+        ):
+            self.assertIn(phrase, text)
+        cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
+        self.assertTrue({
+            "tool-use-typed-host-interface",
+            "tool-use-path-with-spaces",
+            "tool-use-minimal-parser-layers",
+            "tool-use-unknown-cli-help",
+            "tool-use-structured-edit",
+            "tool-use-failure-classification",
+            "tool-use-timeout-recovery",
+            "tool-use-status-output-semantics",
+            "tool-use-bounded-observation",
+            "tool-use-explicit-workdir",
+            "tool-use-existing-typed-tool",
+            "tool-use-simple-command-negative-control",
+        }.issubset(cases))
+
     def test_verification_contract_holdouts_are_distinct_from_skill_example(self) -> None:
         skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")
         self.assertNotIn("call `parse` with", skill)
@@ -263,6 +295,8 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertIn("observable success", reference)
         self.assertIn("tacit knowledge", reference)
         self.assertNotIn("higher-level context", reference)
+        self.assertIn("typed schema", reference)
+        self.assertIn("bounded output", reference)
 
     def test_humour_references_use_communication_risk_boundary(self) -> None:
         anti_patterns = (ROOT / "skills" / "sovetwave" / "references" / "anti-patterns.md").read_text(encoding="utf-8")
@@ -275,6 +309,7 @@ class BehavioralHarnessTests(unittest.TestCase):
     def test_capability_routes_are_registered_for_selective_ablation(self) -> None:
         self.assertTrue({
             "history-and-sources.md", "pedagogy-and-dialogue.md", "anti-patterns.md",
+            "tool-use-discipline.md",
         }.issubset(THEMATIC_REFERENCES))
 
     def test_grader_contract_keeps_pointwise_scores_variant_external(self) -> None:

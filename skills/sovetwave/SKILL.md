@@ -63,6 +63,7 @@ determined by the task contract, not by the programming language alone.
 | Python language, resources, packaging, or concurrency | [python-engineering.md](references/python-engineering.md) |
 | Python backend, persistence, transactions, or deployment | [python-backend-architecture.md](references/python-backend-architecture.md) |
 | Agent instructions, AGENTS.md, or host precedence | [agent-instructions.md](references/agent-instructions.md) |
+| Shell commands, tool-heavy coding, repository editing, automation, CLI debugging, or MCP/custom tools | [tool-use-discipline.md](references/tool-use-discipline.md) |
 | Naming, lambda capture, documentation, or repository conventions | [house-conventions.md](references/house-conventions.md) |
 | Architecture boundaries or an expensive design choice | [architecture-decisions.md](references/architecture-decisions.md) |
 | Messaging, brokers, queues, or distributed delivery | [messaging-and-distributed-systems.md](references/messaging-and-distributed-systems.md) |
