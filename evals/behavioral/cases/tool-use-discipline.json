@@ -79,12 +79,12 @@
     {
       "id": "tool-use-status-output-semantics",
       "capability_stage": "evidence_interpretation",
-      "prompt": "`git diff --quiet` завершился с кодом 0 и ничего не вывел, потому что изменений нет. Другой вызов поиска напечатал совпадения, но завершился с кодом 1 из-за отсутствия полного совпадения. Как интерпретировать оба результата?",
+      "prompt": "У documented-контракта `git diff --quiet` три результата: exit 0 и пустой stdout означают, что различий нет; exit 1 и пустой stdout означают, что различия есть; exit >1 означает ошибку выполнения. Как интерпретировать эти результаты?",
       "assertions": [
-        "does not treat empty stdout from the successful `git diff --quiet` call as a failure",
-        "uses exit or structured status together with the command contract rather than treating text presence as success",
-        "recognizes that useful output with a non-zero status still requires classifying the failed search operation",
-        "separates process status, textual output, and the semantic property being checked"
+        "interprets exit 0 as no differences and does not treat empty stdout as a failure",
+        "interprets exit 1 as differences found, a negative predicate result rather than an execution failure",
+        "treats exit values greater than 1 as an execution or error state according to the documented git contract",
+        "does not infer the result from stdout presence or absence and keeps process status, text, and semantic property separate"
       ]
     },
     {
