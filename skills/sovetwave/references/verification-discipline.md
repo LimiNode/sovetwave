@@ -69,9 +69,11 @@ do not demand repository access merely to replay the premise.
 ## Negative results and branch closure
 
 A negative result retains the scope of the tested configuration or
-intervention. Do not promote a failed variant to a failed method family unless
-the tested implementation is representative or a canonical/reference
-implementation has tested the same mechanism under adequate conditions.
+intervention. A canonical or reference implementation can establish fidelity
+of the particular method it implements, but does not by itself establish
+representativeness of the whole family. Promote a failed variant to a failed
+method family only when the tested intervention represents the claimed family
+scope or multiple independent mechanisms close the material recovery paths.
 
 Before closing a research or design branch, record what is being rejected and
 the strongest observation that would show the closure is premature. Check the

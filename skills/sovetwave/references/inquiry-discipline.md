@@ -79,7 +79,8 @@ Before generalising a negative result, check only the material conditions that
 could reopen the branch:
 
 - whether the implementation is faithful or a simplified surrogate;
-- whether a canonical or strong reference implementation tests the same claim;
+- whether a canonical or strong reference implementation tests the same claim
+  and, separately, whether the tested method represents the claimed family;
 - whether the objective and operating conditions match the mechanism and final
   decision;
 - whether available upstream state makes the proposed component redundant or

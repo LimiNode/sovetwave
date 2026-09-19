@@ -95,7 +95,7 @@
     {
       "id": "inquiry-closure-variant-versus-family",
       "capability_stage": "inquiry",
-      "prompt": "A simplified implementation of a quantization method is unstable on shuffled out-of-fold data. The team proposes closing the whole method family and moving to another direction. Summarize the evidence and recommend the next decision step.",
+      "prompt": "A global-query-covariance block quantizer is unstable on shuffled out-of-fold data. The team proposes closing query-aware quantization and moving to another direction. Summarize the evidence and recommend the next decision step.",
       "assertions": [
         "bounds the negative result to the tested implementation, configuration, and conditions before discussing the method family",
         "asks whether the implementation is faithful or representative and whether a canonical or strong reference tests the same mechanism",
@@ -106,7 +106,7 @@
     {
       "id": "inquiry-residual-information",
       "capability_stage": "inquiry",
-      "prompt": "A coarse encoder already emits a compact state describing the input pattern. A new proposal adds another full side representation and claims that more encoded state must be useful. What should be examined before accepting the design?",
+      "prompt": "An upstream representation already stores a discrete state. A downstream correction uses an unconditional side representation, and quality has plateaued. Recommend the next experiment.",
       "assertions": [
         "asks what information the upstream state already contains and what residual uncertainty remains",
         "checks whether the proposed component duplicates available information instead of resolving a residual need",
@@ -117,7 +117,7 @@
     {
       "id": "inquiry-closure-faithful-negative-control",
       "capability_stage": "inquiry",
-      "prompt": "A faithful reference implementation was tested with an aligned objective, adequate data, appropriate operating conditions, and several independent repetitions. It is consistently worse than the baseline on the decision metric. Should the branch be closed?",
+      "prompt": "A faithful reference implementation was tested with an aligned objective, adequate data, and appropriate operating conditions. The preregistered acceptance gate allows no more than 1% degradation versus baseline; the candidate is 4–6% worse, with confidence intervals entirely beyond that margin across four independent repetitions. Should the branch be closed?",
       "assertions": [
         "allows closing the tested method or decision branch when the stated representative evidence and threshold support that scope",
         "records what is being rejected and keeps any broader family or design-direction claim bounded to the evidence",

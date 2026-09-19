@@ -81,7 +81,11 @@ class BehavioralHarnessTests(unittest.TestCase):
 
     def test_verification_discipline_reference_and_cases_are_routable(self) -> None:
         self.assertIn("verification-discipline.md", THEMATIC_REFERENCES)
-        self.assertTrue((ROOT / "skills" / "sovetwave" / "references" / "verification-discipline.md").is_file())
+        reference = ROOT / "skills" / "sovetwave" / "references" / "verification-discipline.md"
+        self.assertTrue(reference.is_file())
+        text = reference.read_text(encoding="utf-8")
+        self.assertIn("does not by itself establish", text)
+        self.assertIn("multiple independent mechanisms", text)
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({
             "verification-finding-needs-disconfirmation",
