@@ -161,6 +161,20 @@ class BehavioralHarnessTests(unittest.TestCase):
             "tool-use-existing-typed-tool",
             "tool-use-simple-command-negative-control",
         }.issubset(cases))
+        grounded = {
+            case["id"]: case
+            for case in load_cases(ROOT / "evals" / "behavioral" / "cases")
+            if case["id"].startswith("tool-grounded-")
+        }
+        self.assertEqual(set(grounded), {
+            "tool-grounded-path-with-spaces",
+            "tool-grounded-unknown-cli-recovery",
+            "tool-grounded-silent-success",
+            "tool-grounded-documented-predicate",
+            "tool-grounded-structured-edit",
+            "tool-grounded-deterministic-failure",
+        })
+        self.assertTrue(all(case["execution_mode"] == "repository_grounded" for case in grounded.values()))
 
     def test_verification_contract_holdouts_are_distinct_from_skill_example(self) -> None:
         skill = (ROOT / "skills" / "sovetwave" / "SKILL.md").read_text(encoding="utf-8")

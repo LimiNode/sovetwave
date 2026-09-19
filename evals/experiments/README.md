@@ -99,3 +99,20 @@ uncached input by at least 10%, and require C to show no material degradation
 plus a 10% cost reduction. Any systematic timeout/tool failure or divergence
 on negative controls blocks the corresponding simplification. These are pilot
 gates, not a formal non-inferiority test.
+
+## Integral beta.2 benchmark
+
+`sovetwave-integral-benchmark-v1.json` is the frozen selection for the first
+cross-capability comparison after the routing and closure-audit changes. It
+keeps a 36-case explicit-activation core separate from a 10-case
+natural-activation subset, a six-case repository-grounded tool-use pilot, and
+three small thematic ablations. The same case manifest and four repetitions
+are used for Luna and Terra; run Luna first, then Terra without editing the
+manifest. The repository-grounded pilot has three repetitions because its
+purpose is trajectory inspection rather than the primary capability estimate.
+
+The manifest is data, not a new runner. Use repeated `--case-id` values from
+the frozen lists with `scripts/run_model_evals.py`; keep the resulting JSON,
+JSONL checkpoint, model, revision, activation mode, and provider configuration
+together. Do not add a case after seeing a model result; a newly discovered
+failure becomes a holdout for the next benchmark revision.
