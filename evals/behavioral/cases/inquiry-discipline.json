@@ -126,6 +126,17 @@
       ]
     },
     {
+      "id": "inquiry-natural-closure-scope-holdout",
+      "capability_stage": "inquiry",
+      "prompt": "Variant A uses a concrete objective and block scheme. It is unstable on out-of-fold data, while variants B and C work better. The team proposes abandoning the entire approach X. Summarize the evidence and recommend the next plan.",
+      "assertions": [
+        "keeps the immediate negative conclusion at Variant A, its objective, block scheme, and tested out-of-fold conditions before addressing approach X",
+        "asks whether the observed variant is representative of approach X or whether B and C test materially different mechanisms",
+        "proposes the cheapest discriminating comparison or states a bounded decision instead of silently accepting the broad abandonment",
+        "does not demand an exhaustive catalogue of every possible approach or invent a rescue hypothesis without decision impact"
+      ]
+    },
+    {
       "id": "inquiry-stop-known-local-fix",
       "prompt": "Компилятор показывает точную syntax error на строке 42. Контракт исправляемого выражения известен. Что делать дальше?",
       "assertions": [

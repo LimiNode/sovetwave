@@ -123,6 +123,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             "inquiry-closure-variant-versus-family",
             "inquiry-residual-information",
             "inquiry-closure-faithful-negative-control",
+            "inquiry-natural-closure-scope-holdout",
             "inquiry-stop-known-local-fix",
             "inquiry-stop-established-contract",
         }.issubset(cases))
