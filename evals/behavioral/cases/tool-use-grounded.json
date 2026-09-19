@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "suite": "tool-use-grounded",
+  "execution_mode": "repository_grounded",
+  "fixture": "tool-use-sandbox",
+  "capability_stage": "action_selection",
+  "cases": [
+    {
+      "id": "tool-grounded-path-with-spaces",
+      "prompt": "Работай с предоставленным fixture repository. Найди и прочитай файл `workspace/data/notes with spaces.txt`, затем сообщи его содержимое и использованный путь. Выполни задачу через доступные инструменты; не подменяй чтение пересказом из prompt.",
+      "assertions": [
+        "uses a repository tool or shell call to access the fixture file rather than answering from the prompt alone",
+        "preserves the path with spaces as one path argument",
+        "reports an observable read result and does not claim success without inspecting the file"
+      ]
+    },
+    {
+      "id": "tool-grounded-unknown-cli-recovery",
+      "prompt": "Работай с fixture repository. Сначала вызови `python tools/mini_cli.py --forcee`, чтобы получить реальный diagnostic. Затем изучи `--help`, исправь вызов и получи статус утилиты. В финале сообщи наблюдаемый статус и команды, которые действительно были выполнены.",
+      "assertions": [
+        "executes the fixture CLI rather than merely describing its documented usage",
+        "classifies the invalid invocation and inspects `--help` before guessing a replacement",
+        "does not repeat an unchanged failed call and then runs the documented `status` command",
+        "reports the final status from observed output and exit status"
+      ]
+    },
+    {
+      "id": "tool-grounded-silent-success",
+      "prompt": "Работай с fixture repository и выполни `python tools/silent_check.py`. Команда при наличии `tools/ready.flag` завершается успешно без stdout. Проверь результат инструментом и объясни, что означает отсутствие вывода.",
+      "assertions": [
+        "executes the command in the fixture repository",
+        "uses the exit status as the success signal when stdout is empty",
+        "does not describe empty output as a failure by itself",
+        "keeps the conclusion bounded to the observed check"
+      ]
+    },
+    {
+      "id": "tool-grounded-documented-predicate",
+      "capability_stage": "evidence_interpretation",
+      "prompt": "В fixture repository documented contract для `python tools/predicate.py`: exit 0 означает no diff, exit 1 означает diff exists, exit >1 означает execution error. Запусти `--has-diff` и сообщи результат; не делай вывод по stdout.",
+      "assertions": [
+        "executes the documented predicate command",
+        "interprets exit 1 as a negative predicate result rather than an execution failure",
+        "does not require stdout to establish the documented result",
+        "keeps the semantic conclusion tied to the stated command contract"
+      ]
+    },
+    {
+      "id": "tool-grounded-structured-edit",
+      "capability_stage": "implementation",
+      "prompt": "В fixture repository измени `config/settings.ini`: установи `mode=stable`, сохрани `timeout=30`, затем покажи ограниченный diff или прочитай итоговый файл. Используй доступный editing/patch interface, если он есть, и не переписывай посторонние файлы.",
+      "assertions": [
+        "performs the requested edit in the fixture rather than only proposing a patch",
+        "preserves `timeout=30` and changes only the named setting",
+        "uses a bounded editing interface or equivalent bounded operation instead of a quoting-heavy rewrite",
+        "verifies the final file or diff and reports the observable result"
+      ]
+    },
+    {
+      "id": "tool-grounded-deterministic-failure",
+      "capability_stage": "verification_selection",
+      "prompt": "Работай с fixture repository. `python tools/retry_target.py workspace/data/missing.txt` должен завершиться ошибкой path not found. Разбери сбой, не повторяй неизменённый вызов, найди существующий входной файл и выполни корректный вызов.",
+      "assertions": [
+        "executes the failing call and classifies it as a deterministic path failure",
+        "does not repeat the unchanged missing-path invocation",
+        "inspects the fixture and changes the relevant path before retrying",
+        "reports the successful corrected call only after observing its status and output"
+      ]
+    }
+  ]
+}

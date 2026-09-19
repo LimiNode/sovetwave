@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "name": "sovetwave-integral-benchmark-v1",
+  "purpose": "Frozen capability comparison of baseline and explicit Sovetwave activation before beta.2",
+  "source_main_revision": "a34fdbf0814d1b0efdf41b5da3085820012962a2",
+  "core": {
+    "activation": "explicit",
+    "repetitions": 4,
+    "arms": ["baseline", "sovetwave"],
+    "models": ["gpt-5.6-luna", "gpt-5.6-terra"],
+    "case_count": 36,
+    "cases": [
+      {"id": "verification-finding-needs-disconfirmation", "category": "verification"},
+      {"id": "verification-passing-test-wrong-property", "category": "verification"},
+      {"id": "verification-contract-lookup-status", "category": "verification"},
+      {"id": "inquiry-natural-regime-initiative", "category": "inquiry"},
+      {"id": "inquiry-natural-construct-initiative", "category": "inquiry"},
+      {"id": "inquiry-natural-interaction-initiative", "category": "inquiry"},
+      {"id": "inquiry-natural-alternative-initiative", "category": "inquiry"},
+      {"id": "inquiry-closure-variant-versus-family", "category": "branch_closure"},
+      {"id": "inquiry-residual-information", "category": "branch_closure"},
+      {"id": "inquiry-closure-faithful-negative-control", "category": "branch_closure"},
+      {"id": "architecture-cheap-reversible-choice", "category": "architecture_code_economy"},
+      {"id": "architecture-unknown-needs-spike", "category": "architecture_code_economy"},
+      {"id": "code-economy-reuse-existing-path", "category": "architecture_code_economy"},
+      {"id": "cpp-vector-invalidation", "category": "language_correctness"},
+      {"id": "c-allocation-size-overflow", "category": "language_correctness"},
+      {"id": "python-exception-boundary-contract", "category": "language_correctness"},
+      {"id": "agent-instructions-root-router", "category": "repository_grounded"},
+      {"id": "workflow-real-validation-command", "category": "repository_grounded"},
+      {"id": "cpp-review-bounded-diff-scope", "category": "repository_grounded"},
+      {"id": "tool-use-path-with-spaces", "category": "tool_use"},
+      {"id": "tool-use-unknown-cli-help", "category": "tool_use"},
+      {"id": "tool-use-status-output-semantics", "category": "tool_use"},
+      {"id": "tool-use-structured-edit", "category": "tool_use"},
+      {"id": "trust-boundary-malicious-readme", "category": "agent_instructions"},
+      {"id": "agent-instructions-enforcement-boundary", "category": "agent_instructions"},
+      {"id": "project-documentation-public-api-impact", "category": "documentation_workflow"},
+      {"id": "workflow-publication-boundary", "category": "documentation_workflow"},
+      {"id": "cpp-callback-under-lock-reentrancy", "category": "reliability"},
+      {"id": "python-task-cancellation-ownership", "category": "reliability"},
+      {"id": "russian-pr-status-report", "category": "russian_voice"},
+      {"id": "russian-rag-capacity-analysis", "category": "russian_voice"},
+      {"id": "critical-deletion", "category": "critical_context"},
+      {"id": "russian-deployment-rollback", "category": "critical_context"},
+      {"id": "tool-use-simple-command-negative-control", "category": "negative_control"},
+      {"id": "inquiry-stop-known-local-fix", "category": "negative_control"},
+      {"id": "python-local-defect-no-toolchain-ritual", "category": "negative_control"}
+    ]
+  },
+  "natural_activation": {
+    "activation": "natural",
+    "repetitions": 4,
+    "cases": [
+      "russian-pr-status-report",
+      "architecture-cheap-reversible-choice",
+      "inquiry-natural-regime-initiative",
+      "inquiry-natural-construct-initiative",
+      "inquiry-natural-interaction-initiative",
+      "inquiry-natural-alternative-initiative",
+      "tool-use-simple-command-negative-control",
+      "workflow-small-local-fix",
+      "cpp-vector-invalidation",
+      "russian-cmake-failure"
+    ]
+  },
+  "tool_use_grounded_pilot": {
+    "execution_mode": "repository_grounded",
+    "repetitions": 3,
+    "cases": [
+      "tool-grounded-path-with-spaces",
+      "tool-grounded-unknown-cli-recovery",
+      "tool-grounded-silent-success",
+      "tool-grounded-documented-predicate",
+      "tool-grounded-structured-edit",
+      "tool-grounded-deterministic-failure"
+    ]
+  },
+  "reference_ablations": {
+    "repetitions": 3,
+    "cases": {
+      "inquiry-discipline.md": [
+        "inquiry-natural-regime-initiative",
+        "inquiry-closure-variant-versus-family",
+        "inquiry-residual-information"
+      ],
+      "verification-discipline.md": [
+        "verification-finding-needs-disconfirmation",
+        "verification-passing-test-wrong-property",
+        "verification-contract-lookup-status"
+      ],
+      "tool-use-discipline.md": [
+        "tool-use-unknown-cli-help",
+        "tool-use-status-output-semantics",
+        "tool-grounded-documented-predicate"
+      ]
+    }
+  },
+  "freeze_rules": [
+    "Do not edit selected prompts, assertions, fixtures, or category assignments after the first model run.",
+    "Run Luna before Terra; use this exact manifest and repetition count for both models.",
+    "Treat natural activation and repository-grounded tool trajectories as separate analyses.",
+    "Grade hard gates separately from voice, inquiry, tool, and cost metrics."
+  ]
+}
