@@ -33,6 +33,14 @@ lenses, not a mandatory nine-step checklist:
 | `controls / baseline` | Is there a control that separates the claimed effect from background behaviour? |
 | `generalisation` | Does the result survive outside the development sample or configuration? |
 | `metric alignment` | Does the measured quantity answer the decision the user actually has to make? |
+| `method fidelity / family coverage` | Does the tested implementation faithfully represent the method or family to which the conclusion will be applied? |
+| `available information / residual uncertainty` | What state or information is already available at this layer, and what uncertainty remains for the proposed component to resolve? |
+
+For an optimized or selected system, inspect metric alignment across the full
+decision chain: training objective, inference score, selection metric, and
+final decision. Alignment at one link does not establish alignment at the
+next. For a proposed component, ask whether it duplicates information already
+available upstream or should encode only the residual uncertainty.
 
 ## Inquiry candidate
 
@@ -57,6 +65,35 @@ coverage state
 These states do not mean that the claim is true or false. Keep
 `confirmed`, `disproved`, `not reproduced`, and `not checked` for evidence
 status in the verification process.
+
+## Branch closure audit
+
+Treat a statement such as "close this branch" or "the family is exhausted" as
+a consequential claim. First name the scope being rejected: a configuration,
+implementation, objective, method, method family, or broader design
+direction. A negative observation inherits the scope of the tested
+intervention; broader rejection requires evidence that the intervention is
+representative of that scope.
+
+Before generalising a negative result, check only the material conditions that
+could reopen the branch:
+
+- whether the implementation is faithful or a simplified surrogate;
+- whether a canonical or strong reference implementation tests the same claim
+  and, separately, whether the tested method represents the claimed family;
+- whether the objective and operating conditions match the mechanism and final
+  decision;
+- whether available upstream state makes the proposed component redundant or
+  leaves a meaningful residual uncertainty;
+- whether the tested paths or independent repetitions are sufficient for the
+  intended scope.
+
+Do not require a complete survey of every method. If these conditions remain
+material and unassessed, keep the conclusion bounded to the tested variant and
+choose the cheapest closure-disconfirmation check. If a representative
+reference or several independent mechanisms close the material recovery paths,
+record the scope, threshold, and disposition, then stop rather than inventing
+new rescue hypotheses.
 
 ## Operational prerequisites
 

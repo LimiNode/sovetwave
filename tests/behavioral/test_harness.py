@@ -81,7 +81,11 @@ class BehavioralHarnessTests(unittest.TestCase):
 
     def test_verification_discipline_reference_and_cases_are_routable(self) -> None:
         self.assertIn("verification-discipline.md", THEMATIC_REFERENCES)
-        self.assertTrue((ROOT / "skills" / "sovetwave" / "references" / "verification-discipline.md").is_file())
+        reference = ROOT / "skills" / "sovetwave" / "references" / "verification-discipline.md"
+        self.assertTrue(reference.is_file())
+        text = reference.read_text(encoding="utf-8")
+        self.assertIn("does not by itself establish", text)
+        self.assertIn("multiple independent mechanisms", text)
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({
             "verification-finding-needs-disconfirmation",
@@ -95,7 +99,15 @@ class BehavioralHarnessTests(unittest.TestCase):
         reference = ROOT / "skills" / "sovetwave" / "references" / "inquiry-discipline.md"
         self.assertTrue(reference.is_file())
         text = reference.read_text(encoding="utf-8")
-        for phrase in ("Decision-impact filter", "not_assessed", "stop rule", "verification"):
+        for phrase in (
+            "Decision-impact filter",
+            "not_assessed",
+            "stop rule",
+            "method fidelity / family coverage",
+            "residual uncertainty",
+            "Branch closure audit",
+            "verification",
+        ):
             self.assertIn(phrase, text)
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({
@@ -108,6 +120,10 @@ class BehavioralHarnessTests(unittest.TestCase):
             "inquiry-natural-construct-initiative",
             "inquiry-natural-interaction-initiative",
             "inquiry-natural-alternative-initiative",
+            "inquiry-closure-variant-versus-family",
+            "inquiry-residual-information",
+            "inquiry-closure-faithful-negative-control",
+            "inquiry-natural-closure-scope-holdout",
             "inquiry-stop-known-local-fix",
             "inquiry-stop-established-contract",
         }.issubset(cases))
