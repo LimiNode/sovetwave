@@ -291,7 +291,7 @@ Supported thematic references are `agent-instructions.md`,
 `house-conventions.md`, `messaging-and-distributed-systems.md`,
 `pedagogy-and-dialogue.md`, `python-backend-architecture.md`,
 `python-engineering.md`, `qt-cpp-engineering.md`, `verification-discipline.md`,
-and `history-and-sources.md`.
+`tool-use-discipline.md`, and `history-and-sources.md`.
 The always-loaded voice core is deliberately not
 ablatable: removing it would compare different skills rather than isolate a
 thematic layer.

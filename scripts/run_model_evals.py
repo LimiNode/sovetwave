@@ -65,6 +65,7 @@ THEMATIC_REFERENCES = frozenset({
     "python-engineering.md",
     "python-backend-architecture.md",
     "qt-cpp-engineering.md",
+    "tool-use-discipline.md",
     "verification-discipline.md",
 })
 CASE_RELATION_KINDS = frozenset({"contrast", "directional", "invariance"})

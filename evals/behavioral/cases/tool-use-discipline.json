@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "suite": "tool-use-discipline",
+  "execution_mode": "prompt_only",
+  "capability_stage": "action_selection",
+  "cases": [
+    {
+      "id": "tool-use-typed-host-interface",
+      "prompt": "Хост предоставляет typed-инструмент `run_command(command, workdir, timeout)` со структурированным статусом и обычный shell. Нужно выполнить `git status --short` в известном каталоге репозитория. Как выбрать интерфейс и какие границы проверки задать?",
+      "assertions": [
+        "prefers the available typed host interface and passes the working directory through its structured field",
+        "does not replace a structured argument with embedded `cd` or unrelated shell text",
+        "distinguishes process status from the textual output and from the semantic meaning of the repository state",
+        "does not require a new wrapper, executor, or tool taxonomy for this bounded operation"
+      ]
+    },
+    {
+      "id": "tool-use-path-with-spaces",
+      "prompt": "Нужно прочитать `C:\\work area\\notes.txt` в PowerShell и `/tmp/work area/notes.txt` в Bash; typed-параметра path у доступного инструмента нет. Как подготовить вызовы, не перенося правила quoting между оболочками и не выдумывая преобразование filesystem path?",
+      "assertions": [
+        "establishes which interpreter will parse each actual call before choosing quoting or escaping",
+        "uses each environment's actual path as one argument according to that interpreter rather than copying Bash quoting into PowerShell or vice versa",
+        "avoids adding another shell layer merely to make quoting look familiar",
+        "reports the actual command status and does not claim a read succeeded without an observable result"
+      ]
+    },
+    {
+      "id": "tool-use-minimal-parser-layers",
+      "prompt": "Задача запускает Python-скрипт из PowerShell, а предложенный вариант делает PowerShell → `bash -lc` → `python -c` и вкладывает многострочный код. Как выбрать безопасный и проверяемый путь?",
+      "assertions": [
+        "minimizes parser and shell layers and chooses a direct invocation when it expresses the same operation",
+        "names the actual interpreter at each remaining boundary and applies that interpreter's quoting rules",
+        "moves non-trivial multiline content to a file or structured editor when available",
+        "does not treat a larger quoting construction as evidence of greater reliability"
+      ]
+    },
+    {
+      "id": "tool-use-unknown-cli-help",
+      "prompt": "Неизвестная CLI-команда вернула `unknown option --forcee` с ненулевым кодом возврата. У тебя нет достоверной памяти о синтаксисе этой версии. Что делать дальше?",
+      "assertions": [
+        "classifies the result as an argument or syntax failure rather than a transient failure",
+        "inspects `--help`, subcommand help, version output, or repository documentation before guessing another form",
+        "does not repeat the identical failed call",
+        "does not report the requested operation as successful merely because the CLI produced diagnostic text"
+      ]
+    },
+    {
+      "id": "tool-use-structured-edit",
+      "capability_stage": "implementation",
+      "prompt": "Нужно изменить три блока в конфигурационном файле, сохранив остальной текст. Доступны `apply_patch`/editor с границами файла и shell с here-string. Какой интерфейс выбрать и что проверить после изменения?",
+      "assertions": [
+        "prefers the structured patch or editor interface for the non-trivial edit",
+        "keeps the edit bounded to the named file and blocks rather than embedding a large payload in shell quoting",
+        "checks the resulting diff or file content for the requested change and unintended edits",
+        "does not introduce a general-purpose wrapper or new mutable state for this one edit"
+      ]
+    },
+    {
+      "id": "tool-use-failure-classification",
+      "prompt": "Команда завершилась `path not found` до запуска программы. Повтор того же вызова даст тот же результат. Как классифицировать сбой и выбрать следующий шаг?",
+      "assertions": [
+        "classifies the failure as a path, working-directory, or environment problem rather than blindly retrying",
+        "inspects or corrects the relevant path or working directory before making a changed call",
+        "does not repeat an unchanged failed invocation",
+        "reports the original operation as unverified until a later call produces the required status and semantic result"
+      ]
+    },
+    {
+      "id": "tool-use-timeout-recovery",
+      "capability_stage": "verification_selection",
+      "prompt": "Команда миграции получила timeout после записи части лога; состояние данных неизвестно, а повтор может быть неидемпотентным. Как действовать до возможного retry?",
+      "assertions": [
+        "treats the timeout as an unknown-side-effect boundary rather than proof of either success or harmless failure",
+        "inspects current state and available logs or status before retrying",
+        "checks idempotency or an approved recovery path and does not issue an unchanged automatic retry",
+        "keeps the final conclusion conditional until an observable post-operation state is established"
+      ]
+    },
+    {
+      "id": "tool-use-status-output-semantics",
+      "capability_stage": "evidence_interpretation",
+      "prompt": "У documented-контракта `git diff --quiet` три результата: exit 0 и пустой stdout означают, что различий нет; exit 1 и пустой stdout означают, что различия есть; exit >1 означает ошибку выполнения. Как интерпретировать эти результаты?",
+      "assertions": [
+        "interprets exit 0 as no differences and does not treat empty stdout as a failure",
+        "interprets exit 1 as differences found, a negative predicate result rather than an execution failure",
+        "treats exit values greater than 1 as an execution or error state according to the documented git contract",
+        "does not infer the result from stdout presence or absence and keeps process status, text, and semantic property separate"
+      ]
+    },
+    {
+      "id": "tool-use-bounded-observation",
+      "capability_stage": "verification_selection",
+      "prompt": "В репозитории есть лог размером 8 GB, а неизвестно только, случалась ли ошибка после последнего запуска. Как построить наблюдение, не выводя весь файл?",
+      "assertions": [
+        "starts with a bounded observation such as a focused tail, range, timestamp query, or error filter",
+        "uses the first result to decide whether a wider bounded read is necessary",
+        "does not dump the entire log or recursive tree merely to establish one local fact",
+        "names the status and evidence that would count as a successful diagnosis"
+      ]
+    },
+    {
+      "id": "tool-use-explicit-workdir",
+      "prompt": "Инструмент поддерживает отдельное поле `workdir`, а команда использует относительный путь `tests/parser`. Пользователь дал корень репозитория, но текущий процесс может находиться в другом каталоге. Как оформить вызов?",
+      "assertions": [
+        "passes the repository root through the host's explicit `workdir` field",
+        "does not hide the boundary in an unverified `cd` embedded in command text",
+        "keeps the relative path relative to the stated root and checks the command's observable status",
+        "does not ask generic environment questions when the working directory and operation are already explicit"
+      ]
+    },
+    {
+      "id": "tool-use-existing-typed-tool",
+      "prompt": "Для операции уже есть repository-specific tool `check_routes` с параметрами `scene`, `domain` и структурированным отчётом. Одновременно доступны generic typed host tool `run_command(command, workdir)` и shell. Какой путь выбрать?",
+      "assertions": [
+        "uses the most specific repository tool because its contract directly owns the operation and its validation",
+        "passes scene and domain as typed arguments rather than imitating the interface in shell text",
+        "reads the structured result and checks the route property it actually reports",
+        "uses the generic host runner or shell only if the repository tool is unavailable or its contract does not cover the requested operation"
+      ]
+    },
+    {
+      "id": "tool-use-simple-command-negative-control",
+      "prompt": "Текущий рабочий каталог точно установлен в корень репозитория, а пользователь просит показать `git status --short`. Доступен обычный shell; дополнительных неопределённостей нет. Что сделать?",
+      "assertions": [
+        "executes the simple command directly in the known working directory",
+        "does not produce a ritualized inventory of tool classes or ask unnecessary shell questions",
+        "reports the command status and concise output without claiming more than `git status` establishes",
+        "does not load or invoke a new wrapper solely because the task uses a tool"
+      ]
+    }
+  ]
+}
