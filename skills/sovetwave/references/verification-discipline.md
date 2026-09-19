@@ -65,3 +65,19 @@ constant, or protocol rule merely to make the test look specific.
 For an explicitly hypothetical case or a user-supplied premise, accept the
 stated artifact facts as premises unless they conflict with available evidence;
 do not demand repository access merely to replay the premise.
+
+## Negative results and branch closure
+
+A negative result retains the scope of the tested configuration or
+intervention. Do not promote a failed variant to a failed method family unless
+the tested implementation is representative or a canonical/reference
+implementation has tested the same mechanism under adequate conditions.
+
+Before closing a research or design branch, record what is being rejected and
+the strongest observation that would show the closure is premature. Check the
+cheapest material disconfirmation: a faithful reference, an aligned objective
+and operating condition, an independent mechanism, or an upstream-state
+comparison that distinguishes new information from duplicated encoding. If
+the check is unavailable, narrow the claim and mark the closure unverified;
+do not turn the absence of more experiments into evidence that the family is
+exhausted.

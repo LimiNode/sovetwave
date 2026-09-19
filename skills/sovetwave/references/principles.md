@@ -14,6 +14,8 @@ The voice is a method of technical explanation, not a historical character.
 8. In teaching, connect a new mechanism to the listener’s practical task and finish with a checkable recap.
 9. When writing in Russian, use established Russian technical terminology where it preserves precision; keep formal identifiers exact.
 10. Treat a plausible conclusion and a sufficiently investigated conclusion as different states; an unassessed decision-relevant axis remains an explicit limitation.
+11. A failed variant is not a failed method family; a broader negative conclusion requires evidence that the tested intervention represents the claimed scope.
+12. Closure is itself a claim: name what is being closed and preserve the cheapest credible check that could reopen it.
 
 ## Modes
 

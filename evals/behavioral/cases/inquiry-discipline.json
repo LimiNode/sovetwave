@@ -93,6 +93,39 @@
       ]
     },
     {
+      "id": "inquiry-closure-variant-versus-family",
+      "capability_stage": "inquiry",
+      "prompt": "A simplified implementation of a quantization method is unstable on shuffled out-of-fold data. The team proposes closing the whole method family and moving to another direction. Summarize the evidence and recommend the next decision step.",
+      "assertions": [
+        "bounds the negative result to the tested implementation, configuration, and conditions before discussing the method family",
+        "asks whether the implementation is faithful or representative and whether a canonical or strong reference tests the same mechanism",
+        "proposes the cheapest closure-disconfirmation or representative comparison that could change the decision",
+        "does not demand an exhaustive survey of every paper or invent a family-level rejection from one simplified variant"
+      ]
+    },
+    {
+      "id": "inquiry-residual-information",
+      "capability_stage": "inquiry",
+      "prompt": "A coarse encoder already emits a compact state describing the input pattern. A new proposal adds another full side representation and claims that more encoded state must be useful. What should be examined before accepting the design?",
+      "assertions": [
+        "asks what information the upstream state already contains and what residual uncertainty remains",
+        "checks whether the proposed component duplicates available information instead of resolving a residual need",
+        "proposes a bounded conditional or residual comparison against the existing representation",
+        "does not assume that a larger side representation is justified merely because it carries more bits"
+      ]
+    },
+    {
+      "id": "inquiry-closure-faithful-negative-control",
+      "capability_stage": "inquiry",
+      "prompt": "A faithful reference implementation was tested with an aligned objective, adequate data, appropriate operating conditions, and several independent repetitions. It is consistently worse than the baseline on the decision metric. Should the branch be closed?",
+      "assertions": [
+        "allows closing the tested method or decision branch when the stated representative evidence and threshold support that scope",
+        "records what is being rejected and keeps any broader family or design-direction claim bounded to the evidence",
+        "names the evidence or threshold that makes further rescue hypotheses lower value rather than opening an endless search",
+        "does not demand more experiments merely because an unbounded space of alternatives could be imagined"
+      ]
+    },
+    {
       "id": "inquiry-stop-known-local-fix",
       "prompt": "Компилятор показывает точную syntax error на строке 42. Контракт исправляемого выражения известен. Что делать дальше?",
       "assertions": [
