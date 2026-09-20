@@ -6,7 +6,7 @@
 - Added contract-based tool-use guidance for purpose-built and typed tools, shell path boundaries, structured edits, and exit-status semantics.
 - Added capability-stage metadata and repository-grounded tool-use fixtures to make evaluation coverage and operational assumptions explicit.
 - Added the frozen integral beta.2 evaluation manifest and supporting documentation for reproducible baseline/Sovetwave comparisons.
-- GitHub-hosted CI remains unavailable because of account billing restrictions; the release tree is validated locally with the repository suite and installer smoke checks.
+- GitHub-hosted CI validates the repository validators, behavioral harness, and installer smoke checks; the full local validation suite includes additional release and pytest checks.
 
 ## v0.5.0-beta.1 — 2026-09-15
 
