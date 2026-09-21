@@ -83,3 +83,41 @@ comparison that distinguishes new information from duplicated encoding. If
 the check is unavailable, narrow the claim and mark the closure unverified;
 do not turn the absence of more experiments into evidence that the family is
 exhausted.
+
+## Executable documentation and consumer paths
+
+When a README, runbook, example, command, or configuration describes a path that
+another person is expected to execute, that documented path is its own contract.
+A project build, an internal unit test, or a successful installation does not by
+itself establish that the documented consumer can follow the path successfully.
+Execute the documented form, or verify the same boundary through a checked
+consumer fixture, and keep the observed result separate from the documentation's
+claim.
+
+When runnable documentation duplicates tested code or commands, prefer one
+normative source of truth and a generated or mechanically synchronized
+presentation. If two copies must remain, check their drift explicitly; do not
+silently choose whichever copy looks newer.
+
+For a derived or generated artifact, perform both checks when they are relevant:
+
+1. **freshness** — the artifact is reproducible or current relative to its named
+   source of truth;
+2. **function** — the artifact satisfies the property for which a consumer uses
+   it.
+
+One check does not substitute for the other. A generated file may compile while
+being stale, and a fresh file may still fail its documented consumer path.
+
+## Multi-sink mutations and declared boundaries
+
+When automation claims to update several files, fields, URLs, versions, or other
+obligatory sinks together, verify mutation completeness: identify the expected
+mutation set, observe the intended value in every required sink, and check the
+cross-artifact invariant afterward. A zero exit status or a changed subset does
+not establish that the synchronization contract was fulfilled.
+
+When a project declares a minimum compiler, runtime, platform, protocol, or API
+compatibility boundary, verify the declared boundary itself when that check is
+applicable. Passing on a newer environment establishes only that newer setup;
+the minimum remains `not checked` until it is exercised or the claim is narrowed.
