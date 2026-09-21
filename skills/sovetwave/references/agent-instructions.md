@@ -98,8 +98,11 @@ security boundary. Keep any workflow explanation in the repository document,
 but let the host and checks enforce what they can enforce mechanically.
 
 Move mechanically decidable rules into deterministic checks where practical:
-format, generated-file drift, forbidden syntax, paired-document presence,
-standalone header compilation, link validation, or submodule pin availability.
+format, generated-file drift, executable-documentation synchronization,
+forbidden syntax, paired-document presence, standalone header compilation, link
+validation, or submodule pin availability. When a documented command or
+consumer path is part of the contract, execute that boundary or record it as
+not checked; a successful internal build is not a substitute.
 Keep semantic decisions in review: ownership, compatibility, rollback,
 concurrency, and whether two similar implementations really share one contract.
 A grep gate is evidence about text, not proof of runtime semantics.
