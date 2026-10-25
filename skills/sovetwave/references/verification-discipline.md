@@ -66,6 +66,32 @@ For an explicitly hypothetical case or a user-supplied premise, accept the
 stated artifact facts as premises unless they conflict with available evidence;
 do not demand repository access merely to replay the premise.
 
+## Production validation and specialized fast paths
+
+Debug validation establishes what was checked in that debug configuration; it
+does not establish a production input contract. Removing runtime validation is
+sound only when malformed input is excluded by an independently enforced
+boundary. For external, brokered, or network data, establish the producer and
+schema/version boundary, framing or validation gate, drift detection, and the
+allowed failure mode before treating a fast path as safe. A stable staging
+sample or a collection of debug assertions is not a substitute for that
+boundary.
+
+When a specialized implementation relies on known ordering, fixed sizes, or a
+single schema, record the validity scope and the condition that invalidates it.
+Use the cheapest authoritative gate before the specialization and reject or
+fall back explicitly when that gate cannot establish the invariant.
+
+## Benchmark semantic parity
+
+A performance comparison is evidence about the compared contracts, not just the
+reported number. Before calling one implementation a faster version of another,
+establish that both provide the required semantics under the stated workload.
+If one implementation assumes an exact schema, skips validation, narrows the
+input regime, weakens durability, or changes accuracy, state the traded-away
+semantics and report the result as performance under a narrower contract. Do not
+turn a faster measurement into a same-contract claim by implication.
+
 ## Negative results and branch closure
 
 A negative result retains the scope of the tested configuration or

@@ -77,6 +77,16 @@
         "base_case": "architecture-unknown-needs-spike",
         "expect": "an already measured storage property should remove the storage spike, not decide topology automatically"
       }
+    },
+    {
+      "id": "architecture-specialization-versioned-contract",
+      "prompt": "Внутренний fast-path parser принимает только versioned protocol v3: schema gate до parser проверяет версию и обязательный порядок полей, неизвестная версия отклоняется, а drift поднимает alarm. Универсальный parser медленнее и нужен для других протоколов. Что выбрать и какие границы зафиксировать?",
+      "assertions": [
+        "accepts intentional specialization because a versioned schema gate establishes the narrower contract before the fast path",
+        "names the invariant, its enforcing boundary, the rejection or fallback behavior, and the condition that invalidates the assumption",
+        "records a validity horizon or protocol revision trigger and a drift signal rather than relying on a comment or staging history",
+        "does not demand a universal parser when the stated contract is authoritative, while keeping the broader parser for inputs outside that scope"
+      ]
     }
   ]
 }
