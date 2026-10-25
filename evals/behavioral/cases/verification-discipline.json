@@ -66,6 +66,36 @@
         "base_case": "verification-finding-needs-disconfirmation",
         "expect": "the verification structure should be generated from an underspecified report rather than copied from prompt vocabulary"
       }
+    },
+    {
+      "id": "verification-mutation-completeness",
+      "prompt": "Релизный скрипт завершился с exit 0 и сообщил, что обновил версию в CMake, version header и README. В diff изменились CMake и README, а version header всё ещё содержит старую версию. Можно ли считать релиз проверенным? Какой следующий check нужен?",
+      "assertions": [
+        "does not treat exit 0 as proof that every obligatory mutation sink was updated",
+        "identifies the stale version header as a concrete violation of the claimed mutation set",
+        "requires checking every declared sink and the cross-artifact version invariant",
+        "keeps process completion separate from semantic release verification"
+      ]
+    },
+    {
+      "id": "verification-documented-consumer-path",
+      "prompt": "Библиотека успешно собирается и её внутренние тесты проходят. README обещает, что новый пользователь может установить пакет и подключить его через find_package. Этот consumer path отдельно не собирался. Что уже доказано и что нужно проверить перед тем, как называть интеграцию проверенной?",
+      "assertions": [
+        "separates the successful project build and internal tests from the documented consumer contract",
+        "does not call the find_package integration verified without exercising or checking that boundary",
+        "proposes a fresh consumer fixture or the documented installation-and-consumption path",
+        "reports the unexecuted consumer boundary as not checked rather than inferring success"
+      ]
+    },
+    {
+      "id": "verification-declared-minimum-boundary",
+      "prompt": "Проект заявляет поддержку C++17, но проверка выполнена только на C++23 и прошла. Какой вывод допустим о совместимости и какая проверка нужна дальше?",
+      "assertions": [
+        "states that a passing C++23 build does not establish the declared C++17 minimum",
+        "keeps the exact C++17 identifier and compatibility claim intact",
+        "requires a build or focused consumer check at the declared minimum boundary",
+        "marks the minimum compatibility as not checked until that boundary is exercised"
+      ]
     }
   ]
 }
