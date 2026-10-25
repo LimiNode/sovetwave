@@ -86,12 +86,16 @@ class BehavioralHarnessTests(unittest.TestCase):
         text = reference.read_text(encoding="utf-8")
         self.assertIn("does not by itself establish", text)
         self.assertIn("multiple independent mechanisms", text)
+        self.assertIn("Debug validation establishes", text)
+        self.assertIn("Benchmark semantic parity", text)
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({
             "verification-finding-needs-disconfirmation",
             "verification-passing-test-wrong-property",
             "verification-spike-disposition",
             "verification-confirmed-local-reproducer",
+            "verification-debug-validation-boundary",
+            "verification-benchmark-semantic-parity",
         }.issubset(cases))
 
     def test_inquiry_discipline_reference_and_cases_are_routable(self) -> None:
@@ -106,6 +110,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             "method fidelity / family coverage",
             "residual uncertainty",
             "Branch closure audit",
+            "material specialization questions",
             "verification",
         ):
             self.assertIn(phrase, text)
@@ -1296,6 +1301,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             "architecture-moderate-recommendation",
             "architecture-expensive-public-decision",
             "architecture-unknown-needs-spike",
+            "architecture-specialization-versioned-contract",
         }
         indexed = {case["id"]: case for case in cases}
         self.assertTrue(required_ids.issubset(indexed))
@@ -1307,6 +1313,7 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(any("explicit delegation" in item for item in delegated["assertions"]))
         architecture = (ROOT / "skills" / "sovetwave" / "references" / "architecture-decisions.md").read_text(encoding="utf-8")
         self.assertIn("explicitly delegated this choice", architecture)
+        self.assertIn("Specialize against established invariants", architecture)
 
     def test_c_engineering_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

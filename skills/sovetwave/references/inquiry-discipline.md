@@ -42,6 +42,13 @@ final decision. Alignment at one link does not establish alignment at the
 next. For a proposed component, ask whether it duplicates information already
 available upstream or should encode only the residual uncertainty.
 
+For an optimization that narrows the supported input or operating regime, ask
+only the material specialization questions: what general behaviour is excluded,
+which invariant makes the shortcut sound, where that invariant is enforced, how
+violations or drift are detected, and which benchmark semantics were traded
+away. Do not demand a universal implementation when a versioned or otherwise
+authoritatively enforced contract makes the narrower design intentional.
+
 ## Inquiry candidate
 
 For each surfaced inquiry, keep the shape compact:

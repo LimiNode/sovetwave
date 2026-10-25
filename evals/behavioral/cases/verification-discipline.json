@@ -96,6 +96,26 @@
         "requires a build or focused consumer check at the declared minimum boundary",
         "marks the minimum compatibility as not checked until that boundary is exercised"
       ]
+    },
+    {
+      "id": "verification-debug-validation-boundary",
+      "prompt": "Внутренний fast-path JSON parser в Release не проверяет имена полей и порядок, потому что schema несколько месяцев не менялась на staging, а в debug стоят assert. Вход приходит от внешнего producer. Можно ли убрать production validation?",
+      "assertions": [
+        "does not treat staging stability or debug-only assertions as a production input contract",
+        "asks about the producer boundary, schema or version ownership, malformed input, framing or validation gate, and drift detection",
+        "proposes the smallest authoritative gate and an explicit reject or fallback behavior for violated invariants",
+        "keeps the fast path conditional on an established contract instead of rejecting all specialization or accepting it unconditionally"
+      ]
+    },
+    {
+      "id": "verification-benchmark-semantic-parity",
+      "prompt": "Специализированный JSON parser показывает 5× speedup против simdjson, но принимает только один порядок полей и фиксированную длину значений, пропуская общую проверку произвольного valid JSON. Как сформулировать результат?",
+      "assertions": [
+        "does not call the result a same-contract 5× faster implementation when the specialized parser provides weaker semantics",
+        "identifies the validation, input-generality, or failure semantics traded away by the faster path",
+        "states the result as performance under a narrower contract or proposes a semantic-parity comparison",
+        "does not reject specialization outright when its narrower contract is explicit and independently enforced"
+      ]
     }
   ]
 }

@@ -70,3 +70,27 @@ service does not automatically need layers, repositories, queues, plugins,
 dependency injection, or a framework. Require each boundary to own a present
 contract. Prefer a lean recommendation over a diagram whose boxes do not change
 any engineering decision.
+
+## Specialize against established invariants
+
+Specialization is a valid architectural choice when it deliberately narrows the
+supported world and the narrower contract is real. Before accepting a fast path
+that assumes a schema, layout, ordering, bounded size, or operating regime,
+state:
+
+- which general behaviour or input class is being excluded;
+- which invariant makes the specialization sound and where that invariant is
+  established or enforced;
+- what happens when the invariant is violated (reject, fallback, diagnostic, or
+  another explicit failure mode);
+- how the assumption is scoped in time or version and how drift is detected.
+
+Do not require a universal implementation merely because a specialized one is
+narrow. Do require an authoritative boundary before the specialized path, and
+do not treat a comment, a stable staging sample, or debug-only assertions as
+that boundary. If the repository has an explicit owner for the contract, name
+it; otherwise identify the enforcing schema, version gate, or input boundary.
+
+Encode established knowledge explicitly when it removes repeated runtime work,
+but keep benchmark claims honest about validation, generality, and failure
+semantics that the specialized path no longer provides.
