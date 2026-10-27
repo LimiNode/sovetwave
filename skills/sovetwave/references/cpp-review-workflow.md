@@ -50,6 +50,36 @@ and do not call a heuristic finding confirmed merely because a script printed
 it. Preserve the command, configuration, and relevant output needed to reproduce
 the observation.
 
+## Build, package, and dependency boundaries
+
+Treat the build and package boundary as part of the review when the project
+publishes a library, an install tree, or a reusable CMake target. A successful
+in-tree build and green tests do not by themselves establish that a clean
+consumer can use the installed interface.
+
+- Establish the project's actual build and test entry points before proposing
+  a command. For a single-config generator such as Ninja, `CMAKE_BUILD_TYPE`
+  selects the configuration at configure time; for a multi-config generator
+  such as Visual Studio, select it at build and test time with `--config` and
+  `-C`.
+- When installation is part of the contract, build and install the package,
+  then use a separate consumer with `find_package()`. Check the public headers,
+  exported CMake targets, include directories, link interfaces, transitive
+  dependencies, and the declared minimum C++ standard from that consumer
+  boundary.
+- Identify who owns each dependency version and how it is acquired: a
+  submodule, package manager, system package, or another repository mechanism.
+  Check that the same dependency is not provided through incompatible parallel
+  paths and that the documented offline or CI mode is reproducible when that
+  mode is part of the contract.
+- Do not infer a universal source layout from a repository convention. Keeping
+  `.hpp` beside `.cpp`, separating `include/` from `src/`, or using
+  `CMakePresets.json` can each be valid choices; require a migration only when
+  the project's public, build, or maintenance contract needs it.
+- Keep generated build and install artifacts isolated according to the
+  repository's convention, and do not use a review as justification for
+  destructive cleanup of unrelated or untracked files.
+
 ## Perform semantic passes
 
 After collecting deterministic evidence, inspect the code in bounded passes:

@@ -53,6 +53,22 @@ does not make construction of the call arguments lazy.
 
 When state is shared, inspect all conflicting reads and writes, not only assignments. An apparently harmless observation of a non-atomic object can race with a write. Determine the synchronisation or atomic contract before proposing a lock, a memory order, or a waiting protocol.
 
+## Repository and package boundaries
+
+When a C++ project exposes a reusable library or CMake package, treat the
+installed interface and dependency ownership as part of its contract. A green
+build from the source tree does not prove that a clean consumer can include
+the public headers, resolve exported targets, link required transitive
+dependencies, and use the declared language standard. Verify those properties
+from the installed package when the project claims them.
+
+Source layout, build-directory names, and the presence of a preset file are
+repository conventions rather than universal C++ rules. Preserve an existing
+layout unless the public interface, build reproducibility, or maintenance
+contract gives a concrete reason to change it. Likewise, dependency folders
+or submodules do not establish ownership by their physical presence; identify
+the acquisition mechanism, pinned version, and target boundary explicitly.
+
 ## Use tools as evidence, not verdicts
 
 Combine the smallest reproducer with compiler warnings, static analysis, sanitizers, and more than one relevant build configuration when practical. A sanitizer report is evidence of a defect; a clean sanitizer run covers only the executed path and does not prove the absence of every defect.

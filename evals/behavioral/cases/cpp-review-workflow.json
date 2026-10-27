@@ -53,6 +53,46 @@
         "checks consumers, headers, compiler configuration, and versioning rather than relying only on the type name",
         "proposes an ABI-focused verification or compatible representation"
       ]
+    },
+    {
+      "id": "cpp-review-installed-consumer-boundary",
+      "prompt": "A C++ library builds from its source tree and its in-tree tests pass. A clean external consumer installs the package and then fails at `find_package()` because an exported target refers to a required transitive dependency that the install tree does not provide. Review the failure and propose the smallest evidence-based next step.",
+      "assertions": [
+        "does not treat the successful in-tree build as proof that the installed consumer contract works",
+        "inspects installed public headers, exported CMake targets, link interfaces, and transitive dependency ownership",
+        "proposes reproducing the failure from a separate consumer rather than adding arbitrary include_directories",
+        "distinguishes a package/export defect from an unestablished dependency contract"
+      ]
+    },
+    {
+      "id": "cpp-review-cmake-generator-configuration",
+      "prompt": "A project is configured with the Visual Studio generator. The review request says to repair its Release build by adding `-DCMAKE_BUILD_TYPE=Release` to the existing configure command. The Debug build is present and the project uses the generator's named configurations. What should the review establish before changing the command?",
+      "assertions": [
+        "recognizes Visual Studio as a multi-config generator",
+        "does not prescribe CMAKE_BUILD_TYPE as the configuration selector for this generator",
+        "uses the generator-appropriate `--config Release` build and test path",
+        "keeps single-config guidance conditional on the actual generator"
+      ]
+    },
+    {
+      "id": "cpp-review-dependency-ownership-collision",
+      "prompt": "Two repository components each bring a different pinned copy of the same C++ dependency and expose colliding CMake targets. The core library needs only one of them; an optional adapter currently discovers the other through its own submodule. Review the situation before deleting either checkout.",
+      "assertions": [
+        "identifies dependency acquisition and version ownership as the first contract to establish",
+        "checks the CMake target graph and whether the core really depends on the optional adapter dependency",
+        "examines compatibility and a single authoritative provider before proposing consolidation",
+        "does not delete a submodule merely because its directory is duplicated"
+      ]
+    },
+    {
+      "id": "cpp-review-layout-negative-control",
+      "prompt": "A library uses `include/` for public headers and `src/` for implementations. Its installed package, exported targets, clean consumer, and declared C++ standard all work. A reviewer prefers colocating every `.hpp` beside its `.cpp` and asks for a migration before accepting the change. How should the review handle that request?",
+      "assertions": [
+        "does not treat one source layout as a universal C++ requirement",
+        "accepts the existing layout when the public and installed consumer contracts are verified",
+        "asks for a concrete build, interface, or maintenance invariant before requiring migration",
+        "separates repository convention from API and package correctness"
+      ]
     }
   ]
 }
