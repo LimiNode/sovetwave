@@ -67,6 +67,36 @@ Confirm the cited path and contract; fix a supported finding, reject an
 unsupported one with evidence, and keep a contract-dependent request
 conditional. Re-run the check that can demonstrate the correction.
 
+## Optional task contract / work order
+
+Use a compact task contract when work is autonomous, spans several stages,
+crosses an agent handoff, is expected to repeat, or has a formal acceptance
+boundary. For a small local change with a known contract, skip this ceremony.
+
+When the contract is useful, record only the fields that materially constrain
+the work:
+
+- **goal** — the result to produce;
+- **starting context/state** — the relevant revision, artifacts, and known
+  observations;
+- **constraints and non-goals** — what must remain unchanged and what is out
+  of scope;
+- **execution autonomy** — edits, commands, checks, or external systems the
+  agent may use;
+- **publication authority** — separately state whether commit, push, issue or
+  PR changes, merge, release, or other external actions are authorized;
+- **expected artifact** — the file, patch, report, or handoff to return;
+- **acceptance evidence** — the concrete check and observable result that make
+  the artifact acceptable;
+- **blocked conditions** — missing authority, unavailable prerequisites,
+  failed checks, or unresolved contract choices.
+
+Completing the work does not grant publication authority. Do not infer commit,
+push, merge, release, or other external permission from execution autonomy or
+from the presence of an expected artifact. Do not require a fixed JSON/YAML
+schema or a separate Work Order file when a short task description carries the
+same distinctions.
+
 ## Separate handoff from publication
 
 Handoff states what changed, what was checked, what was not checked, and what

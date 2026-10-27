@@ -1295,6 +1295,9 @@ class BehavioralHarnessTests(unittest.TestCase):
             "workflow-real-validation-command",
             "workflow-review-finding-triage",
             "workflow-publication-boundary",
+            "workflow-optional-task-contract-handoff",
+            "workflow-simple-change-needs-no-work-order",
+            "workflow-task-execution-without-publication-authority",
             "architecture-small-utility-no-framework",
             "architecture-brownfield-inherits",
             "architecture-cheap-reversible-choice",
@@ -1308,6 +1311,9 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertTrue(all(indexed[case_id]["assertions"] for case_id in required_ids))
         self.assertIn("engineering-workflow.md", THEMATIC_REFERENCES)
         self.assertIn("architecture-decisions.md", THEMATIC_REFERENCES)
+        workflow = (ROOT / "skills" / "sovetwave" / "references" / "engineering-workflow.md").read_text(encoding="utf-8")
+        self.assertIn("Optional task contract / work order", workflow)
+        self.assertIn("publication authority", workflow)
         delegated = indexed["architecture-expensive-public-decision"]
         self.assertIn("явно делегирую тебе выбор", delegated["prompt"])
         self.assertTrue(any("explicit delegation" in item for item in delegated["assertions"]))
