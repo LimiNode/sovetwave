@@ -88,6 +88,8 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertIn("multiple independent mechanisms", text)
         self.assertIn("Debug validation establishes", text)
         self.assertIn("Benchmark semantic parity", text)
+        self.assertIn("Architecture claims and source entailment", text)
+        self.assertIn("source entailment", text)
         cases = {case["id"] for case in load_cases(ROOT / "evals" / "behavioral" / "cases")}
         self.assertTrue({
             "verification-finding-needs-disconfirmation",
@@ -96,6 +98,8 @@ class BehavioralHarnessTests(unittest.TestCase):
             "verification-confirmed-local-reproducer",
             "verification-debug-validation-boundary",
             "verification-benchmark-semantic-parity",
+            "verification-architecture-source-entailment",
+            "verification-runtime-trace-scope",
         }.issubset(cases))
 
     def test_inquiry_discipline_reference_and_cases_are_routable(self) -> None:
@@ -1305,6 +1309,8 @@ class BehavioralHarnessTests(unittest.TestCase):
             "architecture-expensive-public-decision",
             "architecture-unknown-needs-spike",
             "architecture-specialization-versioned-contract",
+            "architecture-authored-delta-impact-boundary",
+            "architecture-narrow-diagram-scope",
         }
         indexed = {case["id"]: case for case in cases}
         self.assertTrue(required_ids.issubset(indexed))
@@ -1320,6 +1326,8 @@ class BehavioralHarnessTests(unittest.TestCase):
         architecture = (ROOT / "skills" / "sovetwave" / "references" / "architecture-decisions.md").read_text(encoding="utf-8")
         self.assertIn("explicitly delegated this choice", architecture)
         self.assertIn("Specialize against established invariants", architecture)
+        self.assertIn("Separate authored models from observed impact", architecture)
+        self.assertIn("observed authored delta", architecture)
 
     def test_c_engineering_suite_has_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

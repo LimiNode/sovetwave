@@ -116,6 +116,26 @@
         "states the result as performance under a narrower contract or proposes a semantic-parity comparison",
         "does not reject specialization outright when its narrower contract is explicit and independently enforced"
       ]
+    },
+    {
+      "id": "verification-architecture-source-entailment",
+      "prompt": "На revision `abc123` диапазон `src/task_manager.cpp:120-128` показывает только вызов `StorageAdapter::enqueue(job)` из `TaskManager`. В отчёте сказано: «`TaskManager` напрямую записывает job в PostgreSQL». Какой статический вывод подтверждён и что нужно проверить для остальной части утверждения?",
+      "assertions": [
+        "accepts the cited `TaskManager` call to `StorageAdapter::enqueue(job)` as the established static fact",
+        "does not infer that `TaskManager` writes directly to PostgreSQL from the adapter call alone",
+        "identifies the adapter implementation, backend selection, or storage path that must be inspected to establish the PostgreSQL claim",
+        "does not require a runtime trace merely to confirm the static adapter call already established by the cited source"
+      ]
+    },
+    {
+      "id": "verification-runtime-trace-scope",
+      "prompt": "Реальный execution trace на revision `def456`, с конфигурацией `storage.backend=postgresql` и входом `job-17`, показывает маршрут `TaskManager::submit` → `StorageAdapter::enqueue` → `PostgreSQLStorage::insert`. Другие конфигурации и состояния в trace не наблюдались. Как сформулировать подтверждённый вывод и его границы?",
+      "assertions": [
+        "recognizes the observed route to the PostgreSQL storage component as confirmed for the traced execution",
+        "records the revision, configuration, input, and observation scope of the trace",
+        "does not generalize the observed route to every configuration, input, state, or deployment",
+        "does not dismiss the trace as useless merely because it has bounded coverage"
+      ]
     }
   ]
 }
