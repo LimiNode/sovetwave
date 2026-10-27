@@ -7,3 +7,4 @@ temp/
 evals/behavioral/results/*.json
 evals/behavioral/results/*.md
 __pycache__/
+/.worktrees/
