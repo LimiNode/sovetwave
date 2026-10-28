@@ -121,6 +121,42 @@ class BuildBundleTests(unittest.TestCase):
         self.assertEqual(row["codex_item_counts_by_type"]["command_execution"], 1)
         self.assertEqual(row["reference_trace_status"], "not_available")
 
+    def test_tool_events_are_retained_and_csv_serialized(self):
+        events = [{"event": "completed", "call_id": "call-1", "status": "completed", "exit_code": 0}]
+        row = sanitize_result("run", "rev", {
+            "case_id": "case", "variant": "sovetwave", "process_status": "completed",
+            "tool_events": events,
+        })
+        self.assertEqual(row["tool_events"], events)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "run.json"
+            output = root / "bundle"
+            source.write_text(json.dumps({"results": [{
+                "case_id": "case", "variant": "sovetwave", "process_status": "completed",
+                "tool_events": events, "response": "answer",
+            }]}), encoding="utf-8")
+            subprocess.run([
+                sys.executable, str(ROOT / "scripts" / "build_bundle.py"),
+                "--output-dir", str(output), "--run", f"experiment=rev={source}",
+            ], cwd=ROOT, check=True, capture_output=True, text=True)
+            with (output / "observations.csv").open(encoding="utf-8-sig", newline="") as stream:
+                csv_row = next(csv.DictReader(stream))
+            self.assertEqual(json.loads(csv_row["tool_events"]), events)
+
+    def test_legacy_observations_keep_empty_tool_events(self):
+        row = sanitize_result("run", "rev", {
+            "case_id": "case", "variant": "baseline", "process_status": "completed",
+        })
+        self.assertEqual(row["tool_events"], [])
+
+    def test_tool_event_paths_are_redacted_in_bundle(self):
+        row = sanitize_result("run", "rev", {
+            "case_id": "case", "variant": "sovetwave", "process_status": "completed",
+            "tool_events": [{"event": "completed", "path": "C:\\private\\result.txt"}],
+        })
+        self.assertEqual(row["tool_events"][0]["path"], "result.txt")
+
     def test_ambiguous_usage_is_not_flattened_or_counted(self):
         row = sanitize_result("run", "rev", {
             "case_id": "case", "variant": "sovetwave", "process_status": "completed",

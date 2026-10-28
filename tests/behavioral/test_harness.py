@@ -33,6 +33,7 @@ from run_model_evals import (
     reported_tokens_from_stderr,
     run_variant,
     parse_claude_stream,
+    parse_claude_tool_events,
     parse_codex_json_stream,
     prepare_claude_settings,
     summarize_ablation,
@@ -1709,6 +1710,39 @@ class BehavioralHarnessTests(unittest.TestCase):
         ])
         self.assertEqual(parse_claude_stream(stream), ("Ответ", ["Skill"]))
 
+    def test_claude_tool_events_preserve_invocation_and_completion(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "id": "call-1", "name": "Write", "input": {"path": "result.txt"}},
+            ]}}),
+            json.dumps({"type": "user", "message": {"content": [
+                {"type": "tool_result", "tool_use_id": "call-1", "is_error": False, "content": "ok"},
+            ]}}),
+        ])
+        events = parse_claude_tool_events(stream)
+        self.assertEqual([event["event"] for event in events], ["invoked", "completed"])
+        self.assertEqual(events[0]["call_id"], "call-1")
+        self.assertEqual(events[1]["status"], "completed")
+
+    def test_codex_tool_events_capture_lifecycle_exit_and_redacted_evidence(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "item.started", "item": {
+                "id": "call-1", "type": "command_execution", "command": "Write result.txt",
+                "path": "C:\\tmp\\result.txt",
+            }}),
+            json.dumps({"type": "item.completed", "item": {
+                "id": "call-1", "type": "command_execution", "status": "completed",
+                "exit_code": 0, "path": "C:\\tmp\\result.txt", "stdout": "done",
+            }}),
+        ])
+        parsed = parse_codex_json_stream(stream)
+        self.assertEqual(len(parsed["tool_events"]), 2)
+        self.assertEqual(parsed["tool_events"][0]["lifecycle"], "invoked")
+        self.assertEqual(parsed["tool_events"][1]["exit_code"], 0)
+        self.assertEqual(parsed["tool_events"][1]["path"], "result.txt")
+        self.assertEqual(parsed["tool_events"][1]["stdout"]["preview"], "done")
+        self.assertEqual(len(parsed["tool_events"][1]["stdout"]["sha256"]), 64)
+
     def test_codex_json_stream_extracts_usage_without_schema_assumptions(self) -> None:
         stream = "\n".join([
             json.dumps({"type": "turn.started"}),
@@ -1750,6 +1784,28 @@ class BehavioralHarnessTests(unittest.TestCase):
         ])
         parsed = parse_codex_json_stream(stream)
         self.assertEqual(parsed["tool_calls"], 1)
+
+    def test_run_variant_records_provider_tool_events(self) -> None:
+        case = {"id": "sample", "prompt": "Explain."}
+        stream = json.dumps({
+            "type": "item.completed",
+            "item": {"id": "call-1", "type": "command_execution", "status": "completed", "exit_code": 0},
+        }) + "\n" + json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1}})
+        completed = subprocess.CompletedProcess(["codex"], 0, stdout=stream, stderr="")
+        with patch("run_model_evals.execute_command", return_value=completed):
+            result = run_variant("codex", case, False, None, 30, False)
+        self.assertEqual(result["tool_events"][0]["call_id"], "call-1")
+
+        claude_stream = "\n".join([
+            json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "id": "claude-call", "name": "Write"},
+            ]}}),
+            json.dumps({"type": "result", "result": "Answer"}),
+        ])
+        completed = subprocess.CompletedProcess(["claude"], 0, stdout=claude_stream, stderr="")
+        with patch("run_model_evals.execute_command", return_value=completed):
+            result = run_variant("claude", case, False, None, 30, False, claude_variant="baseline")
+        self.assertEqual(result["tool_events"][0]["call_id"], "claude-call")
 
     def test_codex_reference_trace_requires_explicit_file_read(self) -> None:
         observed = parse_codex_json_stream(json.dumps({

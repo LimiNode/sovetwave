@@ -1,0 +1,5 @@
+{
+  "artifact_path": "result.txt",
+  "expected_sha256": "60b1e7b585379146f0cd1889394cb3e91e2269fb14ae474005275c3c63bde266",
+  "tool_name": "write_file"
+}
