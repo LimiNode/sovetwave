@@ -12,7 +12,6 @@ import statistics
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
-from posixpath import basename
 
 
 TOKEN_RE = re.compile(r"tokens used[ \t]*\r?\n[ \t]*([0-9 ,\u00a0\u202f]+)", re.IGNORECASE)
@@ -47,8 +46,12 @@ def sanitize_event_path(value: object) -> str | None:
     marker = "skills/sovetwave/"
     if marker in normalized:
         return normalized[normalized.index(marker):]
-    if normalized.startswith(("/", "./")) or (len(normalized) >= 3 and normalized[1:3] == ":/"):
-        return basename(normalized)
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("/") or (len(normalized) >= 3 and normalized[1:3] == ":/"):
+        return None
+    if ".." in normalized.split("/"):
+        return None
     return normalized.lstrip("./")
 
 
@@ -57,8 +60,9 @@ def sanitize_tool_events(value: object) -> list[dict]:
     if not isinstance(value, list):
         return []
     allowed = {
-        "sequence", "event", "call_id", "tool_name", "item_type", "lifecycle",
-        "status", "permission", "exit_code", "path", "command_present", "command_sha256",
+        "sequence", "event", "provider_event", "call_id", "tool_name", "item_type", "lifecycle",
+        "status", "permission", "exit_code", "path", "path_status", "artifact_sha256",
+        "artifact_action", "command_present", "command_sha256",
         "stdout", "stderr", "result",
     }
     events: list[dict] = []
@@ -67,19 +71,21 @@ def sanitize_tool_events(value: object) -> list[dict]:
             continue
         event = {key: raw[key] for key in allowed if key in raw}
         if "path" in event:
-            event["path"] = sanitize_event_path(event["path"])
+            original_path = event["path"]
+            event["path"] = sanitize_event_path(original_path)
             if event["path"] is None:
                 event.pop("path")
+                event["path_status"] = "unavailable"
+            else:
+                event["path_status"] = "known_relative"
         for key in ("stdout", "stderr", "result"):
             evidence = event.get(key)
             if isinstance(evidence, dict):
                 event[key] = {
                     field: evidence[field]
-                    for field in ("bytes", "sha256", "preview")
-                    if field in evidence and field != "preview"
+                    for field in ("bytes", "sha256")
+                    if field in evidence
                 }
-                if isinstance(evidence.get("preview"), str):
-                    event[key]["preview"] = evidence["preview"][:256]
             else:
                 event.pop(key, None)
         events.append(event)
@@ -167,6 +173,7 @@ def sanitize_result(experiment: str, revision: str, row: dict) -> dict:
         "reference_trace_status": row.get("reference_trace_status"),
         "reference_files_read": row.get("reference_files_read") or [],
         "tool_events": sanitize_tool_events(row.get("tool_events")),
+        "tool_events_status": row.get("tool_events_status"),
         "response": row.get("response") or "",
         **usage_fields,
     }
@@ -300,7 +307,7 @@ def main() -> int:
         "material_inputs_dirty", "attempt", "recovered", "original_process_status",
         "reference_trace_status", "codex_tool_calls", "codex_usage_events",
         "codex_duplicate_usage_events", "codex_usage_status",
-        "tool_events",
+        "tool_events", "tool_events_status",
         "codex_input_tokens", "codex_cached_input_tokens",
         "codex_cache_write_input_tokens", "codex_output_tokens",
         "codex_reasoning_output_tokens", "codex_anonymous_tool_items",

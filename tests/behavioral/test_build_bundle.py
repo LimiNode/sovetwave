@@ -126,6 +126,7 @@ class BuildBundleTests(unittest.TestCase):
         row = sanitize_result("run", "rev", {
             "case_id": "case", "variant": "sovetwave", "process_status": "completed",
             "tool_events": events,
+            "tool_events_status": "complete",
         })
         self.assertEqual(row["tool_events"], events)
         with tempfile.TemporaryDirectory() as directory:
@@ -134,7 +135,7 @@ class BuildBundleTests(unittest.TestCase):
             output = root / "bundle"
             source.write_text(json.dumps({"results": [{
                 "case_id": "case", "variant": "sovetwave", "process_status": "completed",
-                "tool_events": events, "response": "answer",
+                "tool_events": events, "tool_events_status": "complete", "response": "answer",
             }]}), encoding="utf-8")
             subprocess.run([
                 sys.executable, str(ROOT / "scripts" / "build_bundle.py"),
@@ -143,6 +144,7 @@ class BuildBundleTests(unittest.TestCase):
             with (output / "observations.csv").open(encoding="utf-8-sig", newline="") as stream:
                 csv_row = next(csv.DictReader(stream))
             self.assertEqual(json.loads(csv_row["tool_events"]), events)
+            self.assertEqual(csv_row["tool_events_status"], "complete")
 
     def test_legacy_observations_keep_empty_tool_events(self):
         row = sanitize_result("run", "rev", {
@@ -155,7 +157,17 @@ class BuildBundleTests(unittest.TestCase):
             "case_id": "case", "variant": "sovetwave", "process_status": "completed",
             "tool_events": [{"event": "completed", "path": "C:\\private\\result.txt"}],
         })
-        self.assertEqual(row["tool_events"][0]["path"], "result.txt")
+        self.assertNotIn("path", row["tool_events"][0])
+        self.assertEqual(row["tool_events"][0]["path_status"], "unavailable")
+
+    def test_tool_event_preview_is_not_exported(self):
+        row = sanitize_result("run", "rev", {
+            "case_id": "case", "variant": "sovetwave", "process_status": "completed",
+            "tool_events": [{"event": "completed", "result": {
+                "bytes": 10, "sha256": "a" * 64, "preview": "password=hunter2",
+            }}],
+        })
+        self.assertNotIn("preview", row["tool_events"][0]["result"])
 
     def test_ambiguous_usage_is_not_flattened_or_counted(self):
         row = sanitize_result("run", "rev", {

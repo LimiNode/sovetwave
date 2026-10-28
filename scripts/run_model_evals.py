@@ -520,16 +520,21 @@ def parse_claude_stream_metadata(stream: str) -> tuple[str, list[str], list[str]
     return response, list(dict.fromkeys(tool_names)), list(dict.fromkeys(model_names))
 
 
-def parse_claude_tool_events(stream: str) -> list[dict[str, Any]]:
-    """Retain a bounded invocation/completion trace from Claude JSONL output."""
+def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, Any]], str]:
+    """Normalize Claude tool events and report whether the trace is complete."""
     events: list[dict[str, Any]] = []
     sequence = 0
+    candidate_events = 0
+    parse_errors = 0
+    tool_metadata: dict[str, dict[str, Any]] = {}
     for line in (stream or "").splitlines():
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
+            parse_errors += 1
             continue
         if not isinstance(event, dict):
+            parse_errors += 1
             continue
         message = event.get("message")
         content = message.get("content") if isinstance(message, dict) else event.get("content")
@@ -541,27 +546,68 @@ def parse_claude_tool_events(stream: str) -> list[dict[str, Any]]:
             block_type = block.get("type")
             if block_type == "tool_use" and isinstance(block.get("name"), str):
                 sequence += 1
+                candidate_events += 1
                 if len(events) >= MAX_TOOL_EVENTS:
                     continue
-                events.append({
+                record: dict[str, Any] = {
                     "sequence": sequence,
                     "event": "invoked",
+                    "provider_event": "tool_use",
                     "call_id": block.get("id"),
                     "tool_name": block["name"],
                     "permission": "not_available",
-                })
+                }
+                tool_input = block.get("input")
+                raw_path = (
+                    tool_input.get("path") or tool_input.get("file_path")
+                    if isinstance(tool_input, dict) else None
+                )
+                path = _safe_event_path(raw_path)
+                record["path_status"] = _event_path_status(raw_path)
+                if path:
+                    record["path"] = path
+                if isinstance(block.get("id"), str) and block["id"]:
+                    tool_metadata[block["id"]] = {
+                        "tool_name": block["name"],
+                        "path": path,
+                        "path_status": record["path_status"],
+                    }
+                events.append(record)
             elif block_type == "tool_result":
                 sequence += 1
+                candidate_events += 1
                 if len(events) >= MAX_TOOL_EVENTS:
                     continue
-                events.append({
+                call_id = block.get("tool_use_id")
+                metadata = tool_metadata.get(call_id, {}) if isinstance(call_id, str) else {}
+                record = {
                     "sequence": sequence,
                     "event": "completed",
-                    "call_id": block.get("tool_use_id"),
-                    "tool_name": None,
-                    "status": "failed" if block.get("is_error") else "completed",
+                    "provider_event": "tool_result",
+                    "call_id": call_id,
+                    "tool_name": metadata.get("tool_name"),
                     "permission": "not_available",
-                })
+                }
+                if metadata.get("path"):
+                    record["path"] = metadata["path"]
+                record["path_status"] = metadata.get("path_status", "unavailable")
+                if isinstance(block.get("is_error"), bool):
+                    record["status"] = "failed" if block["is_error"] else "completed"
+                events.append(record)
+    if not (stream or "").strip():
+        status = "unavailable"
+    elif parse_errors:
+        status = "parse_error"
+    elif candidate_events > MAX_TOOL_EVENTS:
+        status = "truncated"
+    else:
+        status = "complete"
+    return events, status
+
+
+def parse_claude_tool_events(stream: str) -> list[dict[str, Any]]:
+    """Retain a bounded invocation/completion trace from Claude JSONL output."""
+    events, _ = parse_claude_tool_events_with_status(stream)
     return events
 
 
@@ -573,20 +619,38 @@ def _safe_event_path(value: Any) -> str | None:
     marker = "skills/sovetwave/"
     if marker in normalized:
         return normalized[normalized.index(marker):]
-    if normalized.startswith(("/", "./")) or re.match(r"^[A-Za-z]:/", normalized):
-        return Path(normalized).name or None
-    return normalized.lstrip("./")
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("/") or re.match(r"^[A-Za-z]:/", normalized):
+        return None
+    if ".." in normalized.split("/"):
+        return None
+    return normalized
+
+
+def _event_path_status(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return "unavailable"
+    normalized = value.replace("\\", "/")
+    if "skills/sovetwave/" in normalized:
+        return "known_relative"
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("/") or re.match(r"^[A-Za-z]:/", normalized):
+        return "unavailable"
+    if ".." in normalized.split("/"):
+        return "unavailable"
+    return "known_relative"
 
 
 def _bounded_text_evidence(value: Any) -> dict[str, Any]:
-    """Record result identity and a short redacted preview, never an unbounded payload."""
+    """Record result identity without retaining arbitrary tool output."""
     if not isinstance(value, str):
         return {}
     encoded = value.encode("utf-8", errors="replace")
     return {
         "bytes": len(encoded),
         "sha256": hashlib.sha256(encoded).hexdigest(),
-        "preview": redact_secrets(value[:256]),
     }
 
 
@@ -602,22 +666,27 @@ def _codex_tool_event(event_type: str, item: dict[str, Any], sequence: int) -> d
     )
     if not is_tool:
         return None
-    record: dict[str, Any] = {
-        "sequence": sequence,
-        "event": event_type,
-        "call_id": item.get("id"),
-        "tool_name": item.get("name") if isinstance(item.get("name"), str) else item_type,
-        "item_type": item_type,
-    }
     lifecycle = {
         "item.started": "invoked",
         "item.updated": "updated",
         "item.completed": "completed",
-        "item.failed": "failed",
+        "item.failed": "completed",
     }.get(event_type)
+    record: dict[str, Any] = {
+        "sequence": sequence,
+        "event": lifecycle or "unknown",
+        "provider_event": event_type,
+        "call_id": item.get("id"),
+        "tool_name": item.get("name") if isinstance(item.get("name"), str) else item_type,
+        "item_type": item_type,
+    }
     if lifecycle:
         record["lifecycle"] = lifecycle
     status = item.get("status") or item.get("state")
+    if event_type == "item.failed":
+        status = "failed"
+    elif status is None and event_type == "item.completed":
+        status = "completed"
     if isinstance(status, str):
         record["status"] = status
     for key in ("exit_code", "returncode", "exit_status"):
@@ -631,9 +700,21 @@ def _codex_tool_event(event_type: str, item: dict[str, Any], sequence: int) -> d
         record["permission"] = "denied"
     else:
         record["permission"] = "not_available"
-    path = _safe_event_path(item.get("path") or item.get("file") or item.get("artifact_path"))
+    raw_path = item.get("path") or item.get("file") or item.get("artifact_path")
+    path = _safe_event_path(raw_path)
+    record["path_status"] = _event_path_status(raw_path)
     if path:
         record["path"] = path
+    artifact = item.get("artifact")
+    artifact_sha256 = item.get("artifact_sha256")
+    artifact_action = item.get("artifact_action")
+    if isinstance(artifact, dict):
+        artifact_sha256 = artifact.get("sha256", artifact_sha256)
+        artifact_action = artifact.get("action", artifact_action)
+    if isinstance(artifact_sha256, str):
+        record["artifact_sha256"] = artifact_sha256.lower()
+    if isinstance(artifact_action, str):
+        record["artifact_action"] = artifact_action
     if isinstance(item.get("command"), str):
         record["command_present"] = True
         record["command_sha256"] = hashlib.sha256(item["command"].encode("utf-8", errors="replace")).hexdigest()
@@ -662,6 +743,8 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     reference_reads: list[str] = []
     tool_events: list[dict[str, Any]] = []
     event_sequence = 0
+    tool_event_candidates = 0
+    parse_errors = 0
 
     def safe_reference_path(value: Any) -> str | None:
         if not isinstance(value, str):
@@ -675,8 +758,10 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
+            parse_errors += 1
             continue
         if not isinstance(event, dict):
+            parse_errors += 1
             continue
         event_type = event.get("type")
         if isinstance(event_type, str) and event_type not in event_types:
@@ -709,8 +794,10 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
                 item,
                 event_sequence,
             )
-            if tool_event is not None and len(tool_events) < MAX_TOOL_EVENTS:
-                tool_events.append(tool_event)
+            if tool_event is not None:
+                tool_event_candidates += 1
+                if len(tool_events) < MAX_TOOL_EVENTS:
+                    tool_events.append(tool_event)
             item_type = item.get("type", "")
             item_id = item.get("id")
             if isinstance(item_type, str) and isinstance(item_id, str) and item_id:
@@ -751,6 +838,14 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         usage_status = "valid"
     else:
         usage_status = "missing"
+    if not (stream or "").strip():
+        tool_events_status = "unavailable"
+    elif parse_errors:
+        tool_events_status = "parse_error"
+    elif tool_event_candidates > MAX_TOOL_EVENTS:
+        tool_events_status = "truncated"
+    else:
+        tool_events_status = "complete"
     return {
         "usage": usage or None,
         "usage_status": usage_status,
@@ -761,6 +856,7 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         "anonymous_tool_items": anonymous_items,
         "item_counts_by_type": item_counts,
         "tool_events": tool_events,
+        "tool_events_status": tool_events_status,
         "reference_files_read": reference_reads,
     }
 
@@ -1013,6 +1109,7 @@ def run_variant(
             "reference_files_read": [],
             "reference_trace_status": "not_available",
             "tool_events": [],
+            "tool_events_status": "unavailable",
             "skill_revision": repository_revision(),
             "skill_revision_dirty": repository_revision_dirty(),
             "material_inputs_dirty": repository_material_inputs_dirty(),
@@ -1074,13 +1171,14 @@ def run_variant(
             result["codex_anonymous_tool_items"] = codex_telemetry["anonymous_tool_items"]
             result["codex_item_counts_by_type"] = codex_telemetry["item_counts_by_type"]
             result["tool_events"] = codex_telemetry["tool_events"]
+            result["tool_events_status"] = codex_telemetry["tool_events_status"]
             if codex_telemetry["reference_files_read"]:
                 result["reference_files_read"] = codex_telemetry["reference_files_read"]
                 result["reference_trace_status"] = "observed"
         if provider == "claude":
             response, tool_trace, resolved_models = parse_claude_stream_metadata(response)
             result["tool_trace"] = tool_trace
-            result["tool_events"] = parse_claude_tool_events(completed.stdout or "")
+            result["tool_events"], result["tool_events_status"] = parse_claude_tool_events_with_status(completed.stdout or "")
             result["skill_invoked"] = "Skill" in tool_trace
             result["resolved_models"] = resolved_models
         stderr_model = resolved_model_from_stderr(completed.stderr or "")

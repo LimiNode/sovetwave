@@ -21,11 +21,31 @@ evaluations, or make semantic claims about an agent response.
 
 ## Evidence contract
 
-`tool_events` is a bounded, redacted trace. The runner keeps lifecycle events,
-call identifiers, tool names, permission outcome when exposed, exit status,
-relative artifact identity, and a digest plus short preview for textual result
-fields. Absolute workspace paths and unbounded command/result bodies are not
-retained. The review bundle applies a second allow-list and event-count bound.
+`tool_events` is a bounded, redacted trace. The runner keeps provider-native
+event name, canonical lifecycle, call identifiers, tool names, permission
+outcome when exposed, exit status, relative artifact identity, and a digest
+plus byte count for textual result fields. Arbitrary result previews are not
+retained. Absolute workspace paths are marked unavailable rather than reduced
+to a basename. Each trace carries `tool_events_status`: `complete`,
+`truncated`, `unavailable`, or `parse_error`. The review bundle applies a
+second allow-list and event-count bound.
+
+The normalized event contract is deliberately small:
+
+```text
+event          = invoked | completed | updated | unknown
+provider_event = provider-native lifecycle name
+call_id        = stable provider identifier, or null
+tool_name      = provider tool/type when exposed
+permission     = allowed | denied | not_available
+status         = provider completion status when exposed
+exit_code      = integer when exposed
+path_status    = known_relative | unavailable
+```
+
+The scorer consumes only canonical `event` values. A Claude `tool_result`
+without an explicit exit code remains a completion record, not proof of a
+successful shell process.
 
 The offline pilot emits independent fields:
 
@@ -34,10 +54,12 @@ The offline pilot emits independent fields:
 `assertion_status`.
 
 An agent's text claim is never evidence of an action. `assertion_status` is
-`passed` only when a matching invocation exists, a matching completion reports
-`status=completed` and `exit_code=0`, and the expected artifact digest matches.
-Missing trajectory is `not_assessable`; a failed tool or digest mismatch is
-`failed`.
+`passed` only when a matching invocation and completion have one unambiguous
+non-empty `call_id`, the completion follows the invocation, reports
+`status=completed` and `exit_code=0`, includes artifact provenance, and the
+expected artifact digest matches. A pre-existing matching file is not enough.
+Missing or truncated trajectory is `not_assessable`; a failed tool or digest
+mismatch is `failed`.
 
 ## Offline checks
 

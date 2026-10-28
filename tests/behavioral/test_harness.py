@@ -1723,6 +1723,8 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertEqual([event["event"] for event in events], ["invoked", "completed"])
         self.assertEqual(events[0]["call_id"], "call-1")
         self.assertEqual(events[1]["status"], "completed")
+        self.assertEqual(events[1]["tool_name"], "Write")
+        self.assertEqual(events[1]["path"], "result.txt")
 
     def test_codex_tool_events_capture_lifecycle_exit_and_redacted_evidence(self) -> None:
         stream = "\n".join([
@@ -1737,11 +1739,44 @@ class BehavioralHarnessTests(unittest.TestCase):
         ])
         parsed = parse_codex_json_stream(stream)
         self.assertEqual(len(parsed["tool_events"]), 2)
+        self.assertEqual(parsed["tool_events"][0]["event"], "invoked")
+        self.assertEqual(parsed["tool_events"][0]["provider_event"], "item.started")
+        self.assertEqual(parsed["tool_events"][1]["event"], "completed")
         self.assertEqual(parsed["tool_events"][0]["lifecycle"], "invoked")
         self.assertEqual(parsed["tool_events"][1]["exit_code"], 0)
-        self.assertEqual(parsed["tool_events"][1]["path"], "result.txt")
-        self.assertEqual(parsed["tool_events"][1]["stdout"]["preview"], "done")
+        self.assertNotIn("path", parsed["tool_events"][1])
+        self.assertEqual(parsed["tool_events"][1]["path_status"], "unavailable")
+        self.assertNotIn("preview", parsed["tool_events"][1]["stdout"])
         self.assertEqual(len(parsed["tool_events"][1]["stdout"]["sha256"]), 64)
+        self.assertEqual(parsed["tool_events_status"], "complete")
+
+    def test_tool_event_redaction_does_not_retain_arbitrary_output_or_absolute_path(self) -> None:
+        parsed = parse_codex_json_stream(json.dumps({
+            "type": "item.completed",
+            "item": {
+                "id": "call-secret", "type": "command_execution",
+                "path": "C:\\private\\result.txt",
+                "stdout": "password=hunter2 cookie=session-secret person@example.test",
+            },
+        }))
+        event = parsed["tool_events"][0]
+        self.assertNotIn("path", event)
+        self.assertEqual(event["path_status"], "unavailable")
+        serialized = json.dumps(event)
+        self.assertNotIn("hunter2", serialized)
+        self.assertNotIn("session-secret", serialized)
+        self.assertNotIn("person@example.test", serialized)
+
+    def test_codex_tool_event_status_reports_parse_error_and_truncation(self) -> None:
+        parsed = parse_codex_json_stream("not-json\n" + json.dumps({"type": "item.completed", "item": {"id": "call-1", "type": "command_execution"}}))
+        self.assertEqual(parsed["tool_events_status"], "parse_error")
+        many = "\n".join(
+            json.dumps({"type": "item.completed", "item": {"id": f"call-{index}", "type": "command_execution"}})
+            for index in range(257)
+        )
+        parsed = parse_codex_json_stream(many)
+        self.assertEqual(len(parsed["tool_events"]), 256)
+        self.assertEqual(parsed["tool_events_status"], "truncated")
 
     def test_codex_json_stream_extracts_usage_without_schema_assumptions(self) -> None:
         stream = "\n".join([
@@ -1795,6 +1830,7 @@ class BehavioralHarnessTests(unittest.TestCase):
         with patch("run_model_evals.execute_command", return_value=completed):
             result = run_variant("codex", case, False, None, 30, False)
         self.assertEqual(result["tool_events"][0]["call_id"], "call-1")
+        self.assertEqual(result["tool_events_status"], "complete")
 
         claude_stream = "\n".join([
             json.dumps({"type": "assistant", "message": {"content": [
