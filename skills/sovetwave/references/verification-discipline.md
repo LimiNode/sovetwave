@@ -66,6 +66,39 @@ For an explicitly hypothetical case or a user-supplied premise, accept the
 stated artifact facts as premises unless they conflict with available evidence;
 do not demand repository access merely to replay the premise.
 
+## Architecture claims and source entailment
+
+Keep the evidence type separate from the existing evidence status. A source
+reference, an authored architecture relationship, and a runtime observation
+can each support a `confirmed`, `contract-dependent`, or `not checked` finding,
+but they do not establish the same property:
+
+- **source existence** establishes that a named file, revision, symbol, or
+  range is present;
+- **source entailment** establishes only the static claim that the cited
+  content actually supports;
+- **authored relationship** establishes what a diagram, document, or
+  architecture model declares within its stated scope;
+- **observed runtime behavior** establishes what occurred in the observed
+  revision, configuration, input, and execution path.
+
+For a material claim about an available repository, identify a reproducible
+source: the revision, repository-relative path, and relevant line range or
+another equally precise artifact. Check both that the source exists and that
+its content entails the claim. A caller invoking `StorageAdapter::enqueue()`
+does not by itself establish the adapter's backend, actual I/O, state owner, or
+the later runtime sequence. Conversely, a runtime trace is not required to
+confirm a static declaration, dependency, or call that the source establishes.
+
+Do not attribute uncommitted working-tree changes to a named commit. If the
+working tree differs from the cited revision, describe the source as a dirty
+working tree or provide a separate diff. If source access is unavailable, keep
+the claim conditional and do not invent paths, revisions, or line numbers.
+
+Require this precision only when it changes a material conclusion. A
+hypothetical greenfield recommendation or an incidental statement does not
+need ceremonial line citations.
+
 ## Production validation and specialized fast paths
 
 Debug validation establishes what was checked in that debug configuration; it

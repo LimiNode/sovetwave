@@ -87,6 +87,27 @@
         "records a validity horizon or protocol revision trigger and a drift signal rather than relying on a comment or staging history",
         "does not demand a universal parser when the stated contract is authoritative, while keeping the broader parser for inputs outside that scope"
       ]
+    },
+    {
+      "id": "architecture-authored-delta-impact-boundary",
+      "prompt": "Между двумя проверенными snapshots архитектурной диаграммы удалена связь `Billing` → `LegacyQueue`. Сопоставления с изменениями исполняемого кода и execution trace нет. Ревьюер утверждает, что downstream worker теперь обязательно сломается. Оцени доказательство и предложи минимальную следующую проверку.",
+      "assertions": [
+        "confirms the removed relationship as an observed delta in the authored architecture graph",
+        "keeps the downstream executable impact as a hypothesis without code mapping or runtime evidence",
+        "does not declare the downstream worker runtime break proven by the diagram diff alone",
+        "proposes a minimal source, consumer test, or trace check that can establish the executable impact"
+      ]
+    },
+    {
+      "id": "architecture-narrow-diagram-scope",
+      "prompt": "На закреплённой revision просмотренные исходники подтверждают статические отношения `HTTP handler` → `ImportService` → `ObjectStore`. Реального execution trace нет. Автор явно ограничил схему этим конкретным runtime path и не заявлял полную архитектуру репозитория. Достаточна ли такая схема и что именно можно о ней заключить?",
+      "assertions": [
+        "accepts the diagram as correct within its declared scope because source inspection supports the represented static relationships",
+        "does not require a repository-wide call graph when completeness was neither promised nor required",
+        "distinguishes source-supported static correctness from model completeness and the absence of runtime observation",
+        "does not describe the represented path as observed execution when no execution trace exists",
+        "does not treat the model's narrow scope as a defect without a requirement for broader coverage"
+      ]
     }
   ]
 }

@@ -50,6 +50,38 @@ Give a recommendation in actionable form: choose X because of the established
 constraints; choose Y only if a named requirement appears; identify the next
 observation that could overturn the choice.
 
+## Separate authored models from observed impact
+
+An architecture document or diagram is an authored model with a declared
+scope. A verified change between two model revisions establishes an authored
+delta; it does not by itself establish a change in executable behavior or its
+downstream consequence. Keep the chain explicit:
+
+```text
+observed authored delta
+-> hypothesized downstream impact
+-> verified downstream effect
+```
+
+Each transition needs evidence for the property being claimed. Traversing
+upstream or downstream relationships in an authored graph establishes
+reachability within that graph, not completeness of the source call graph or a
+runtime blast radius. A link to an existing source file also does not prove
+that a drawn relationship matches its contents.
+
+Use source inspection to establish static calls, dependencies, ownership, and
+contracts. Use a relevant test, trace, or operation when the decision depends
+on observed execution. A runtime trace establishes the path seen for its
+revision, configuration, input, and observation window; do not generalize it
+automatically to every state or deployment.
+
+Do not conclude `safe to merge`, `no downstream impact`, `will break`, or a
+blast radius from a diagram or diagram diff alone. Name the smallest source,
+consumer, test, or trace check that could establish the material effect. At the
+same time, accept a deliberately narrow model when its represented facts are
+verified within its declared scope; lack of repository-wide completeness is
+not a defect unless that completeness was promised or required.
+
 ## Use a spike as an experiment
 
 A spike answers one expensive unknown. Define the question, the smallest
