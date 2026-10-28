@@ -526,6 +526,7 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
     sequence = 0
     candidate_events = 0
     parse_errors = 0
+    terminal_event_observed = False
     tool_metadata: dict[str, dict[str, Any]] = {}
     for line in (stream or "").splitlines():
         try:
@@ -536,6 +537,8 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
         if not isinstance(event, dict):
             parse_errors += 1
             continue
+        if event.get("type") == "result":
+            terminal_event_observed = True
         message = event.get("message")
         content = message.get("content") if isinstance(message, dict) else event.get("content")
         if not isinstance(content, list):
@@ -600,6 +603,8 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
         status = "parse_error"
     elif candidate_events > MAX_TOOL_EVENTS:
         status = "truncated"
+    elif not terminal_event_observed:
+        status = "incomplete"
     else:
         status = "complete"
     return events, status
@@ -745,6 +750,7 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     event_sequence = 0
     tool_event_candidates = 0
     parse_errors = 0
+    terminal_event_observed = False
 
     def safe_reference_path(value: Any) -> str | None:
         if not isinstance(value, str):
@@ -766,6 +772,8 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         event_type = event.get("type")
         if isinstance(event_type, str) and event_type not in event_types:
             event_types.append(event_type)
+        if event_type == "turn.completed":
+            terminal_event_observed = True
         # Codex reports aggregate turn usage on turn.completed. Do not sum
         # arbitrary nested usage objects from progress events.
         if event_type == "turn.completed":
@@ -844,6 +852,8 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         tool_events_status = "parse_error"
     elif tool_event_candidates > MAX_TOOL_EVENTS:
         tool_events_status = "truncated"
+    elif not terminal_event_observed:
+        tool_events_status = "incomplete"
     else:
         tool_events_status = "complete"
     return {

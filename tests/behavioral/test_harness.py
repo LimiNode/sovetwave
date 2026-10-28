@@ -33,6 +33,7 @@ from run_model_evals import (
     reported_tokens_from_stderr,
     run_variant,
     parse_claude_stream,
+    parse_claude_tool_events_with_status,
     parse_claude_tool_events,
     parse_codex_json_stream,
     prepare_claude_settings,
@@ -1736,6 +1737,7 @@ class BehavioralHarnessTests(unittest.TestCase):
                 "id": "call-1", "type": "command_execution", "status": "completed",
                 "exit_code": 0, "path": "C:\\tmp\\result.txt", "stdout": "done",
             }}),
+            json.dumps({"type": "turn.completed"}),
         ])
         parsed = parse_codex_json_stream(stream)
         self.assertEqual(len(parsed["tool_events"]), 2)
@@ -1749,6 +1751,28 @@ class BehavioralHarnessTests(unittest.TestCase):
         self.assertNotIn("preview", parsed["tool_events"][1]["stdout"])
         self.assertEqual(len(parsed["tool_events"][1]["stdout"]["sha256"]), 64)
         self.assertEqual(parsed["tool_events_status"], "complete")
+
+    def test_codex_tool_event_status_requires_terminal_marker(self) -> None:
+        stream = json.dumps({"type": "item.completed", "item": {"id": "call-1", "type": "command_execution"}})
+        parsed = parse_codex_json_stream(stream)
+        self.assertEqual(parsed["tool_events_status"], "incomplete")
+
+    def test_claude_tool_event_status_requires_terminal_result(self) -> None:
+        stream = json.dumps({"type": "assistant", "message": {"content": [
+            {"type": "tool_use", "id": "call-1", "name": "Write"},
+        ]}})
+        _, status = parse_claude_tool_events_with_status(stream)
+        self.assertEqual(status, "incomplete")
+
+    def test_claude_tool_event_status_accepts_terminal_result(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "id": "call-1", "name": "Write"},
+            ]}}),
+            json.dumps({"type": "result", "result": "Answer"}),
+        ])
+        _, status = parse_claude_tool_events_with_status(stream)
+        self.assertEqual(status, "complete")
 
     def test_tool_event_redaction_does_not_retain_arbitrary_output_or_absolute_path(self) -> None:
         parsed = parse_codex_json_stream(json.dumps({

@@ -27,8 +27,11 @@ outcome when exposed, exit status, relative artifact identity, and a digest
 plus byte count for textual result fields. Arbitrary result previews are not
 retained. Absolute workspace paths are marked unavailable rather than reduced
 to a basename. Each trace carries `tool_events_status`: `complete`,
-`truncated`, `unavailable`, or `parse_error`. The review bundle applies a
-second allow-list and event-count bound.
+`incomplete`, `truncated`, `unavailable`, or `parse_error`. `complete` is
+reserved for a syntactically valid, untruncated provider stream with its
+provider-specific terminal marker (`turn.completed` for Codex or `result` for
+Claude). A syntactically valid stream without that marker is `incomplete`.
+The review bundle applies a second allow-list and event-count bound.
 
 The normalized event contract is deliberately small:
 
@@ -43,9 +46,12 @@ exit_code      = integer when exposed
 path_status    = known_relative | unavailable
 ```
 
-The scorer consumes only canonical `event` values. A Claude `tool_result`
-without an explicit exit code remains a completion record, not proof of a
-successful shell process.
+The scorer consumes only canonical `event` values and uses physical JSONL line
+order as the lifecycle order. An optional provider `sequence` is validated as
+a positive, strictly increasing consistency check; it never overrides line
+order. A malformed, duplicate, partial, or contradictory sequence makes the
+trajectory not assessable. A Claude `tool_result` without an explicit exit
+code remains a completion record, not proof of a successful shell process.
 
 The offline pilot emits independent fields:
 

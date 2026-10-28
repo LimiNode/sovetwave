@@ -75,6 +75,25 @@ class BenchmarkReliabilityPilotTests(unittest.TestCase):
         result = evaluate(self.task, events, self.fixture_root / "good-workspace")
         self.assertEqual(result["assertion_status"], "not_assessable")
 
+    def test_physical_order_wins_over_forged_sequence(self) -> None:
+        events = [
+            {"event": "completed", "sequence": 99, "call_id": "call-1", "tool_name": "write_file", "status": "completed", "exit_code": 0, "path": "result.txt", "artifact_action": "created", "artifact_sha256": self.task["expected_sha256"]},
+            {"event": "invoked", "sequence": 1, "call_id": "call-1", "tool_name": "write_file", "permission": "allowed", "path": "result.txt"},
+        ]
+        result = evaluate(self.task, events, self.fixture_root / "good-workspace")
+        self.assertEqual(result["sequence_status"], "invalid_order")
+        self.assertEqual(result["assertion_status"], "not_assessable")
+        self.assertNotEqual(result["process_status"], "completed")
+
+    def test_partial_sequence_is_not_assessable(self) -> None:
+        events = [
+            {"event": "invoked", "sequence": 1, "call_id": "call-1", "tool_name": "write_file", "permission": "allowed", "path": "result.txt"},
+            {"event": "completed", "call_id": "call-1", "tool_name": "write_file", "status": "completed", "exit_code": 0, "path": "result.txt", "artifact_action": "created", "artifact_sha256": self.task["expected_sha256"]},
+        ]
+        result = evaluate(self.task, events, self.fixture_root / "good-workspace")
+        self.assertEqual(result["sequence_status"], "invalid_missing")
+        self.assertEqual(result["assertion_status"], "not_assessable")
+
     def test_preexisting_matching_artifact_without_provenance_is_not_a_pass(self) -> None:
         events = [
             {"event": "invoked", "call_id": "call-1", "tool_name": "write_file", "permission": "allowed", "path": "result.txt"},
@@ -115,6 +134,7 @@ class BenchmarkReliabilityPilotTests(unittest.TestCase):
                 "status": "completed", "exit_code": 0,
                 "artifact_action": "created", "artifact_sha256": expected_sha,
             }}),
+            json.dumps({"type": "turn.completed"}),
         ])
         parsed = parse_codex_json_stream(stream)
         with tempfile.TemporaryDirectory() as directory:

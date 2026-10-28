@@ -12,7 +12,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = ROOT / "evals" / "behavioral" / "fixtures" / "benchmark-reliability"
-TRAJECTORY_STATUSES = {"complete", "truncated", "unavailable", "parse_error"}
+TRAJECTORY_STATUSES = {"complete", "incomplete", "truncated", "unavailable", "parse_error"}
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -86,9 +86,30 @@ def _event_targets(event: dict[str, Any], artifact_path: str, tool_name: str | N
     return True
 
 
-def _event_sequence(event: dict[str, Any], fallback: int) -> int:
-    value = event.get("sequence")
-    return value if isinstance(value, int) and not isinstance(value, bool) else fallback
+def _validate_event_sequences(events: list[dict[str, Any]]) -> tuple[bool, str, str | None]:
+    """Validate optional telemetry sequence fields without trusting them for ordering."""
+    lifecycle_events = [
+        event for event in events
+        if event.get("event") in {"invoked", "updated", "completed", "unknown"}
+    ]
+    sequenced = [event for event in lifecycle_events if "sequence" in event]
+    if not sequenced:
+        return True, "not_provided", None
+    if len(sequenced) != len(lifecycle_events):
+        return False, "invalid_missing", "sequence_missing_for_lifecycle_event"
+    values: list[int] = []
+    for event in sequenced:
+        value = event.get("sequence")
+        if not isinstance(value, int) or isinstance(value, bool):
+            return False, "invalid_type", "sequence_must_be_integer"
+        if value <= 0:
+            return False, "invalid_value", "sequence_must_be_positive"
+        values.append(value)
+    if len(values) != len(set(values)):
+        return False, "invalid_duplicate", "sequence_values_must_be_unique"
+    if any(current <= previous for previous, current in zip(values, values[1:])):
+        return False, "invalid_order", "sequence_must_increase_with_jsonl_order"
+    return True, "valid", None
 
 
 def _artifact_report(event: dict[str, Any]) -> tuple[str | None, str | None]:
@@ -118,6 +139,7 @@ def evaluate(
     required_tool = task.get("tool_name")
     if required_tool is not None and not isinstance(required_tool, str):
         raise ValueError("task tool_name must be a string when present")
+    sequence_valid, sequence_status, sequence_diagnostic = _validate_event_sequences(events)
     claims = [event for event in events if event.get("event") == "agent_result"]
     invocations = [event for index, event in enumerate(events, 1)
                    if event.get("event") == "invoked"
@@ -134,7 +156,6 @@ def evaluate(
     attempt_completions: list[dict[str, Any] | None] = []
     for invocation in invocations:
         call_id = invocation.get("call_id")
-        invocation_sequence = _event_sequence(invocation, positions[id(invocation)])
         if not isinstance(call_id, str) or not call_id:
             attempts.append({
                 "call_id": None,
@@ -146,7 +167,7 @@ def evaluate(
         linked = [
             completion for completion in completions
             if completion.get("call_id") == call_id
-            and _event_sequence(completion, positions[id(completion)]) > invocation_sequence
+            and positions[id(completion)] > positions[id(invocation)]
         ]
         if len(linked) != 1:
             attempts.append({
@@ -196,8 +217,7 @@ def evaluate(
         if completion.get("call_id") in valid_call_ids
         and any(
             invocation.get("call_id") == completion.get("call_id")
-            and _event_sequence(completion, positions[id(completion)])
-                > _event_sequence(invocation, positions[id(invocation)])
+            and positions[id(completion)] > positions[id(invocation)]
             for invocation in invocations
         )
     ]
@@ -246,6 +266,10 @@ def evaluate(
 
     if permission_status == "denied" and assertion_status == "passed":
         assertion_status = "failed"
+    if not sequence_valid:
+        process_status = "not_assessable"
+        assertion_status = "not_assessable"
+        artifact_produced = None
 
     return {
         "agent_claimed": any(event.get("claimed") is True for event in claims),
@@ -258,6 +282,8 @@ def evaluate(
         "permission_status": permission_status,
         "process_status": process_status,
         "trajectory_status": trajectory_status,
+        "sequence_status": sequence_status,
+        "sequence_diagnostic": sequence_diagnostic,
         "attempts": attempts,
         "artifact_identity": artifact,
         "artifact_verified": artifact["verified"],
