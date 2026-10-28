@@ -527,6 +527,8 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
     candidate_events = 0
     parse_errors = 0
     terminal_event_observed = False
+    lifecycle_valid = True
+    active_tool_ids: set[str] = set()
     tool_metadata: dict[str, dict[str, Any]] = {}
     for line in (stream or "").splitlines():
         try:
@@ -550,13 +552,18 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
             if block_type == "tool_use" and isinstance(block.get("name"), str):
                 sequence += 1
                 candidate_events += 1
+                call_id = block.get("id")
+                if not isinstance(call_id, str) or not call_id or call_id in active_tool_ids:
+                    lifecycle_valid = False
+                else:
+                    active_tool_ids.add(call_id)
                 if len(events) >= MAX_TOOL_EVENTS:
                     continue
                 record: dict[str, Any] = {
                     "sequence": sequence,
                     "event": "invoked",
                     "provider_event": "tool_use",
-                    "call_id": block.get("id"),
+                    "call_id": call_id,
                     "tool_name": block["name"],
                     "permission": "not_available",
                 }
@@ -579,9 +586,13 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
             elif block_type == "tool_result":
                 sequence += 1
                 candidate_events += 1
+                call_id = block.get("tool_use_id")
+                if not isinstance(call_id, str) or call_id not in active_tool_ids:
+                    lifecycle_valid = False
+                else:
+                    active_tool_ids.remove(call_id)
                 if len(events) >= MAX_TOOL_EVENTS:
                     continue
-                call_id = block.get("tool_use_id")
                 metadata = tool_metadata.get(call_id, {}) if isinstance(call_id, str) else {}
                 record = {
                     "sequence": sequence,
@@ -604,6 +615,8 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
     elif candidate_events > MAX_TOOL_EVENTS:
         status = "truncated"
     elif not terminal_event_observed:
+        status = "incomplete"
+    elif not lifecycle_valid or active_tool_ids:
         status = "incomplete"
     else:
         status = "complete"
@@ -751,6 +764,8 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     tool_event_candidates = 0
     parse_errors = 0
     terminal_event_observed = False
+    lifecycle_valid = True
+    active_tool_ids: set[str] = set()
 
     def safe_reference_path(value: Any) -> str | None:
         if not isinstance(value, str):
@@ -804,6 +819,22 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
             )
             if tool_event is not None:
                 tool_event_candidates += 1
+                item_id = item.get("id")
+                if event_type == "item.started":
+                    if not isinstance(item_id, str) or not item_id or item_id in active_tool_ids:
+                        lifecycle_valid = False
+                    else:
+                        active_tool_ids.add(item_id)
+                elif event_type in {"item.completed", "item.failed"}:
+                    if not isinstance(item_id, str) or item_id not in active_tool_ids:
+                        lifecycle_valid = False
+                    else:
+                        active_tool_ids.remove(item_id)
+                elif event_type == "item.updated":
+                    if not isinstance(item_id, str) or item_id not in active_tool_ids:
+                        lifecycle_valid = False
+                else:
+                    lifecycle_valid = False
                 if len(tool_events) < MAX_TOOL_EVENTS:
                     tool_events.append(tool_event)
             item_type = item.get("type", "")
@@ -853,6 +884,8 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     elif tool_event_candidates > MAX_TOOL_EVENTS:
         tool_events_status = "truncated"
     elif not terminal_event_observed:
+        tool_events_status = "incomplete"
+    elif not lifecycle_valid or active_tool_ids:
         tool_events_status = "incomplete"
     else:
         tool_events_status = "complete"

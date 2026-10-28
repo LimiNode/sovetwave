@@ -1757,6 +1757,14 @@ class BehavioralHarnessTests(unittest.TestCase):
         parsed = parse_codex_json_stream(stream)
         self.assertEqual(parsed["tool_events_status"], "incomplete")
 
+    def test_codex_terminal_marker_requires_closed_lifecycle(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "item.started", "item": {"id": "call-1", "type": "command_execution"}}),
+            json.dumps({"type": "turn.completed"}),
+        ])
+        parsed = parse_codex_json_stream(stream)
+        self.assertEqual(parsed["tool_events_status"], "incomplete")
+
     def test_claude_tool_event_status_requires_terminal_result(self) -> None:
         stream = json.dumps({"type": "assistant", "message": {"content": [
             {"type": "tool_use", "id": "call-1", "name": "Write"},
@@ -1769,10 +1777,23 @@ class BehavioralHarnessTests(unittest.TestCase):
             json.dumps({"type": "assistant", "message": {"content": [
                 {"type": "tool_use", "id": "call-1", "name": "Write"},
             ]}}),
+            json.dumps({"type": "user", "message": {"content": [
+                {"type": "tool_result", "tool_use_id": "call-1", "is_error": False},
+            ]}}),
             json.dumps({"type": "result", "result": "Answer"}),
         ])
         _, status = parse_claude_tool_events_with_status(stream)
         self.assertEqual(status, "complete")
+
+    def test_claude_terminal_result_requires_closed_lifecycle(self) -> None:
+        stream = "\n".join([
+            json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "id": "call-1", "name": "Write"},
+            ]}}),
+            json.dumps({"type": "result", "result": "Answer"}),
+        ])
+        _, status = parse_claude_tool_events_with_status(stream)
+        self.assertEqual(status, "incomplete")
 
     def test_tool_event_redaction_does_not_retain_arbitrary_output_or_absolute_path(self) -> None:
         parsed = parse_codex_json_stream(json.dumps({
@@ -1846,10 +1867,14 @@ class BehavioralHarnessTests(unittest.TestCase):
 
     def test_run_variant_records_provider_tool_events(self) -> None:
         case = {"id": "sample", "prompt": "Explain."}
-        stream = json.dumps({
-            "type": "item.completed",
-            "item": {"id": "call-1", "type": "command_execution", "status": "completed", "exit_code": 0},
-        }) + "\n" + json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1}})
+        stream = "\n".join([
+            json.dumps({"type": "item.started", "item": {"id": "call-1", "type": "command_execution"}}),
+            json.dumps({
+                "type": "item.completed",
+                "item": {"id": "call-1", "type": "command_execution", "status": "completed", "exit_code": 0},
+            }),
+            json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1}}),
+        ])
         completed = subprocess.CompletedProcess(["codex"], 0, stdout=stream, stderr="")
         with patch("run_model_evals.execute_command", return_value=completed):
             result = run_variant("codex", case, False, None, 30, False)

@@ -30,7 +30,8 @@ to a basename. Each trace carries `tool_events_status`: `complete`,
 `incomplete`, `truncated`, `unavailable`, or `parse_error`. `complete` is
 reserved for a syntactically valid, untruncated provider stream with its
 provider-specific terminal marker (`turn.completed` for Codex or `result` for
-Claude). A syntactically valid stream without that marker is `incomplete`.
+Claude), with no unclosed tool lifecycle. A syntactically valid stream without
+that marker or with an unclosed lifecycle is `incomplete`.
 The review bundle applies a second allow-list and event-count bound.
 
 The normalized event contract is deliberately small:

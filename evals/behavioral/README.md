@@ -313,8 +313,9 @@ only byte count and digest, never an arbitrary preview. Each provider parser
 also records whether the trajectory is `complete`, `incomplete`, `truncated`,
 `unavailable`, or affected by a `parse_error`. `complete` requires the
 provider-specific terminal event (`turn.completed` for Codex or `result` for
-Claude); an absent terminal marker is `incomplete`. An absent or incomplete
-trace is unknown telemetry, not proof that no tool was used. `status`/`process_status` describe
+Claude) and a closed tool lifecycle; an absent terminal marker or unclosed
+lifecycle is `incomplete`. An absent or incomplete trace is unknown telemetry,
+not proof that no tool was used. `status`/`process_status` describe
 the CLI process; `semantic_status` is `unrated` until a human or LLM grader
 checks the assertions.
 
