@@ -129,11 +129,12 @@
     },
     {
       "id": "verification-runtime-trace-scope",
-      "prompt": "Реальный execution trace на revision `def456`, с конфигурацией `storage.backend=postgresql` и входом `job-17`, показывает маршрут `TaskManager::submit` → `StorageAdapter::enqueue` → `PostgreSQLStorage::insert`. Другие конфигурации и состояния в trace не наблюдались. Как сформулировать подтверждённый вывод и его границы?",
+      "prompt": "Реальный execution trace на revision `def456`, с конфигурацией `storage.backend=postgresql` и входом `job-17`, показывает маршрут `TaskManager::submit` → `StorageAdapter::enqueue` → `PostgreSQLStorage::insert`. Trace не фиксирует успешный commit транзакции или durable persistence. Другие конфигурации и состояния в trace не наблюдались. Как сформулировать подтверждённый вывод и его границы?",
       "assertions": [
-        "recognizes the observed route to the PostgreSQL storage component as confirmed for the traced execution",
+        "recognizes that the trace confirms reaching the PostgreSQL storage component for the traced execution",
         "records the revision, configuration, input, and observation scope of the trace",
         "does not generalize the observed route to every configuration, input, state, or deployment",
+        "does not infer a successful transaction commit or durable persistence from observing the insert call alone",
         "does not dismiss the trace as useless merely because it has bounded coverage"
       ]
     }

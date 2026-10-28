@@ -100,11 +100,12 @@
     },
     {
       "id": "architecture-narrow-diagram-scope",
-      "prompt": "На закреплённой revision схема проверена для одного конкретного runtime path: `HTTP handler` → `ImportService` → `ObjectStore`. Автор явно ограничил её этим маршрутом и не заявлял полную архитектуру репозитория. Достаточна ли такая схема и что именно можно о ней заключить?",
+      "prompt": "На закреплённой revision просмотренные исходники подтверждают статические отношения `HTTP handler` → `ImportService` → `ObjectStore`. Реального execution trace нет. Автор явно ограничил схему этим конкретным runtime path и не заявлял полную архитектуру репозитория. Достаточна ли такая схема и что именно можно о ней заключить?",
       "assertions": [
-        "accepts the diagram within its explicitly declared and verified runtime-path scope",
+        "accepts the diagram as correct within its declared scope because source inspection supports the represented static relationships",
         "does not require a repository-wide call graph when completeness was neither promised nor required",
-        "distinguishes correctness of the represented elements from completeness of the architecture model",
+        "distinguishes source-supported static correctness from model completeness and the absence of runtime observation",
+        "does not describe the represented path as observed execution when no execution trace exists",
         "does not treat the model's narrow scope as a defect without a requirement for broader coverage"
       ]
     }
