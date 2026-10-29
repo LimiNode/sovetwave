@@ -40,6 +40,13 @@ The manifest is a design-only artifact. Its declared state is
 or overlay hash is fail-closed: it blocks execution readiness rather than being
 treated as a successful preflight.
 
+This validator has no execution-preflight authority. It reports structural
+design validity, provenance verification, allocation verification, and the
+absence of verified fixture/runtime bindings separately, but it always leaves
+`execution_ready=false`. Any transition to execution readiness requires a
+separate reviewed preflight that verifies real fixtures, graders, and runtime
+bindings; non-empty strings or dictionaries are not evidence of those facts.
+
 ## Shared task contract
 
 All arms must receive the same four tasks and expected outputs from the
@@ -94,4 +101,5 @@ python -m pytest -q tests/behavioral/test_experiment_readiness.py
 These checks validate hashes, arm identity, task-contract consistency,
 allocation replay, and the explicit no-model-call boundary. The self-test
 passes only the design validation; its reported execution state remains
-blocked until fixtures and runtime bindings are supplied.
+blocked until a separate execution preflight verifies fixtures, graders, and
+runtime bindings.

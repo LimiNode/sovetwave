@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "status": "design_valid_execution_blocked",
+  "validator_scope": "design_only",
   "design_valid": true,
   "task_fixtures_bound": false,
   "runtime_bound": false,

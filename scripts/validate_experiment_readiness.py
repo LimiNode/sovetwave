@@ -113,18 +113,22 @@ def _resolve_repository_path(relative_path: Any) -> tuple[Path | None, str | Non
 def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
     manifest = load_manifest() if manifest is None else manifest
     errors: list[str] = []
+    design_errors: list[str] = []
 
     def check(condition: bool, message: str) -> None:
         if not condition:
             errors.append(message)
+            design_errors.append(message)
 
     check(isinstance(manifest, dict), "manifest must be an object")
     if not isinstance(manifest, dict):
         return {
             "status": "INVALID",
             "design_valid": False,
-            "task_fixtures_bound": False,
-            "runtime_bound": False,
+            "provenance_verified": False,
+            "allocation_plan_verified": False,
+            "task_fixtures_verified": False,
+            "runtime_verified": False,
             "execution_ready": False,
             "model_calls": 0,
             "errors": errors,
@@ -132,10 +136,11 @@ def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
 
     check(manifest.get("schema_version") == 1, "schema_version must be 1")
     check(manifest.get("status") == "design_valid_execution_blocked", "manifest status must declare design-only execution blocking")
+    check(manifest.get("validator_scope") == "design_only", "validator_scope must be design_only")
     check(manifest.get("design_valid") is True, "design_valid must be true for this design manifest")
-    check(isinstance(manifest.get("task_fixtures_bound"), bool), "task_fixtures_bound must be boolean")
-    check(isinstance(manifest.get("runtime_bound"), bool), "runtime_bound must be boolean")
-    check(isinstance(manifest.get("execution_ready"), bool), "execution_ready must be boolean")
+    check(manifest.get("task_fixtures_bound") is False, "design-only manifest must not claim bound task fixtures")
+    check(manifest.get("runtime_bound") is False, "design-only manifest must not claim runtime bindings")
+    check(manifest.get("execution_ready") is False, "design-only manifest must declare execution_ready=false")
 
     harness = manifest.get("harness")
     arms = manifest.get("arms")
@@ -151,8 +156,10 @@ def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
         return {
             "status": "INVALID",
             "design_valid": False,
-            "task_fixtures_bound": bool(manifest.get("task_fixtures_bound")),
-            "runtime_bound": bool(manifest.get("runtime_bound")),
+            "provenance_verified": False,
+            "allocation_plan_verified": False,
+            "task_fixtures_verified": False,
+            "runtime_verified": False,
             "execution_ready": False,
             "model_calls": 0,
             "errors": errors,
@@ -182,7 +189,6 @@ def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
         check(frozen.get("skill_mode") == "production_frozen", "frozen arm identity is inconsistent")
         check(overlay_arm.get("skill_mode") == "production_frozen_plus_research_overlay", "overlay arm identity is inconsistent")
 
-    identity_errors_before_provenance = len(errors)
     if set(arms_by_id) == EXPECTED_ARMS:
         frozen = arms_by_id["sovetwave-frozen"]
         overlay_arm = arms_by_id["sovetwave-explicit-ladder"]
@@ -203,7 +209,8 @@ def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
             errors.append(f"overlay cannot be read: {error}")
         else:
             overlay_hash_verified = observed_overlay_hash == arms_by_id.get("sovetwave-explicit-ladder", {}).get("overlay_sha256")
-            check(overlay_hash_verified, "overlay hash does not match the manifest at overlay_path")
+            if not overlay_hash_verified:
+                errors.append("overlay hash does not match the manifest at overlay_path")
 
     revision_resolved = isinstance(recorded_revision, str) and _git_revision_available(recorded_revision)
     skill_hash_verified = False
@@ -218,19 +225,22 @@ def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
         elif not skill_hash_verified:
             errors.append("frozen skill tree hash does not match the manifest")
 
-    runtime_values = (runtime.get("model_id"), runtime.get("host_endpoint"), runtime.get("tool_surface"), runtime.get("permissions_profile"), runtime.get("environment_snapshot"))
-    runtime_bound = manifest.get("runtime_bound") is True and all(value is not None for value in runtime_values)
-    if manifest.get("runtime_bound") is True and not runtime_bound:
-        errors.append("runtime_bound=true requires model, host, tool, permission, and environment bindings")
-    if manifest.get("runtime_bound") is False and any(value is not None for value in runtime_values):
-        errors.append("runtime bindings must remain null while runtime_bound=false")
+    runtime_values = (
+        runtime.get("model_id"),
+        runtime.get("host_endpoint"),
+        runtime.get("tool_surface"),
+        runtime.get("permissions_profile"),
+        runtime.get("environment_snapshot"),
+    )
+    check(not any(value is not None for value in runtime_values), "design-only runtime bindings must remain null")
+    runtime_verified = False
 
-    task_fixtures_bound = manifest.get("task_fixtures_bound") is True
     fixture_info = manifest.get("task_fixtures")
-    if task_fixtures_bound and not isinstance(fixture_info, dict):
-        errors.append("task_fixtures_bound=true requires task_fixtures metadata")
-    if not task_fixtures_bound and isinstance(fixture_info, dict) and fixture_info.get("status") != "not_bound":
-        errors.append("unbound task fixtures must declare status=not_bound")
+    check(isinstance(fixture_info, dict), "task_fixtures must be an object")
+    if isinstance(fixture_info, dict):
+        check(fixture_info.get("status") == "not_bound", "design-only task fixtures must declare status=not_bound")
+        check(fixture_info.get("paths") == [], "design-only task fixture paths must remain empty")
+    task_fixtures_verified = False
 
     allocation_plan_verified = False
     try:
@@ -251,7 +261,8 @@ def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
             position_counts[row["arm_id"]][row["block_position"] - 1] += 1
         check(len({tuple(counts) for counts in position_counts.values()}) == 1, "arm order is not balanced across block positions")
 
-    design_valid = not errors[:identity_errors_before_provenance]
+    design_valid = not design_errors
+    provenance_verified = revision_resolved and skill_hash_verified and overlay_hash_verified
     blockers: list[str] = []
     if not revision_resolved:
         blockers.append("frozen reference revision is unavailable")
@@ -259,19 +270,18 @@ def validate_manifest(manifest: dict[str, Any] | None = None) -> dict[str, Any]:
         blockers.append("frozen skill tree hash is not verified")
     if not overlay_hash_verified:
         blockers.append("research overlay hash is not verified")
-    if not task_fixtures_bound:
-        blockers.append("repository task fixtures are not bound")
-    if not runtime_bound:
-        blockers.append("runtime bindings are not bound")
+    blockers.append("repository task fixtures require a separate execution preflight")
+    blockers.append("runtime bindings require a separate execution preflight")
     if not allocation_plan_verified:
         blockers.append("allocation plan is not verified")
-    execution_ready = design_valid and revision_resolved and skill_hash_verified and overlay_hash_verified and task_fixtures_bound and runtime_bound and allocation_plan_verified
-    status = "PASS" if execution_ready else ("BLOCKED" if design_valid else "INVALID")
+    execution_ready = False
+    status = "BLOCKED" if design_valid else "INVALID"
     return {
         "status": status,
         "design_valid": design_valid,
-        "task_fixtures_bound": task_fixtures_bound,
-        "runtime_bound": runtime_bound,
+        "provenance_verified": provenance_verified,
+        "task_fixtures_verified": task_fixtures_verified,
+        "runtime_verified": runtime_verified,
         "execution_ready": execution_ready,
         "skill_revision_resolved": revision_resolved,
         "skill_tree_hash_verified": skill_hash_verified,
@@ -295,7 +305,7 @@ def main() -> int:
         print("Experiment readiness manifest self-test: PASS (design valid; execution blocked)")
         return 0
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0 if result["status"] == "PASS" else 2
+    return 2
 
 
 if __name__ == "__main__":
