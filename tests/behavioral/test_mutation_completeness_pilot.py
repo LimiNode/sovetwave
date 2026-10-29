@@ -10,8 +10,11 @@ from mutation_completeness_pilot import (  # noqa: E402
     STATUS_INVALID,
     STATUS_KILLED,
     STATUS_NOT_EXECUTED,
+    STATUS_SURVIVED,
     build_report,
     contract_hash,
+    evaluate_candidate,
+    reference_candidates,
     selftest,
 )
 
@@ -23,7 +26,55 @@ class MutationCompletenessPilotTests(unittest.TestCase):
         self.assertEqual(statuses["good"], "pass")
         self.assertEqual(statuses["incomplete"], "reject")
         self.assertEqual(statuses["contract_violation"], "reject")
+        self.assertEqual(statuses["success_error_code"], "reject")
         self.assertEqual(statuses["unsafe"], "reject")
+
+    def test_completeness_dimensions_follow_the_failed_property(self) -> None:
+        report = build_report()
+        evaluations = {
+            item["mutation_id"]: item["evaluation"]
+            for item in report["mutation_results"]
+            if "evaluation" in item
+        }
+        expected = {
+            "missing-boundary-check": {
+                "requirements_complete": False,
+                "public_contract_preserved": True,
+                "negative_scenarios": True,
+            },
+            "incorrect-identifier-mapping": {
+                "requirements_complete": False,
+                "public_contract_preserved": True,
+                "negative_scenarios": True,
+            },
+            "incorrect-error-handling": {
+                "requirements_complete": True,
+                "public_contract_preserved": True,
+                "negative_scenarios": False,
+            },
+            "missing-required-output": {
+                "requirements_complete": False,
+                "public_contract_preserved": True,
+                "negative_scenarios": False,
+            },
+            "removed-security-check": {
+                "requirements_complete": True,
+                "public_contract_preserved": True,
+                "negative_scenarios": False,
+                "security_checks_preserved": False,
+            },
+        }
+        for mutation_id, dimensions in expected.items():
+            with self.subTest(mutation_id=mutation_id):
+                self.assertEqual(
+                    {key: evaluations[mutation_id]["completeness"][key] for key in dimensions},
+                    dimensions,
+                )
+
+        success_error = evaluate_candidate(reference_candidates()["success_error_code"])
+        self.assertEqual(success_error["status"], "reject")
+        self.assertFalse(success_error["completeness"]["public_contract_preserved"])
+        self.assertTrue(any("error_code=None" in finding["message"] for finding in success_error["findings"]))
 
     def test_mutation_statuses_are_distinct_and_explainable(self) -> None:
         report = build_report()
@@ -38,6 +89,8 @@ class MutationCompletenessPilotTests(unittest.TestCase):
             self.assertEqual(results[mutation_id]["status"], STATUS_KILLED)
         self.assertEqual(results["equivalent-no-op"]["status"], STATUS_INVALID)
         self.assertEqual(results["untrusted-generated-code"]["status"], STATUS_NOT_EXECUTED)
+        self.assertEqual(results["unobserved-extra-output"]["status"], STATUS_SURVIVED)
+        self.assertEqual(results["malformed-fixture"]["status"], STATUS_INVALID)
         self.assertIn("isolation", results["untrusted-generated-code"]["reason"])
 
     def test_experiment_arms_share_contract_but_have_no_results(self) -> None:

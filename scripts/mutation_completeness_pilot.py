@@ -28,6 +28,7 @@ TASK_CONTRACT: dict[str, Any] = {
     "id_map_contract": {
         "success_ids": ["a", "b", "c"],
         "expected_values": {"a": 10, "b": 20, "c": 30},
+        "success": {"status": "ok", "error_code": None},
         "rejection": {"status": "error", "items": [], "error_code": "unknown_id"},
     },
     "safe_path_contract": {
@@ -107,6 +108,9 @@ def reference_candidates() -> dict[str, Candidate]:
     contract_violation_outputs = copy.deepcopy(good_outputs)
     contract_violation_outputs["id_map_contract"]["rejection"].pop("error_code")
 
+    success_error_outputs = copy.deepcopy(good_outputs)
+    success_error_outputs["id_map_contract"]["success"]["error_code"] = "unexpected"
+
     unsafe_outputs = copy.deepcopy(good_outputs)
     unsafe_outputs["safe_path_contract"]["rejection"].update(
         {"status": "written", "side_effect": True, "reason": "outside_root"}
@@ -116,6 +120,7 @@ def reference_candidates() -> dict[str, Candidate]:
         "good": Candidate("good", good_outputs, loc=42, independent_invariants=4),
         "incomplete": Candidate("incomplete", incomplete_outputs, loc=18, independent_invariants=1),
         "contract_violation": Candidate("contract_violation", contract_violation_outputs, loc=39, independent_invariants=3),
+        "success_error_code": Candidate("success_error_code", success_error_outputs, loc=41, independent_invariants=3),
         "unsafe": Candidate("unsafe", unsafe_outputs, loc=36, independent_invariants=3),
     }
 
@@ -128,6 +133,8 @@ def _check_id_map(outputs: dict[str, dict[str, Any]]) -> list[Finding]:
         findings.append(Finding("id_map_contract", "required_output", "success output is missing a required field"))
     if success.get("status") != "ok":
         findings.append(Finding("id_map_contract", "contract", "success result does not preserve status=ok"))
+    if success.get("error_code") is not None:
+        findings.append(Finding("id_map_contract", "contract", "successful result must carry error_code=None"))
     items = success.get("items")
     if not isinstance(items, list):
         findings.append(Finding("id_map_contract", "required_output", "success items must be a list"))
@@ -141,6 +148,8 @@ def _check_id_map(outputs: dict[str, dict[str, Any]]) -> list[Finding]:
         if isinstance(item, dict) and expected_values.get(item.get("id")) != item.get("value"):
             findings.append(Finding("id_map_contract", "identifier_mapping", "id-to-value mapping is incorrect"))
     rejection = outputs["rejection"]
+    if not required.issubset(rejection):
+        findings.append(Finding("id_map_contract", "required_output", "rejection output is missing a required field"))
     if rejection != TASK_CONTRACT["id_map_contract"]["rejection"]:
         findings.append(Finding("id_map_contract", "error_handling", "unknown id must be rejected with the stable error contract"))
     return findings
@@ -172,7 +181,7 @@ def evaluate_candidate(candidate: Candidate) -> dict[str, Any]:
         "status": "pass" if not findings else "reject",
         "findings": [finding.__dict__ for finding in findings],
         "completeness": {
-            "requirements_complete": axes["required_output"] and axes["boundary"],
+            "requirements_complete": axes["required_output"] and axes["boundary"] and axes["identifier_mapping"],
             "public_contract_preserved": axes["contract"],
             "negative_scenarios": axes["error_handling"] and axes["security"],
             "error_handling_preserved": axes["error_handling"],
@@ -216,6 +225,18 @@ def _remove_security_check(candidate: Candidate) -> Candidate:
     return replace(candidate, name=f"{candidate.name}:drop-security-check", outputs=outputs)
 
 
+def _add_unobserved_output(candidate: Candidate) -> Candidate:
+    outputs = copy.deepcopy(candidate.outputs)
+    outputs["id_map_contract"]["success"]["diagnostic"] = "extra-but-allowed"
+    return replace(candidate, name=f"{candidate.name}:extra-output", outputs=outputs)
+
+
+def _malformed_structure(candidate: Candidate) -> Candidate:
+    outputs = copy.deepcopy(candidate.outputs)
+    outputs["id_map_contract"]["success"] = ["not", "an", "output-object"]
+    return replace(candidate, name=f"{candidate.name}:malformed", outputs=outputs)
+
+
 def mutation_specs() -> list[MutationSpec]:
     return [
         MutationSpec("missing-boundary-check", "omit the last required item", _drop_boundary),
@@ -223,7 +244,9 @@ def mutation_specs() -> list[MutationSpec]:
         MutationSpec("incorrect-identifier-mapping", "swap two identifier values", _swap_mapping),
         MutationSpec("missing-required-output", "remove a required error field", _remove_required_output),
         MutationSpec("removed-security-check", "allow an outside-root side effect", _remove_security_check),
+        MutationSpec("unobserved-extra-output", "add an output field outside this contract", _add_unobserved_output),
         MutationSpec("equivalent-no-op", "attempt a mutation that changes no trusted fixture", lambda candidate: candidate),
+        MutationSpec("malformed-fixture", "replace an output object with an invalid structure", _malformed_structure),
         MutationSpec(
             "untrusted-generated-code",
             "execute a generated-code mutation only inside a future isolated grader",
@@ -238,10 +261,28 @@ def run_mutation(spec: MutationSpec, candidate: Candidate) -> dict[str, Any]:
         return {"mutation_id": spec.mutation_id, "description": spec.description, "status": STATUS_NOT_EXECUTED, "reason": "isolation boundary is not established"}
     if spec.apply is None:
         return {"mutation_id": spec.mutation_id, "description": spec.description, "status": STATUS_INVALID, "reason": "no mutation operator"}
-    mutated = spec.apply(candidate)
+    try:
+        mutated = spec.apply(candidate)
+    except (AttributeError, KeyError, IndexError, TypeError, ValueError) as error:
+        return {
+            "mutation_id": spec.mutation_id,
+            "description": spec.description,
+            "status": STATUS_INVALID,
+            "reason": f"mutation operator failed: {type(error).__name__}",
+        }
     if mutated is None or mutated.outputs == candidate.outputs:
         return {"mutation_id": spec.mutation_id, "description": spec.description, "status": STATUS_INVALID, "reason": "operator did not produce a distinct fixture"}
-    evaluation = evaluate_candidate(mutated)
+    if not isinstance(mutated, Candidate):
+        return {"mutation_id": spec.mutation_id, "description": spec.description, "status": STATUS_INVALID, "reason": "operator did not return a Candidate"}
+    try:
+        evaluation = evaluate_candidate(mutated)
+    except (AttributeError, KeyError, IndexError, TypeError, ValueError) as error:
+        return {
+            "mutation_id": spec.mutation_id,
+            "description": spec.description,
+            "status": STATUS_INVALID,
+            "reason": f"mutated fixture is structurally invalid: {type(error).__name__}",
+        }
     return {
         "mutation_id": spec.mutation_id,
         "description": spec.description,
@@ -285,8 +326,12 @@ def selftest() -> dict[str, Any]:
     report = build_report()
     references = {item["candidate"]: item for item in report["reference_results"]}
     assert references["good"]["status"] == "pass"
-    for name in ("incomplete", "contract_violation", "unsafe"):
+    for name in ("incomplete", "contract_violation", "success_error_code", "unsafe"):
         assert references[name]["status"] == "reject", name
+    assert any(
+        finding["axis"] == "contract" and "error_code=None" in finding["message"]
+        for finding in references["success_error_code"]["findings"]
+    )
     statuses = {item["mutation_id"]: item["status"] for item in report["mutation_results"]}
     for mutation_id in (
         "missing-boundary-check",
@@ -297,6 +342,8 @@ def selftest() -> dict[str, Any]:
     ):
         assert statuses[mutation_id] == STATUS_KILLED, mutation_id
     assert statuses["equivalent-no-op"] == STATUS_INVALID
+    assert statuses["malformed-fixture"] == STATUS_INVALID
+    assert statuses["unobserved-extra-output"] == STATUS_SURVIVED
     assert statuses["untrusted-generated-code"] == STATUS_NOT_EXECUTED
     assert report["experiment_manifest"]["status"] == "planned"
     return report

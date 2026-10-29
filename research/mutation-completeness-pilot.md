@@ -19,13 +19,14 @@ contracts:
 - a repository-root path operation that must write inside the root and block an
   outside-root path before any side effect.
 
-The evaluator is calibrated first against four trusted fixtures:
+The evaluator is calibrated first against five trusted fixtures:
 
 | Fixture | Expected result | What it exercises |
 |---|---|---|
 | `good` | pass | all required outputs, mapping, error path, and safety boundary |
 | `incomplete` | reject | missing required boundary item |
 | `contract_violation` | reject | missing stable error output |
+| `success_error_code` | reject | non-null error code on a successful result |
 | `unsafe` | reject | outside-root side effect is allowed |
 
 The fixture functions are repository code, not model-generated code. A future
@@ -44,8 +45,11 @@ The pilot reports four distinct outcomes:
 
 The self-test covers a missing boundary check, wrong error handling, incorrect
 identifier mapping, removal of required output, and removal of the safety
-check. It also exercises `invalid_mutant` and `not_executed`; no generated
-code is run in the grader process.
+check. It also includes an intentionally unobserved extra field that survives
+the current contract, a malformed fixture classified as `invalid_mutant`, and
+an untrusted-code mutation classified as `not_executed`. A surviving mutation
+is a finding about evaluator coverage, not a pass for the experiment; no
+generated code is run in the grader process.
 
 ## Completeness dimensions
 
@@ -60,7 +64,12 @@ The report keeps correctness dimensions separate from size:
 `loc` is reported as a descriptive metric only. It cannot make an incomplete
 or unsafe candidate pass. Independent-invariant counts are fixture metadata in
 this offline pilot; extracting them from an agent patch requires a separate,
-trusted analysis boundary.
+trusted analysis boundary. A defect is reflected only in the dimensions it
+violates: for example, identifier mapping makes functional completeness false,
+while a wrong error path affects the negative/error-handling dimensions.
+
+The term `mutation killed` means that this evaluator rejected a changed
+trusted fixture. It is not evidence of full source-code mutation testing.
 
 ## Planned three-arm comparison
 
