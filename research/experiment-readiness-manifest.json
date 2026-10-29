@@ -1,9 +1,14 @@
 {
   "schema_version": 1,
-  "status": "dry_run_ready_not_executed",
+  "status": "design_valid_execution_blocked",
+  "design_valid": true,
+  "task_fixtures_bound": false,
+  "runtime_bound": false,
+  "execution_ready": false,
   "purpose": "Reproducible three-arm comparison of completeness, correctness, safety, and code economy.",
   "harness": {
     "repository_revision": "cdbd2827e0f440f171edddefc3e3556a74e5d7a5",
+    "evaluator_revision": "cdbd2827e0f440f171edddefc3e3556a74e5d7a5",
     "frozen_reference_revision": "efb48ec0b10dfbc8b6ca198b5c1b3b09f49be820",
     "task_contract_sha256": "adbc5231a30c15d19126cedb7a879a8840fe9eb7b3dd4d71bbc565dcf32e684b",
     "skill_tree_hash_algorithm": "sha256(sorted relative path UTF-8 + NUL + file bytes + NUL for every skills/sovetwave file at the pinned revision)"
@@ -58,6 +63,11 @@
       "negative_controls": ["short_happy_path_stub", "deleted_error_check"]
     }
   ],
+  "task_fixtures": {
+    "status": "not_bound",
+    "paths": [],
+    "binding_note": "The task prompts are design placeholders; repository-grounded fixtures and independent graders are a separate Draft PR."
+  },
   "shared_runtime": {
     "model_id": null,
     "host_endpoint": null,
@@ -84,6 +94,44 @@
     "ordering": "seeded block randomization by task and repetition",
     "seed": 20261029,
     "maximum_model_calls": 36,
+    "plan": [
+      {"sequence": 1, "task_id": "necessity-and-reuse-order", "repetition": 1, "arm_id": "baseline", "block_position": 1},
+      {"sequence": 2, "task_id": "necessity-and-reuse-order", "repetition": 1, "arm_id": "sovetwave-frozen", "block_position": 2},
+      {"sequence": 3, "task_id": "necessity-and-reuse-order", "repetition": 1, "arm_id": "sovetwave-explicit-ladder", "block_position": 3},
+      {"sequence": 4, "task_id": "necessity-and-reuse-order", "repetition": 2, "arm_id": "sovetwave-explicit-ladder", "block_position": 1},
+      {"sequence": 5, "task_id": "necessity-and-reuse-order", "repetition": 2, "arm_id": "sovetwave-frozen", "block_position": 2},
+      {"sequence": 6, "task_id": "necessity-and-reuse-order", "repetition": 2, "arm_id": "baseline", "block_position": 3},
+      {"sequence": 7, "task_id": "necessity-and-reuse-order", "repetition": 3, "arm_id": "baseline", "block_position": 1},
+      {"sequence": 8, "task_id": "necessity-and-reuse-order", "repetition": 3, "arm_id": "sovetwave-frozen", "block_position": 2},
+      {"sequence": 9, "task_id": "necessity-and-reuse-order", "repetition": 3, "arm_id": "sovetwave-explicit-ladder", "block_position": 3},
+      {"sequence": 10, "task_id": "complete-interface-path", "repetition": 1, "arm_id": "sovetwave-explicit-ladder", "block_position": 1},
+      {"sequence": 11, "task_id": "complete-interface-path", "repetition": 1, "arm_id": "baseline", "block_position": 2},
+      {"sequence": 12, "task_id": "complete-interface-path", "repetition": 1, "arm_id": "sovetwave-frozen", "block_position": 3},
+      {"sequence": 13, "task_id": "complete-interface-path", "repetition": 2, "arm_id": "sovetwave-frozen", "block_position": 1},
+      {"sequence": 14, "task_id": "complete-interface-path", "repetition": 2, "arm_id": "sovetwave-explicit-ladder", "block_position": 2},
+      {"sequence": 15, "task_id": "complete-interface-path", "repetition": 2, "arm_id": "baseline", "block_position": 3},
+      {"sequence": 16, "task_id": "complete-interface-path", "repetition": 3, "arm_id": "baseline", "block_position": 1},
+      {"sequence": 17, "task_id": "complete-interface-path", "repetition": 3, "arm_id": "sovetwave-explicit-ladder", "block_position": 2},
+      {"sequence": 18, "task_id": "complete-interface-path", "repetition": 3, "arm_id": "sovetwave-frozen", "block_position": 3},
+      {"sequence": 19, "task_id": "untrusted-boundary-before-side-effect", "repetition": 1, "arm_id": "sovetwave-frozen", "block_position": 1},
+      {"sequence": 20, "task_id": "untrusted-boundary-before-side-effect", "repetition": 1, "arm_id": "baseline", "block_position": 2},
+      {"sequence": 21, "task_id": "untrusted-boundary-before-side-effect", "repetition": 1, "arm_id": "sovetwave-explicit-ladder", "block_position": 3},
+      {"sequence": 22, "task_id": "untrusted-boundary-before-side-effect", "repetition": 2, "arm_id": "sovetwave-explicit-ladder", "block_position": 1},
+      {"sequence": 23, "task_id": "untrusted-boundary-before-side-effect", "repetition": 2, "arm_id": "baseline", "block_position": 2},
+      {"sequence": 24, "task_id": "untrusted-boundary-before-side-effect", "repetition": 2, "arm_id": "sovetwave-frozen", "block_position": 3},
+      {"sequence": 25, "task_id": "untrusted-boundary-before-side-effect", "repetition": 3, "arm_id": "sovetwave-explicit-ladder", "block_position": 1},
+      {"sequence": 26, "task_id": "untrusted-boundary-before-side-effect", "repetition": 3, "arm_id": "sovetwave-frozen", "block_position": 2},
+      {"sequence": 27, "task_id": "untrusted-boundary-before-side-effect", "repetition": 3, "arm_id": "baseline", "block_position": 3},
+      {"sequence": 28, "task_id": "short-stub-completeness-negative-control", "repetition": 1, "arm_id": "sovetwave-frozen", "block_position": 1},
+      {"sequence": 29, "task_id": "short-stub-completeness-negative-control", "repetition": 1, "arm_id": "sovetwave-explicit-ladder", "block_position": 2},
+      {"sequence": 30, "task_id": "short-stub-completeness-negative-control", "repetition": 1, "arm_id": "baseline", "block_position": 3},
+      {"sequence": 31, "task_id": "short-stub-completeness-negative-control", "repetition": 2, "arm_id": "baseline", "block_position": 1},
+      {"sequence": 32, "task_id": "short-stub-completeness-negative-control", "repetition": 2, "arm_id": "sovetwave-explicit-ladder", "block_position": 2},
+      {"sequence": 33, "task_id": "short-stub-completeness-negative-control", "repetition": 2, "arm_id": "sovetwave-frozen", "block_position": 3},
+      {"sequence": 34, "task_id": "short-stub-completeness-negative-control", "repetition": 3, "arm_id": "sovetwave-frozen", "block_position": 1},
+      {"sequence": 35, "task_id": "short-stub-completeness-negative-control", "repetition": 3, "arm_id": "baseline", "block_position": 2},
+      {"sequence": 36, "task_id": "short-stub-completeness-negative-control", "repetition": 3, "arm_id": "sovetwave-explicit-ladder", "block_position": 3}
+    ],
     "stop_if": [
       "shared task contract, model, host, permissions, or environment differs",
       "required execution trace or artifact provenance is unavailable",

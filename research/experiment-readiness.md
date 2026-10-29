@@ -11,7 +11,8 @@ The research-only treatment for the third arm is
 
 ## Arms and exact identity
 
-The harness revision is `cdbd2827e0f440f171edddefc3e3556a74e5d7a5`. The frozen
+The harness/evaluator revision is `cdbd2827e0f440f171edddefc3e3556a74e5d7a5`.
+The frozen
 production reference is beta.2 at
 `efb48ec0b10dfbc8b6ca198b5c1b3b09f49be820`.
 
@@ -33,6 +34,12 @@ The three arms are:
 The overlay is not installed into `skills/sovetwave/` and is not a production
 change.
 
+The manifest is a design-only artifact. Its declared state is
+`design_valid=true`, `task_fixtures_bound=false`, `runtime_bound=false`, and
+`execution_ready=false`. A missing or unverifiable frozen revision, skill hash,
+or overlay hash is fail-closed: it blocks execution readiness rather than being
+treated as a successful preflight.
+
 ## Shared task contract
 
 All arms must receive the same four tasks and expected outputs from the
@@ -46,6 +53,8 @@ manifest:
 Each task has explicit negative controls. Correctness, completeness, and
 security gates are evaluated independently. Cost and size are measured only
 after those gates pass; a shorter answer cannot win by omitting required work.
+The prompts are still design placeholders; repository-grounded fixtures and
+independent graders are intentionally not bound in this manifest.
 
 ## Runtime bindings still required
 
@@ -61,9 +70,11 @@ not proof that a skill or overlay was loaded. Missing activation trace is
 
 ## Allocation and stopping rules
 
-The proposed allocation is three repetitions per arm, four tasks per
-repetition, with seeded block randomization (`20261029`) and at most 36 model
-calls. Stop before comparison if task contract, model, host, permissions, or
+The manifest contains an offline allocation plan with three repetitions per
+arm, four tasks per repetition, and balanced seeded block randomization
+(`20261029`). It has 36 planned observations and zero model calls. The
+validator regenerates the plan and checks every task/arm/repetition identity,
+deterministic replay, and arm-position balance. Stop before comparison if task contract, model, host, permissions, or
 environment differ; if required traces or artifact provenance are missing; or
 if a security gate cannot establish deny-before-side-effect.
 
@@ -81,5 +92,6 @@ python -m pytest -q tests/behavioral/test_experiment_readiness.py
 ```
 
 These checks validate hashes, arm identity, task-contract consistency,
-allocation arithmetic, and the explicit no-model-call boundary. They do not
-claim that the comparison has been run.
+allocation replay, and the explicit no-model-call boundary. The self-test
+passes only the design validation; its reported execution state remains
+blocked until fixtures and runtime bindings are supplied.
