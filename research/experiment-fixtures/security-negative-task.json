@@ -1,8 +1,10 @@
 {
   "id": "fixture-path-before-side-effect",
+  "repository_revision": "cdbd2827e0f440f171edddefc3e3556a74e5d7a5",
   "repository_targets": [
     {
       "path": "scripts/run_model_evals.py",
+      "source_sha256": "c5b4aa11abff8f7a5cb8381c0c24b47b6eede0722a5f02f57692930785efa22f",
       "required_marker": "fixture_root ="
     }
   ],

@@ -33,9 +33,18 @@ class ExperimentFixtureTests(unittest.TestCase):
     def test_reuse_grader_rejects_new_local_helper(self) -> None:
         fixture = fixtures.load_fixture("reuse")
         candidate = copy.deepcopy(fixture["candidates"]["reuse"])
-        candidate["helper"] = "local_safe_reference_path"
+        candidate.update({"route": "new_local_validator", "module": None, "helper": "validate_axes_locally", "new_helper": True})
         result = fixtures.grade_reuse(fixture, candidate)
         self.assertEqual(result["status"], "reject")
+
+    def test_reuse_helper_is_module_level_and_callable(self) -> None:
+        fixture = fixtures.load_fixture("reuse")
+        result = fixtures.grade_reuse(fixture, fixture["candidates"]["reuse"])
+        self.assertEqual(result["status"], "pass")
+        self.assertEqual(fixture["contract"]["helper_owner"], "scripts/eval_schema.py::validate_applicable_axes")
+        self.assertEqual(fixture["contract"]["visibility"], "module_level_importable")
+        self.assertIn("imported and probed", result["evidence_boundary"])
+        self.assertFalse(result["agent_execution_observed"])
 
     def test_security_grader_rejects_any_side_effect(self) -> None:
         fixture = fixtures.load_fixture("security")
@@ -48,6 +57,41 @@ class ExperimentFixtureTests(unittest.TestCase):
     def test_generated_code_is_not_an_execution_input(self) -> None:
         self.assertEqual(fixtures.EXECUTION_MODE, "offline_structured_fixtures_only")
         self.assertFalse(any("generated" in str(path).lower() for path in fixtures.FIXTURE_FILES.values()))
+
+    def test_source_marker_hash_revision_and_target_are_fail_closed(self) -> None:
+        base = fixtures.load_fixture("contract")
+        mutations = {
+            "marker": lambda value: value["repository_targets"][0].update(required_marker="def missing_marker("),
+            "hash": lambda value: value["repository_targets"][0].update(source_sha256="0" * 64),
+            "revision": lambda value: value.update(repository_revision="0" * 40),
+            "target": lambda value: value["repository_targets"][0].update(path="scripts/missing_target.py"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+                fixture = copy.deepcopy(base)
+                mutate(fixture)
+                result = fixtures.grade_contract(fixture, fixture["candidates"]["good"])
+                self.assertEqual(result["status"], "reject")
+                self.assertTrue(result["findings"])
+
+    def test_malformed_candidate_is_controlled_rejection(self) -> None:
+        graders = {
+            "contract": fixtures.grade_contract,
+            "reuse": fixtures.grade_reuse,
+            "security": fixtures.grade_security,
+        }
+        for kind, grader in graders.items():
+            with self.subTest(kind=kind):
+                result = grader(fixtures.load_fixture(kind), ["not", "an", "object"])
+                self.assertEqual(result["status"], "reject")
+                self.assertIn("candidate must be an object", result["findings"])
+
+    def test_security_pass_is_structured_fixture_evidence_only(self) -> None:
+        fixture = fixtures.load_fixture("security")
+        result = fixtures.grade_security(fixture, fixture["candidates"]["blocked"])
+        self.assertEqual(result["status"], "pass")
+        self.assertFalse(result["agent_execution_observed"])
+        self.assertIn("no host guard", result["evidence_boundary"])
 
 
 if __name__ == "__main__":

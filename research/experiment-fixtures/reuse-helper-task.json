@@ -1,26 +1,32 @@
 {
-  "id": "reuse-safe-reference-path-helper",
+  "id": "reuse-applicable-axes-validator",
+  "repository_revision": "cdbd2827e0f440f171edddefc3e3556a74e5d7a5",
   "repository_targets": [
     {
-      "path": "scripts/run_model_evals.py",
-      "required_marker": "def safe_reference_path("
+      "path": "scripts/eval_schema.py",
+      "source_sha256": "b2932a19df5cab6419e894278139b3e03ef32e0af2288eb12383e18457193621",
+      "required_marker": "def validate_applicable_axes("
     }
   ],
   "contract": {
-    "existing_helper": "safe_reference_path",
-    "helper_owner": "scripts/run_model_evals.py::parse_claude_stream_metadata",
-    "required_route": "reuse_existing_helper",
+    "existing_helper": "validate_applicable_axes",
+    "helper_module": "eval_schema",
+    "helper_owner": "scripts/eval_schema.py::validate_applicable_axes",
+    "visibility": "module_level_importable",
+    "required_route": "import_existing_helper",
     "new_helper_allowed": false
   },
   "candidates": {
     "reuse": {
-      "route": "reuse_existing_helper",
-      "helper": "safe_reference_path",
+      "route": "import_existing_helper",
+      "module": "eval_schema",
+      "helper": "validate_applicable_axes",
       "new_helper": false
     },
     "reinvent": {
-      "route": "new_local_parser",
-      "helper": "local_safe_reference_path",
+      "route": "new_local_validator",
+      "module": null,
+      "helper": "validate_axes_locally",
       "new_helper": true
     }
   }

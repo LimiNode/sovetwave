@@ -25,6 +25,8 @@ jobs:
         run: python tests/behavioral/test_harness.py
       - name: Test experiment readiness design validator
         run: python tests/behavioral/test_experiment_readiness.py
+      - name: Test repository-grounded fixture classifiers
+        run: python tests/behavioral/test_experiment_fixtures.py
 
   installer-smoke:
     name: Installer smoke (${{ matrix.os }})

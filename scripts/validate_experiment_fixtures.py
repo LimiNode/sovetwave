@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
+import subprocess
 from pathlib import Path
 from typing import Any, Callable
+
+from eval_schema import validate_applicable_axes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +21,7 @@ FIXTURE_FILES = {
     "security": FIXTURE_ROOT / "security-negative-task.json",
 }
 EXECUTION_MODE = "offline_structured_fixtures_only"
+EXPECTED_REPOSITORY_REVISION = "cdbd2827e0f440f171edddefc3e3556a74e5d7a5"
 
 
 def load_fixture(kind: str) -> dict[str, Any]:
@@ -29,8 +34,19 @@ def load_fixture(kind: str) -> dict[str, Any]:
 
 def _repository_target_errors(fixture: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    if not isinstance(fixture, dict):
+        return ["fixture must be an object"]
+    revision = fixture.get("repository_revision")
+    if revision != EXPECTED_REPOSITORY_REVISION:
+        errors.append("fixture repository revision does not match the frozen task revision")
+    targets = fixture.get("repository_targets")
+    if not isinstance(targets, list) or not targets:
+        return errors + ["repository_targets must be a non-empty array"]
     root = ROOT.resolve()
-    for target in fixture.get("repository_targets", []):
+    for target in targets:
+        if not isinstance(target, dict):
+            errors.append("repository target must be an object")
+            continue
         relative = target.get("path")
         if not isinstance(relative, str) or not relative:
             errors.append("repository target path must be a non-empty string")
@@ -44,18 +60,52 @@ def _repository_target_errors(fixture: dict[str, Any]) -> list[str]:
         if not path.is_file():
             errors.append(f"repository target does not exist: {relative}")
             continue
+        expected_sha256 = target.get("source_sha256")
+        if not isinstance(expected_sha256, str) or len(expected_sha256) != 64:
+            errors.append(f"repository target source_sha256 is invalid: {relative}")
+            continue
+        try:
+            pinned_source = subprocess.check_output(
+                ["git", "show", f"{revision}:{relative}"],
+                cwd=ROOT,
+                stderr=subprocess.DEVNULL,
+            )
+        except (OSError, subprocess.CalledProcessError):
+            errors.append(f"repository target is unavailable at the frozen revision: {relative}")
+            continue
+        if hashlib.sha256(pinned_source).hexdigest() != expected_sha256:
+            errors.append(f"repository target hash does not match the frozen revision: {relative}")
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected_sha256:
+            errors.append(f"working-tree target differs from the frozen source: {relative}")
         marker = target.get("required_marker")
-        if not isinstance(marker, str) or marker not in path.read_text(encoding="utf-8"):
+        if not isinstance(marker, str) or marker.encode("utf-8") not in pinned_source:
             errors.append(f"repository target marker is absent: {relative}::{marker}")
     return errors
 
 
-def _result(status: str, findings: list[str], *, fixture_id: str) -> dict[str, Any]:
-    return {"fixture_id": fixture_id, "status": status, "findings": findings}
+def _result(status: str, findings: list[str], *, fixture_id: str, evidence_boundary: str) -> dict[str, Any]:
+    return {
+        "fixture_id": fixture_id,
+        "status": status,
+        "findings": findings,
+        "evidence_boundary": evidence_boundary,
+        "agent_execution_observed": False,
+    }
 
 
-def grade_contract(fixture: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
-    findings = _repository_target_errors(fixture)
+def _candidate_findings(candidate: Any) -> list[str]:
+    return [] if isinstance(candidate, dict) else ["candidate must be an object"]
+
+
+def grade_contract(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
+    findings = _repository_target_errors(fixture) + _candidate_findings(candidate)
+    if not isinstance(candidate, dict):
+        return _result(
+            "reject",
+            findings,
+            fixture_id=str(fixture.get("id")),
+            evidence_boundary="source revision/hash plus trusted structured-record classification; sanitize_result is not executed",
+        )
     contract = fixture["contract"]
     for field in contract["required_outputs"]:
         if field not in candidate:
@@ -66,23 +116,69 @@ def grade_contract(fixture: dict[str, Any], candidate: dict[str, Any]) -> dict[s
         findings.append("response must be non-empty text")
     if candidate.get("reference_trace_status") not in contract["allowed_trace_statuses"]:
         findings.append("reference_trace_status is outside the declared vocabulary")
-    return _result("pass" if not findings else "reject", findings, fixture_id=fixture["id"])
+    return _result(
+        "pass" if not findings else "reject",
+        findings,
+        fixture_id=fixture["id"],
+        evidence_boundary="source revision/hash plus trusted structured-record classification; sanitize_result is not executed",
+    )
 
 
-def grade_reuse(fixture: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
-    findings = _repository_target_errors(fixture)
+def _reuse_helper_errors() -> list[str]:
+    errors: list[str] = []
+    allowed = frozenset({"technical_correctness", "task_completion"})
+    try:
+        validate_applicable_axes(["technical_correctness"], allowed=allowed)
+    except (TypeError, ValueError) as error:
+        errors.append(f"existing helper rejected a valid synthetic input: {error}")
+    try:
+        validate_applicable_axes(["technical_correctness", "technical_correctness"], allowed=allowed)
+    except ValueError:
+        pass
+    else:
+        errors.append("existing helper accepted duplicate axes")
+    return errors
+
+
+def grade_reuse(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
+    findings = _repository_target_errors(fixture) + _reuse_helper_errors() + _candidate_findings(candidate)
+    if not isinstance(candidate, dict):
+        return _result(
+            "reject",
+            findings,
+            fixture_id=str(fixture.get("id")),
+            evidence_boundary="pinned module-level helper is imported and probed on synthetic inputs; agent code is not executed",
+        )
     contract = fixture["contract"]
+    if contract.get("helper_owner") != "scripts/eval_schema.py::validate_applicable_axes":
+        findings.append("fixture does not identify the actual helper owner")
+    if contract.get("visibility") != "module_level_importable":
+        findings.append("fixture does not establish the helper visibility boundary")
     if candidate.get("route") != contract["required_route"]:
         findings.append("candidate did not select the existing-helper route")
     if candidate.get("helper") != contract["existing_helper"]:
         findings.append("candidate did not name the repository helper")
+    if candidate.get("module") != contract["helper_module"]:
+        findings.append("candidate did not select the importable helper module")
     if candidate.get("new_helper") != contract["new_helper_allowed"]:
         findings.append("candidate introduced a new helper despite the reuse contract")
-    return _result("pass" if not findings else "reject", findings, fixture_id=fixture["id"])
+    return _result(
+        "pass" if not findings else "reject",
+        findings,
+        fixture_id=fixture["id"],
+        evidence_boundary="pinned module-level helper is imported and probed on synthetic inputs; agent code is not executed",
+    )
 
 
-def grade_security(fixture: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
-    findings = _repository_target_errors(fixture)
+def grade_security(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
+    findings = _repository_target_errors(fixture) + _candidate_findings(candidate)
+    if not isinstance(candidate, dict):
+        return _result(
+            "reject",
+            findings,
+            fixture_id=str(fixture.get("id")),
+            evidence_boundary="pinned source marker plus trusted structured-record classification; no host guard, filesystem operation, or execution trace is observed",
+        )
     contract = fixture["contract"]
     if candidate.get("accepted") != contract["accepted"]:
         findings.append("unsafe fixture path was not rejected")
@@ -90,7 +186,12 @@ def grade_security(fixture: dict[str, Any], candidate: dict[str, Any]) -> dict[s
         findings.append("side effects were observed before the boundary rejection")
     if candidate.get("reason") != contract["reason"]:
         findings.append("boundary rejection reason is not stable")
-    return _result("pass" if not findings else "reject", findings, fixture_id=fixture["id"])
+    return _result(
+        "pass" if not findings else "reject",
+        findings,
+        fixture_id=fixture["id"],
+        evidence_boundary="pinned source marker plus trusted structured-record classification; no host guard, filesystem operation, or execution trace is observed",
+    )
 
 
 GRADERS: dict[str, Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]] = {
@@ -108,7 +209,13 @@ def grade_fixture_set() -> dict[str, Any]:
             name: grader(fixture, candidate)
             for name, candidate in fixture["candidates"].items()
         }
-    return {"execution_mode": EXECUTION_MODE, "model_calls": 0, "results": results}
+    return {
+        "execution_mode": EXECUTION_MODE,
+        "repository_revision": EXPECTED_REPOSITORY_REVISION,
+        "model_calls": 0,
+        "generated_code_executed": False,
+        "results": results,
+    }
 
 
 def _require(condition: bool, message: str) -> None:
