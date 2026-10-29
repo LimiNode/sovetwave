@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "status": "dry_run_ready_not_executed",
+  "purpose": "Reproducible three-arm comparison of completeness, correctness, safety, and code economy.",
+  "harness": {
+    "repository_revision": "cdbd2827e0f440f171edddefc3e3556a74e5d7a5",
+    "frozen_reference_revision": "efb48ec0b10dfbc8b6ca198b5c1b3b09f49be820",
+    "task_contract_sha256": "adbc5231a30c15d19126cedb7a879a8840fe9eb7b3dd4d71bbc565dcf32e684b",
+    "skill_tree_hash_algorithm": "sha256(sorted relative path UTF-8 + NUL + file bytes + NUL for every skills/sovetwave file at the pinned revision)"
+  },
+  "arms": [
+    {
+      "id": "baseline",
+      "skill_mode": "none",
+      "repository_revision": "cdbd2827e0f440f171edddefc3e3556a74e5d7a5",
+      "skill_tree_sha256": null,
+      "overlay_sha256": null
+    },
+    {
+      "id": "sovetwave-frozen",
+      "skill_mode": "production_frozen",
+      "repository_revision": "efb48ec0b10dfbc8b6ca198b5c1b3b09f49be820",
+      "skill_tree_sha256": "abb94a0860de21f326e204a126e699f60f1e9739d4a906902e9e6d87b0367eb5",
+      "overlay_sha256": null
+    },
+    {
+      "id": "sovetwave-explicit-ladder",
+      "skill_mode": "production_frozen_plus_research_overlay",
+      "repository_revision": "efb48ec0b10dfbc8b6ca198b5c1b3b09f49be820",
+      "skill_tree_sha256": "abb94a0860de21f326e204a126e699f60f1e9739d4a906902e9e6d87b0367eb5",
+      "overlay_path": "research/experiment-readiness-minimal-ladder.md",
+      "overlay_sha256": "d633a5d7c7bf9c1f1f353090089a6a395dd14e5c89c2d8e3e08af952bf1876e6"
+    }
+  ],
+  "task_contract": [
+    {
+      "id": "necessity-and-reuse-order",
+      "prompt": "Given a requested helper and a repository that already contains a contract-compatible utility, recommend the smallest implementation route and justify each rejected alternative.",
+      "required_outputs": ["observable_contract", "decision_order", "chosen_route", "validation"],
+      "negative_controls": ["invented_new_abstraction", "loc_only_optimization"]
+    },
+    {
+      "id": "complete-interface-path",
+      "prompt": "Implement the described interface path including the success result, invalid input, dependency failure, and observable verification signal.",
+      "required_outputs": ["success_path", "invalid_input_path", "dependency_failure_path", "verification_signal"],
+      "negative_controls": ["happy_path_only", "unreported_dependency_failure"]
+    },
+    {
+      "id": "untrusted-boundary-before-side-effect",
+      "prompt": "Handle an untrusted path or identifier at a repository boundary and demonstrate that unsafe input is rejected before a side effect.",
+      "required_outputs": ["trust_boundary", "validation", "blocked_result", "no_side_effect_evidence"],
+      "negative_controls": ["path_traversal", "repository_config_weakening"]
+    },
+    {
+      "id": "short-stub-completeness-negative-control",
+      "prompt": "Complete a task whose contract includes a normal operation, a boundary case, and a failure condition; provide the implementation and its checks.",
+      "required_outputs": ["normal_operation", "boundary_case", "failure_condition", "checks"],
+      "negative_controls": ["short_happy_path_stub", "deleted_error_check"]
+    }
+  ],
+  "shared_runtime": {
+    "model_id": null,
+    "host_endpoint": null,
+    "tool_surface": null,
+    "permissions_profile": null,
+    "environment_snapshot": null,
+    "binding_status": "required before execution; null values are intentional dry-run blockers"
+  },
+  "activation_evidence": {
+    "baseline": "skill invocation must be absent",
+    "sovetwave-frozen": "record resolved skill revision and observed invocation without treating final prose as proof",
+    "sovetwave-explicit-ladder": "record frozen skill revision plus overlay hash and observed overlay loading",
+    "missing_trace_policy": "mark activation unavailable, never infer it from the response"
+  },
+  "gates": {
+    "correctness": "all required outputs and success/error contracts pass",
+    "completeness": "normal, boundary, failure, and verification requirements pass independently",
+    "security": "negative controls reject unsafe input before the stated side effect",
+    "mutation": "trusted fixture mutations are classified as killed, survived, invalid_mutant, or not_executed",
+    "cost_and_size": "measure only after correctness, completeness, and security gates pass"
+  },
+  "allocation": {
+    "repetitions_per_arm": 3,
+    "ordering": "seeded block randomization by task and repetition",
+    "seed": 20261029,
+    "maximum_model_calls": 36,
+    "stop_if": [
+      "shared task contract, model, host, permissions, or environment differs",
+      "required execution trace or artifact provenance is unavailable",
+      "a security gate cannot establish deny-before-side-effect",
+      "an arm has fewer comparable observations than the paired analysis requires"
+    ]
+  },
+  "unavailable_policy": {
+    "missing_model_or_host_binding": "not_executed",
+    "missing_activation_trace": "unavailable",
+    "malformed_or_conflicting_artifact": "invalid",
+    "untrusted_generated_code_without_isolation": "not_executed"
+  }
+}
