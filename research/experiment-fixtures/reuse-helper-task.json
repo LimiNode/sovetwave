@@ -1,0 +1,27 @@
+{
+  "id": "reuse-safe-reference-path-helper",
+  "repository_targets": [
+    {
+      "path": "scripts/run_model_evals.py",
+      "required_marker": "def safe_reference_path("
+    }
+  ],
+  "contract": {
+    "existing_helper": "safe_reference_path",
+    "helper_owner": "scripts/run_model_evals.py::parse_claude_stream_metadata",
+    "required_route": "reuse_existing_helper",
+    "new_helper_allowed": false
+  },
+  "candidates": {
+    "reuse": {
+      "route": "reuse_existing_helper",
+      "helper": "safe_reference_path",
+      "new_helper": false
+    },
+    "reinvent": {
+      "route": "new_local_parser",
+      "helper": "local_safe_reference_path",
+      "new_helper": true
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "id": "bundle-sanitization-contract",
+  "repository_targets": [
+    {
+      "path": "scripts/build_bundle.py",
+      "required_marker": "def sanitize_result("
+    },
+    {
+      "path": "tests/behavioral/test_harness.py",
+      "required_marker": "test_codex_reference_trace_requires_explicit_file_read"
+    }
+  ],
+  "contract": {
+    "required_outputs": [
+      "experiment",
+      "revision",
+      "case_id",
+      "process_status",
+      "response",
+      "reference_trace_status"
+    ],
+    "completed_status": "completed",
+    "allowed_trace_statuses": ["observed", "unavailable", "not_applicable"]
+  },
+  "candidates": {
+    "good": {
+      "experiment": "fixture-experiment",
+      "revision": "fixture-revision",
+      "case_id": "fixture-case",
+      "process_status": "completed",
+      "response": "The contract result is complete.",
+      "reference_trace_status": "unavailable"
+    },
+    "incomplete": {
+      "experiment": "fixture-experiment",
+      "revision": "fixture-revision",
+      "case_id": "fixture-case",
+      "process_status": "completed",
+      "response": "The contract result is incomplete."
+    }
+  }
+}
