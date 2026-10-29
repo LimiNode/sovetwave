@@ -527,6 +527,7 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
     candidate_events = 0
     parse_errors = 0
     terminal_event_observed = False
+    terminal_order_valid = True
     lifecycle_valid = True
     active_tool_ids: set[str] = set()
     tool_metadata: dict[str, dict[str, Any]] = {}
@@ -540,6 +541,10 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
             parse_errors += 1
             continue
         if event.get("type") == "result":
+            if terminal_event_observed:
+                # A second result cannot be assigned to this segment without
+                # a provider segment identity; fail closed.
+                terminal_order_valid = False
             terminal_event_observed = True
         message = event.get("message")
         content = message.get("content") if isinstance(message, dict) else event.get("content")
@@ -549,6 +554,10 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
             if not isinstance(block, dict):
                 continue
             block_type = block.get("type")
+            if terminal_event_observed and block_type in {"tool_use", "tool_result"}:
+                # Tool lifecycle events after ``result`` belong to another
+                # segment or malformed telemetry, not this completed run.
+                terminal_order_valid = False
             if block_type == "tool_use" and isinstance(block.get("name"), str):
                 sequence += 1
                 candidate_events += 1
@@ -615,6 +624,8 @@ def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, An
     elif candidate_events > MAX_TOOL_EVENTS:
         status = "truncated"
     elif not terminal_event_observed:
+        status = "incomplete"
+    elif not terminal_order_valid:
         status = "incomplete"
     elif not lifecycle_valid or active_tool_ids:
         status = "incomplete"
@@ -764,6 +775,7 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     tool_event_candidates = 0
     parse_errors = 0
     terminal_event_observed = False
+    terminal_order_valid = True
     lifecycle_valid = True
     active_tool_ids: set[str] = set()
 
@@ -788,6 +800,10 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         if isinstance(event_type, str) and event_type not in event_types:
             event_types.append(event_type)
         if event_type == "turn.completed":
+            if terminal_event_observed:
+                # Without an explicit segment identity, a second terminal
+                # marker cannot be assigned to the same execution safely.
+                terminal_order_valid = False
             terminal_event_observed = True
         # Codex reports aggregate turn usage on turn.completed. Do not sum
         # arbitrary nested usage objects from progress events.
@@ -811,6 +827,11 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
                             usage[key] = value
         item = event.get("item")
         if isinstance(item, dict):
+            if terminal_event_observed and event_type != "turn.completed":
+                # Only provider events after the terminal marker that carry
+                # an execution item can change the evidence for this segment.
+                # Treat them as a boundary violation instead of merging turns.
+                terminal_order_valid = False
             event_sequence += 1
             tool_event = _codex_tool_event(
                 event_type if isinstance(event_type, str) else "unknown",
@@ -884,6 +905,8 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     elif tool_event_candidates > MAX_TOOL_EVENTS:
         tool_events_status = "truncated"
     elif not terminal_event_observed:
+        tool_events_status = "incomplete"
+    elif not terminal_order_valid:
         tool_events_status = "incomplete"
     elif not lifecycle_valid or active_tool_ids:
         tool_events_status = "incomplete"

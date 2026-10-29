@@ -1765,6 +1765,37 @@ class BehavioralHarnessTests(unittest.TestCase):
         parsed = parse_codex_json_stream(stream)
         self.assertEqual(parsed["tool_events_status"], "incomplete")
 
+    def test_codex_terminal_marker_must_precede_only_service_telemetry(self) -> None:
+        late_invocation = "\n".join([
+            json.dumps({"type": "turn.completed"}),
+            json.dumps({"type": "item.started", "item": {"id": "call-1", "type": "command_execution"}}),
+            json.dumps({"type": "item.completed", "item": {"id": "call-1", "type": "command_execution"}}),
+        ])
+        parsed = parse_codex_json_stream(late_invocation)
+        self.assertEqual(parsed["tool_events_status"], "incomplete")
+
+        late_completion = "\n".join([
+            json.dumps({"type": "item.started", "item": {"id": "call-1", "type": "command_execution"}}),
+            json.dumps({"type": "turn.completed"}),
+            json.dumps({"type": "item.completed", "item": {"id": "call-1", "type": "command_execution"}}),
+        ])
+        parsed = parse_codex_json_stream(late_completion)
+        self.assertEqual(parsed["tool_events_status"], "incomplete")
+
+        trailing_telemetry = "\n".join([
+            json.dumps({"type": "turn.completed"}),
+            json.dumps({"type": "response.completed"}),
+        ])
+        parsed = parse_codex_json_stream(trailing_telemetry)
+        self.assertEqual(parsed["tool_events_status"], "complete")
+
+        repeated_terminal = "\n".join([
+            json.dumps({"type": "turn.completed"}),
+            json.dumps({"type": "turn.completed"}),
+        ])
+        parsed = parse_codex_json_stream(repeated_terminal)
+        self.assertEqual(parsed["tool_events_status"], "incomplete")
+
     def test_claude_tool_event_status_requires_terminal_result(self) -> None:
         stream = json.dumps({"type": "assistant", "message": {"content": [
             {"type": "tool_use", "id": "call-1", "name": "Write"},
@@ -1793,6 +1824,42 @@ class BehavioralHarnessTests(unittest.TestCase):
             json.dumps({"type": "result", "result": "Answer"}),
         ])
         _, status = parse_claude_tool_events_with_status(stream)
+        self.assertEqual(status, "incomplete")
+
+    def test_claude_terminal_result_must_precede_only_service_telemetry(self) -> None:
+        late_invocation = "\n".join([
+            json.dumps({"type": "result", "result": "Answer"}),
+            json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "id": "call-1", "name": "Write"},
+            ]}}),
+        ])
+        _, status = parse_claude_tool_events_with_status(late_invocation)
+        self.assertEqual(status, "incomplete")
+
+        late_completion = "\n".join([
+            json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "id": "call-1", "name": "Write"},
+            ]}}),
+            json.dumps({"type": "result", "result": "Answer"}),
+            json.dumps({"type": "user", "message": {"content": [
+                {"type": "tool_result", "tool_use_id": "call-1", "is_error": False},
+            ]}}),
+        ])
+        _, status = parse_claude_tool_events_with_status(late_completion)
+        self.assertEqual(status, "incomplete")
+
+        trailing_telemetry = "\n".join([
+            json.dumps({"type": "result", "result": "Answer"}),
+            json.dumps({"type": "message_stop"}),
+        ])
+        _, status = parse_claude_tool_events_with_status(trailing_telemetry)
+        self.assertEqual(status, "complete")
+
+        repeated_terminal = "\n".join([
+            json.dumps({"type": "result", "result": "Answer"}),
+            json.dumps({"type": "result", "result": "Second"}),
+        ])
+        _, status = parse_claude_tool_events_with_status(repeated_terminal)
         self.assertEqual(status, "incomplete")
 
     def test_tool_event_redaction_does_not_retain_arbitrary_output_or_absolute_path(self) -> None:
