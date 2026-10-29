@@ -23,7 +23,7 @@ licenses can change; any implementation PR must re-pin and re-check them.
 
 | Mechanism | Upstream evidence | Sovetwave equivalent | Actual gap | Decision | Smallest useful verification |
 |---|---|---|---|---|---|
-| Minimal-solution ladder | Ponytail `AGENTS.md` asks whether the feature is needed, whether the repository or standard library already provides it, and only then permits a new implementation. | [`code-economy.md`](../skills/sovetwave/references/code-economy.md) already requires the same order, bounded semantic surface, reuse, and validation. | No material production gap established. | `already_covered` | Keep an offline contrast case where a local helper or standard-library operation is sufficient; assert that an unnecessary new abstraction is rejected without dropping required validation. |
+| Minimal-solution ladder | Ponytail `AGENTS.md` asks whether the feature is needed, whether the repository or standard library already provides it, and only then permits a new implementation. | [`code-economy.md`](../skills/sovetwave/references/code-economy.md) covers the underlying principles: establish the contract, inspect repository reuse, compare contracts before consolidating, bound the change, and verify the result. It does not state Ponytail's explicit ordered ladder (`necessity → repository reuse → stdlib/platform → existing dependency → new code`). | The semantic discipline is mostly covered, but the value of making that exact ordering explicit has not been established. | `experiment` (production adoption `not_decided`) | Compare fixed tasks with the existing Sovetwave guidance and with an experimental explicit ladder; measure completeness, unnecessary new abstractions, and validation retention. Do not infer value from LOC alone. |
 | Completeness separate from code size | Ponytail's agentic benchmark reports completeness separately from LOC and tests the full result, not only a shorter patch. | Current behavioral harness has assertion-based semantic cases; the benchmark-reliability pilot is a separate Draft PR. | Historical benchmark does not yet provide a mutation-kill or completeness-vs-LOC arm. | `experiment` | Add a deterministic offline arm after benchmark-reliability is accepted; mutate one required sink and require the completeness check to fail while LOC remains unchanged. |
 | Security task routing | Codex Security `docs/agent-workflows.md` separates repository scan, diff scan, triage, fix, and independent verify-fix. | [`verification-discipline.md`](../skills/sovetwave/references/verification-discipline.md) separates finding, evidence, disconfirmation, and verification; [`agent-instructions.md`](../skills/sovetwave/references/agent-instructions.md) states that prompts are not a hard security boundary. | No narrow route and fixture set explicitly covering attacker/source → controls → sink → independent fix verification. | `adapt` | First prove the case gap against current fixtures; then add a small security-review route and positive/negative cases in a separate PR. |
 | External security scanner | Codex Security provides `cs scan`, `cs validate`, saved findings, coverage, threat-model artifacts, and separate fix verification. | No internal scanner is present or required. | Sovetwave cannot provide scanner coverage, provider isolation, or saved findings by prompt text. | `external_integration` | Use Codex Security or another approved scanner only when explicitly requested; record revision, scope, provider, data boundary, and coverage. Do not make every PR depend on a live or paid scan. |
@@ -37,13 +37,23 @@ licenses can change; any implementation PR must re-pin and re-check them.
 
 ### Ponytail
 
-The minimal-solution questions are useful as a method, but Sovetwave already
-has an independently formulated `code-economy.md` with the same boundary:
-requirements, safety, untrusted-data validation, data-loss prevention, error
-handling, and necessary tests are not traded away for fewer lines. The useful
-new work is experimental rather than textual: measure completeness and mutation
-survival separately from LOC. Do not add Ponytail levels, plugin hooks, or an
-upstream dependency.
+The minimal-solution questions are useful as a method. Sovetwave's independently
+formulated `code-economy.md` already covers the main principles—an observable
+contract, repository reuse, contract-aware consolidation, bounded semantic
+surface, and explicit verification—but it does not state Ponytail's exact
+ordered ladder. That difference is a hypothesis about decision quality, not a
+demonstrated production gap. Keep production adoption `not_decided` until a
+separate fixed-task experiment compares the existing guidance with an explicit
+ladder and measures completeness, unnecessary abstractions, and retained
+validation. Do not add Ponytail levels, plugin hooks, or an upstream dependency
+in this review.
+
+Ponytail's `AGENTS.md` and `skills/ponytail/SKILL.md` can be used as standalone
+instruction text without installing the full plugin. The plugin adds host
+integration and auxiliary commands; it is a different distribution boundary.
+Its MIT license permits adaptation when the license and notice conditions are
+preserved. This review adapts the underlying decision hypothesis and does not
+copy Ponytail's prompt text.
 
 ### Codex Security
 
