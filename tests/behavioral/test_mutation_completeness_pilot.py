@@ -11,6 +11,7 @@ from mutation_completeness_pilot import (  # noqa: E402
     STATUS_KILLED,
     STATUS_NOT_EXECUTED,
     STATUS_SURVIVED,
+    STATUS_TOLERATED,
     build_report,
     contract_hash,
     evaluate_candidate,
@@ -89,7 +90,10 @@ class MutationCompletenessPilotTests(unittest.TestCase):
             self.assertEqual(results[mutation_id]["status"], STATUS_KILLED)
         self.assertEqual(results["equivalent-no-op"]["status"], STATUS_INVALID)
         self.assertEqual(results["untrusted-generated-code"]["status"], STATUS_NOT_EXECUTED)
-        self.assertEqual(results["unobserved-extra-output"]["status"], STATUS_SURVIVED)
+        self.assertEqual(results["unobserved-extra-output"]["status"], STATUS_TOLERATED)
+        self.assertEqual(results["unobserved-wrong-rejection-path"]["status"], STATUS_SURVIVED)
+        self.assertEqual(results["unrelated-rejection"]["status"], STATUS_SURVIVED)
+        self.assertIn("not for the targeted property", results["unrelated-rejection"]["reason"])
         self.assertEqual(results["malformed-fixture"]["status"], STATUS_INVALID)
         self.assertIn("isolation", results["untrusted-generated-code"]["reason"])
 

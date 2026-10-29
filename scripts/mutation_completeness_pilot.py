@@ -20,6 +20,7 @@ from typing import Any, Callable
 
 STATUS_KILLED = "killed"
 STATUS_SURVIVED = "survived"
+STATUS_TOLERATED = "tolerated"
 STATUS_INVALID = "invalid_mutant"
 STATUS_NOT_EXECUTED = "not_executed"
 
@@ -31,12 +32,13 @@ TASK_CONTRACT: dict[str, Any] = {
         "success": {"status": "ok", "error_code": None},
         "rejection": {"status": "error", "items": [], "error_code": "unknown_id"},
     },
-    "safe_path_contract": {
-        "safe_path": "workspace/notes.txt",
-        "unsafe_path": "../secrets.txt",
-        "success": {"status": "written", "side_effect": True},
-        "rejection": {"status": "blocked", "side_effect": False, "reason": "outside_root"},
-    },
+        "safe_path_contract": {
+            "safe_path": "workspace/notes.txt",
+            "unsafe_path": "../secrets.txt",
+            "success": {"status": "written", "side_effect": True},
+            "rejection": {"status": "blocked", "side_effect": False, "reason": "outside_root"},
+            "rejection_input_binding": {"output_field": "path", "input_field": "unsafe_path"},
+        },
 }
 
 
@@ -63,6 +65,8 @@ class MutationSpec:
     description: str
     apply: Callable[[Candidate], Candidate | None] | None
     execution_allowed: bool = True
+    expected_axes: tuple[str, ...] = ()
+    tolerated: bool = False
 
 
 def contract_hash() -> str:
@@ -173,7 +177,7 @@ def _check_safe_path(outputs: dict[str, dict[str, Any]]) -> list[Finding]:
 def evaluate_candidate(candidate: Candidate) -> dict[str, Any]:
     findings = _check_id_map(candidate.outputs["id_map_contract"])
     findings.extend(_check_safe_path(candidate.outputs["safe_path_contract"]))
-    axes = {"required_output": True, "contract": True, "boundary": True, "identifier_mapping": True, "error_handling": True, "security": True}
+    axes = {"required_output": True, "contract": True, "boundary": True, "identifier_mapping": True, "error_handling": True, "security": True, "input_binding": True}
     for finding in findings:
         axes[finding.axis] = False
     return {
@@ -231,6 +235,12 @@ def _add_unobserved_output(candidate: Candidate) -> Candidate:
     return replace(candidate, name=f"{candidate.name}:extra-output", outputs=outputs)
 
 
+def _change_rejection_path(candidate: Candidate) -> Candidate:
+    outputs = copy.deepcopy(candidate.outputs)
+    outputs["safe_path_contract"]["rejection"]["path"] = "workspace/notes.txt"
+    return replace(candidate, name=f"{candidate.name}:wrong-rejection-path", outputs=outputs)
+
+
 def _malformed_structure(candidate: Candidate) -> Candidate:
     outputs = copy.deepcopy(candidate.outputs)
     outputs["id_map_contract"]["success"] = ["not", "an", "output-object"]
@@ -239,12 +249,29 @@ def _malformed_structure(candidate: Candidate) -> Candidate:
 
 def mutation_specs() -> list[MutationSpec]:
     return [
-        MutationSpec("missing-boundary-check", "omit the last required item", _drop_boundary),
-        MutationSpec("incorrect-error-handling", "turn a rejected input into success", _wrong_error),
-        MutationSpec("incorrect-identifier-mapping", "swap two identifier values", _swap_mapping),
-        MutationSpec("missing-required-output", "remove a required error field", _remove_required_output),
-        MutationSpec("removed-security-check", "allow an outside-root side effect", _remove_security_check),
-        MutationSpec("unobserved-extra-output", "add an output field outside this contract", _add_unobserved_output),
+        MutationSpec("missing-boundary-check", "omit the last required item", _drop_boundary, expected_axes=("boundary",)),
+        MutationSpec("incorrect-error-handling", "turn a rejected input into success", _wrong_error, expected_axes=("error_handling",)),
+        MutationSpec("incorrect-identifier-mapping", "swap two identifier values", _swap_mapping, expected_axes=("identifier_mapping",)),
+        MutationSpec("missing-required-output", "remove a required error field", _remove_required_output, expected_axes=("required_output",)),
+        MutationSpec("removed-security-check", "allow an outside-root side effect", _remove_security_check, expected_axes=("security",)),
+        MutationSpec(
+            "unobserved-extra-output",
+            "add an output field outside this contract",
+            _add_unobserved_output,
+            tolerated=True,
+        ),
+        MutationSpec(
+            "unobserved-wrong-rejection-path",
+            "report a different path while preserving the blocked status",
+            _change_rejection_path,
+            expected_axes=("input_binding",),
+        ),
+        MutationSpec(
+            "unrelated-rejection",
+            "reject for an unrelated axis while targeting security coverage",
+            _wrong_error,
+            expected_axes=("security",),
+        ),
         MutationSpec("equivalent-no-op", "attempt a mutation that changes no trusted fixture", lambda candidate: candidate),
         MutationSpec("malformed-fixture", "replace an output object with an invalid structure", _malformed_structure),
         MutationSpec(
@@ -270,10 +297,12 @@ def run_mutation(spec: MutationSpec, candidate: Candidate) -> dict[str, Any]:
             "status": STATUS_INVALID,
             "reason": f"mutation operator failed: {type(error).__name__}",
         }
-    if mutated is None or mutated.outputs == candidate.outputs:
+    if mutated is None:
         return {"mutation_id": spec.mutation_id, "description": spec.description, "status": STATUS_INVALID, "reason": "operator did not produce a distinct fixture"}
     if not isinstance(mutated, Candidate):
         return {"mutation_id": spec.mutation_id, "description": spec.description, "status": STATUS_INVALID, "reason": "operator did not return a Candidate"}
+    if mutated.outputs == candidate.outputs:
+        return {"mutation_id": spec.mutation_id, "description": spec.description, "status": STATUS_INVALID, "reason": "operator did not produce a distinct fixture"}
     try:
         evaluation = evaluate_candidate(mutated)
     except (AttributeError, KeyError, IndexError, TypeError, ValueError) as error:
@@ -283,12 +312,25 @@ def run_mutation(spec: MutationSpec, candidate: Candidate) -> dict[str, Any]:
             "status": STATUS_INVALID,
             "reason": f"mutated fixture is structurally invalid: {type(error).__name__}",
         }
-    return {
+    matching_findings = [
+        finding for finding in evaluation["findings"] if finding["axis"] in spec.expected_axes
+    ]
+    if evaluation["status"] == "reject":
+        status = STATUS_KILLED if matching_findings else STATUS_SURVIVED
+        reason = None if matching_findings else "evaluator rejected the fixture, but not for the targeted property"
+    else:
+        status = STATUS_TOLERATED if spec.tolerated else STATUS_SURVIVED
+        reason = None
+    result = {
         "mutation_id": spec.mutation_id,
         "description": spec.description,
-        "status": STATUS_KILLED if evaluation["status"] == "reject" else STATUS_SURVIVED,
+        "status": status,
+        "expected_axes": list(spec.expected_axes),
         "evaluation": evaluation,
     }
+    if reason:
+        result["reason"] = reason
+    return result
 
 
 def experiment_manifest() -> dict[str, Any]:
@@ -343,7 +385,9 @@ def selftest() -> dict[str, Any]:
         assert statuses[mutation_id] == STATUS_KILLED, mutation_id
     assert statuses["equivalent-no-op"] == STATUS_INVALID
     assert statuses["malformed-fixture"] == STATUS_INVALID
-    assert statuses["unobserved-extra-output"] == STATUS_SURVIVED
+    assert statuses["unobserved-extra-output"] == STATUS_TOLERATED
+    assert statuses["unobserved-wrong-rejection-path"] == STATUS_SURVIVED
+    assert statuses["unrelated-rejection"] == STATUS_SURVIVED
     assert statuses["untrusted-generated-code"] == STATUS_NOT_EXECUTED
     assert report["experiment_manifest"]["status"] == "planned"
     return report

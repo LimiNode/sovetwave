@@ -35,21 +35,27 @@ separate isolation contract.
 
 ## Mutation status
 
-The pilot reports four distinct outcomes:
+The pilot reports five distinct outcomes:
 
-- `killed` — the evaluator rejects the mutated trusted fixture;
-- `survived` — the evaluator accepts the mutation, which is a pilot finding;
+- `killed` — the evaluator rejects the mutated trusted fixture for its declared target axis;
+- `survived` — the evaluator accepts a contract-violating mutation, or rejects it for an unrelated axis;
 - `invalid_mutant` — the operator did not produce a distinct valid fixture;
 - `not_executed` — the mutation requires an isolation boundary that is not
   established.
 
+`tolerated` is reserved for a contract-permitted, semantically equivalent
+change and is not a coverage failure. A surviving mutation may either pass the
+evaluator despite violating the contract or be rejected for an unrelated axis;
+the target-axis check keeps those cases distinct from a genuine kill.
+
 The self-test covers a missing boundary check, wrong error handling, incorrect
 identifier mapping, removal of required output, and removal of the safety
-check. It also includes an intentionally unobserved extra field that survives
-the current contract, a malformed fixture classified as `invalid_mutant`, and
-an untrusted-code mutation classified as `not_executed`. A surviving mutation
-is a finding about evaluator coverage, not a pass for the experiment; no
-generated code is run in the grader process.
+check. It also includes an allowed extra field classified as `tolerated`, a
+wrong rejected-path identity that survives the current evaluator, an unrelated
+rejection that does not count as a kill, a malformed fixture classified as
+`invalid_mutant`, and an untrusted-code mutation classified as `not_executed`.
+A surviving mutation is a finding about evaluator coverage, not a pass for the
+experiment; no generated code is run in the grader process.
 
 ## Completeness dimensions
 
@@ -70,6 +76,10 @@ while a wrong error path affects the negative/error-handling dimensions.
 
 The term `mutation killed` means that this evaluator rejected a changed
 trusted fixture. It is not evidence of full source-code mutation testing.
+
+The `unobserved-wrong-rejection-path` case records the current evaluator gap
+between the declared unsafe input and the path named in the rejection. It is a
+real surviving contract violation, unlike the tolerated extra field.
 
 ## Planned three-arm comparison
 
