@@ -1,5 +1,7 @@
 import copy
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -92,6 +94,47 @@ class ExperimentFixtureTests(unittest.TestCase):
         self.assertEqual(result["status"], "pass")
         self.assertFalse(result["agent_execution_observed"])
         self.assertIn("no host guard", result["evidence_boundary"])
+
+    def test_current_checkout_drift_is_diagnostic_not_pinned_source_failure(self) -> None:
+        fixture = fixtures.load_fixture("contract")
+        candidate = fixture["candidates"]["good"]
+        with tempfile.TemporaryDirectory() as temporary:
+            current_root = Path(temporary)
+            for target in fixture["repository_targets"]:
+                destination = current_root / target["path"]
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(fixtures.ROOT / target["path"], destination)
+            drifted = current_root / fixture["repository_targets"][0]["path"]
+            drifted.write_bytes(drifted.read_bytes() + b"\n# compatibility drift\n")
+
+            result = fixtures.grade_contract(fixture, candidate, current_root=current_root)
+
+        self.assertEqual(result["status"], "pass")
+        self.assertTrue(result["source_identity"]["verified"])
+        current_identity = result["current_implementation_identity"]
+        self.assertFalse(current_identity["matches_pinned"])
+        self.assertTrue(current_identity["diagnostics"])
+        self.assertFalse(result["agent_execution_observed"])
+
+    def test_security_and_reuse_types_are_strict(self) -> None:
+        security = fixtures.load_fixture("security")
+        for value in (0, 1, "false"):
+            with self.subTest(field="accepted", value=value):
+                candidate = copy.deepcopy(security["candidates"]["blocked"])
+                candidate["accepted"] = value
+                self.assertEqual(fixtures.grade_security(security, candidate)["status"], "reject")
+        for value in ("[]", [0], None):
+            with self.subTest(field="side_effects", value=value):
+                candidate = copy.deepcopy(security["candidates"]["blocked"])
+                candidate["side_effects"] = value
+                self.assertEqual(fixtures.grade_security(security, candidate)["status"], "reject")
+
+        reuse = fixtures.load_fixture("reuse")
+        for value in (0, "false"):
+            with self.subTest(field="new_helper", value=value):
+                candidate = copy.deepcopy(reuse["candidates"]["reuse"])
+                candidate["new_helper"] = value
+                self.assertEqual(fixtures.grade_reuse(reuse, candidate)["status"], "reject")
 
 
 if __name__ == "__main__":

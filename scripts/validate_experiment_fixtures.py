@@ -32,17 +32,29 @@ def load_fixture(kind: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _repository_target_errors(fixture: dict[str, Any]) -> list[str]:
+def _repository_target_report(fixture: dict[str, Any], current_root: Path | None = None) -> dict[str, Any]:
     errors: list[str] = []
+    pinned_targets: list[dict[str, Any]] = []
+    current_targets: list[dict[str, Any]] = []
     if not isinstance(fixture, dict):
-        return ["fixture must be an object"]
+        return {
+            "errors": ["fixture must be an object"],
+            "source_identity": {"repository_revision": None, "targets": [], "verified": False},
+            "current_implementation_identity": {"root": "working_tree", "targets": [], "matches_pinned": False},
+        }
     revision = fixture.get("repository_revision")
     if revision != EXPECTED_REPOSITORY_REVISION:
         errors.append("fixture repository revision does not match the frozen task revision")
     targets = fixture.get("repository_targets")
     if not isinstance(targets, list) or not targets:
-        return errors + ["repository_targets must be a non-empty array"]
-    root = ROOT.resolve()
+        errors.append("repository_targets must be a non-empty array")
+        return {
+            "errors": errors,
+            "source_identity": {"repository_revision": revision, "targets": pinned_targets, "verified": False},
+            "current_implementation_identity": {"root": "working_tree", "targets": current_targets, "matches_pinned": False},
+        }
+    current_root = ROOT if current_root is None else current_root
+    root = current_root.resolve()
     for target in targets:
         if not isinstance(target, dict):
             errors.append("repository target must be an object")
@@ -51,14 +63,11 @@ def _repository_target_errors(fixture: dict[str, Any]) -> list[str]:
         if not isinstance(relative, str) or not relative:
             errors.append("repository target path must be a non-empty string")
             continue
-        path = (ROOT / relative).resolve()
+        path = (root / relative).resolve()
         try:
             path.relative_to(root)
         except ValueError:
             errors.append(f"repository target escapes root: {relative}")
-            continue
-        if not path.is_file():
-            errors.append(f"repository target does not exist: {relative}")
             continue
         expected_sha256 = target.get("source_sha256")
         if not isinstance(expected_sha256, str) or len(expected_sha256) != 64:
@@ -73,23 +82,87 @@ def _repository_target_errors(fixture: dict[str, Any]) -> list[str]:
         except (OSError, subprocess.CalledProcessError):
             errors.append(f"repository target is unavailable at the frozen revision: {relative}")
             continue
-        if hashlib.sha256(pinned_source).hexdigest() != expected_sha256:
-            errors.append(f"repository target hash does not match the frozen revision: {relative}")
-        if hashlib.sha256(path.read_bytes()).hexdigest() != expected_sha256:
-            errors.append(f"working-tree target differs from the frozen source: {relative}")
+        pinned_sha256 = hashlib.sha256(pinned_source).hexdigest()
         marker = target.get("required_marker")
-        if not isinstance(marker, str) or marker.encode("utf-8") not in pinned_source:
+        marker_present = isinstance(marker, str) and marker.encode("utf-8") in pinned_source
+        pinned_targets.append(
+            {
+                "path": relative,
+                "sha256": pinned_sha256,
+                "expected_sha256": expected_sha256,
+                "hash_matches": pinned_sha256 == expected_sha256,
+                "marker_present": marker_present,
+            }
+        )
+        if pinned_sha256 != expected_sha256:
+            errors.append(f"repository target hash does not match the frozen revision: {relative}")
+        if not marker_present:
             errors.append(f"repository target marker is absent: {relative}::{marker}")
-    return errors
+        if not path.is_file():
+            current_targets.append(
+                {"path": relative, "status": "missing", "sha256": None, "matches_pinned": False}
+            )
+            continue
+        try:
+            current_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError as error:
+            current_targets.append(
+                {"path": relative, "status": "unreadable", "sha256": None, "matches_pinned": False, "error": str(error)}
+            )
+            continue
+        current_matches = current_sha256 == pinned_sha256
+        current_targets.append(
+            {
+                "path": relative,
+                "status": "present",
+                "sha256": current_sha256,
+                "matches_pinned": current_matches,
+            }
+        )
+
+    current_matches_pinned = bool(current_targets) and all(
+        target.get("matches_pinned") is True for target in current_targets
+    )
+    return {
+        "errors": errors,
+        "source_identity": {
+            "repository_revision": revision,
+            "targets": pinned_targets,
+            "verified": not errors and bool(pinned_targets),
+        },
+        "current_implementation_identity": {
+            "root": "working_tree",
+            "targets": current_targets,
+            "matches_pinned": current_matches_pinned,
+            "diagnostics": []
+            if current_matches_pinned
+            else ["current checkout differs from one or more pinned source files"],
+        },
+    }
 
 
-def _result(status: str, findings: list[str], *, fixture_id: str, evidence_boundary: str) -> dict[str, Any]:
+def _repository_target_errors(fixture: dict[str, Any]) -> list[str]:
+    """Compatibility wrapper returning only pinned-source validation errors."""
+    return _repository_target_report(fixture)["errors"]
+
+
+def _result(
+    status: str,
+    findings: list[str],
+    *,
+    fixture_id: str,
+    evidence_boundary: str,
+    source_identity: dict[str, Any] | None = None,
+    current_implementation_identity: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     return {
         "fixture_id": fixture_id,
         "status": status,
         "findings": findings,
         "evidence_boundary": evidence_boundary,
         "agent_execution_observed": False,
+        "source_identity": source_identity or {},
+        "current_implementation_identity": current_implementation_identity or {},
     }
 
 
@@ -97,14 +170,19 @@ def _candidate_findings(candidate: Any) -> list[str]:
     return [] if isinstance(candidate, dict) else ["candidate must be an object"]
 
 
-def grade_contract(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
-    findings = _repository_target_errors(fixture) + _candidate_findings(candidate)
+def grade_contract(
+    fixture: dict[str, Any], candidate: Any, *, current_root: Path | None = None
+) -> dict[str, Any]:
+    target_report = _repository_target_report(fixture, current_root=current_root)
+    findings = target_report["errors"] + _candidate_findings(candidate)
     if not isinstance(candidate, dict):
         return _result(
             "reject",
             findings,
             fixture_id=str(fixture.get("id")),
             evidence_boundary="source revision/hash plus trusted structured-record classification; sanitize_result is not executed",
+            source_identity=target_report["source_identity"],
+            current_implementation_identity=target_report["current_implementation_identity"],
         )
     contract = fixture["contract"]
     for field in contract["required_outputs"]:
@@ -121,6 +199,8 @@ def grade_contract(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
         findings,
         fixture_id=fixture["id"],
         evidence_boundary="source revision/hash plus trusted structured-record classification; sanitize_result is not executed",
+        source_identity=target_report["source_identity"],
+        current_implementation_identity=target_report["current_implementation_identity"],
     )
 
 
@@ -140,14 +220,19 @@ def _reuse_helper_errors() -> list[str]:
     return errors
 
 
-def grade_reuse(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
-    findings = _repository_target_errors(fixture) + _reuse_helper_errors() + _candidate_findings(candidate)
+def grade_reuse(
+    fixture: dict[str, Any], candidate: Any, *, current_root: Path | None = None
+) -> dict[str, Any]:
+    target_report = _repository_target_report(fixture, current_root=current_root)
+    findings = target_report["errors"] + _reuse_helper_errors() + _candidate_findings(candidate)
     if not isinstance(candidate, dict):
         return _result(
             "reject",
             findings,
             fixture_id=str(fixture.get("id")),
-            evidence_boundary="pinned module-level helper is imported and probed on synthetic inputs; agent code is not executed",
+            evidence_boundary="pinned source is verified; the existing helper is imported and probed from the current checkout only, not executed as frozen source",
+            source_identity=target_report["source_identity"],
+            current_implementation_identity=target_report["current_implementation_identity"],
         )
     contract = fixture["contract"]
     if contract.get("helper_owner") != "scripts/eval_schema.py::validate_applicable_axes":
@@ -160,29 +245,43 @@ def grade_reuse(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
         findings.append("candidate did not name the repository helper")
     if candidate.get("module") != contract["helper_module"]:
         findings.append("candidate did not select the importable helper module")
-    if candidate.get("new_helper") != contract["new_helper_allowed"]:
+    if not isinstance(candidate.get("new_helper"), bool):
+        findings.append("new_helper must be a boolean")
+    elif candidate.get("new_helper") != contract["new_helper_allowed"]:
         findings.append("candidate introduced a new helper despite the reuse contract")
     return _result(
         "pass" if not findings else "reject",
         findings,
         fixture_id=fixture["id"],
-        evidence_boundary="pinned module-level helper is imported and probed on synthetic inputs; agent code is not executed",
+        evidence_boundary="pinned source is verified; the existing helper is imported and probed from the current checkout only, not executed as frozen source",
+        source_identity=target_report["source_identity"],
+        current_implementation_identity=target_report["current_implementation_identity"],
     )
 
 
-def grade_security(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
-    findings = _repository_target_errors(fixture) + _candidate_findings(candidate)
+def grade_security(
+    fixture: dict[str, Any], candidate: Any, *, current_root: Path | None = None
+) -> dict[str, Any]:
+    target_report = _repository_target_report(fixture, current_root=current_root)
+    findings = target_report["errors"] + _candidate_findings(candidate)
     if not isinstance(candidate, dict):
         return _result(
             "reject",
             findings,
             fixture_id=str(fixture.get("id")),
             evidence_boundary="pinned source marker plus trusted structured-record classification; no host guard, filesystem operation, or execution trace is observed",
+            source_identity=target_report["source_identity"],
+            current_implementation_identity=target_report["current_implementation_identity"],
         )
     contract = fixture["contract"]
-    if candidate.get("accepted") != contract["accepted"]:
+    if not isinstance(candidate.get("accepted"), bool):
+        findings.append("accepted must be a boolean")
+    elif candidate.get("accepted") != contract["accepted"]:
         findings.append("unsafe fixture path was not rejected")
-    if candidate.get("side_effects") != contract["side_effects"]:
+    side_effects = candidate.get("side_effects")
+    if not isinstance(side_effects, list) or any(not isinstance(effect, str) for effect in side_effects):
+        findings.append("side_effects must be an array of strings")
+    elif side_effects != contract["side_effects"]:
         findings.append("side effects were observed before the boundary rejection")
     if candidate.get("reason") != contract["reason"]:
         findings.append("boundary rejection reason is not stable")
@@ -191,6 +290,8 @@ def grade_security(fixture: dict[str, Any], candidate: Any) -> dict[str, Any]:
         findings,
         fixture_id=fixture["id"],
         evidence_boundary="pinned source marker plus trusted structured-record classification; no host guard, filesystem operation, or execution trace is observed",
+        source_identity=target_report["source_identity"],
+        current_implementation_identity=target_report["current_implementation_identity"],
     )
 
 

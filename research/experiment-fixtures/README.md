@@ -16,9 +16,13 @@ The three contracts are:
 
 Every task is pinned to repository revision
 `cdbd2827e0f440f171edddefc3e3556a74e5d7a5` and to SHA-256 of each referenced
-source file. A marker proves only that the named source text exists at that
-revision. The reuse check additionally imports the established module-level
-helper and probes its existing contract with trusted synthetic inputs.
+source file. The validator verifies those bytes with `git show` and checks the
+marker in the pinned source. It reports the current checkout's file hashes as
+a separate implementation-identity diagnostic; later changes to the working
+tree therefore do not invalidate the historical fixture provenance.
+The reuse check additionally imports the established module-level helper from
+the current checkout and probes its existing contract with trusted synthetic
+inputs. That probe is not evidence that the frozen source was executed.
 
 The graders classify trusted structured candidate records. They do not import
 or execute generated code and do not establish that a coding agent actually
