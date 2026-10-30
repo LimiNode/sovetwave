@@ -305,10 +305,19 @@ unnecessary.
 The Codex adapter creates a temporary workspace for each variant and installs the repository skill only for the Sovetwave run. Claude's three-arm mode uses the same tool surface for vanilla, voice-only, and full-skill arms; only the full-skill workspace contains the project skill. Prompt-only cases omit `--permission-mode`; repository-grounded cases use `dontAsk` with an isolated fixture.
 
 Every Claude invocation uses `--output-format stream-json --verbose`. The run
-JSON records observed tool names, whether the project skill was available, and
-whether a `Skill` tool call occurred. `status`/`process_status` describe the
-CLI process; `semantic_status` is `unrated` until a human or LLM grader checks
-the assertions.
+JSON records observed tool names, a bounded `tool_events` lifecycle trace when
+the provider exposes one, whether the project skill was available, and whether
+a `Skill` tool call occurred. Tool-event paths retain only known relative
+identity; unknown absolute paths are marked unavailable. Textual results retain
+only byte count and digest, never an arbitrary preview. Each provider parser
+also records whether the trajectory is `complete`, `incomplete`, `truncated`,
+`unavailable`, or affected by a `parse_error`. `complete` requires the
+provider-specific terminal event (`turn.completed` for Codex or `result` for
+Claude) and a closed tool lifecycle; an absent terminal marker or unclosed
+lifecycle is `incomplete`. An absent or incomplete trace is unknown telemetry,
+not proof that no tool was used. `status`/`process_status` describe
+the CLI process; `semantic_status` is `unrated` until a human or LLM grader
+checks the assertions.
 
 By default a live run stops on the first failed, timed-out, or empty invocation,
 so an invalid login or unavailable model does not produce a full set of empty

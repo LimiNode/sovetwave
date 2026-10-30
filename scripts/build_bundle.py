@@ -23,6 +23,7 @@ CODEX_USAGE_COMPONENTS = (
     "output_tokens",
     "reasoning_output_tokens",
 )
+MAX_TOOL_EVENTS = 256
 
 
 def parse_tokens(stderr: str) -> int | None:
@@ -36,6 +37,59 @@ def parse_tokens(stderr: str) -> int | None:
 def parse_model(stderr: str) -> str | None:
     match = MODEL_RE.search(stderr or "")
     return match.group(1) if match else None
+
+
+def sanitize_event_path(value: object) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    normalized = value.replace("\\", "/")
+    marker = "skills/sovetwave/"
+    if marker in normalized:
+        return normalized[normalized.index(marker):]
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("/") or (len(normalized) >= 3 and normalized[1:3] == ":/"):
+        return None
+    if ".." in normalized.split("/"):
+        return None
+    return normalized.lstrip("./")
+
+
+def sanitize_tool_events(value: object) -> list[dict]:
+    """Retain only bounded, redacted per-call fields in a review bundle."""
+    if not isinstance(value, list):
+        return []
+    allowed = {
+        "sequence", "event", "provider_event", "call_id", "tool_name", "item_type", "lifecycle",
+        "status", "permission", "exit_code", "path", "path_status", "artifact_sha256",
+        "artifact_action", "command_present", "command_sha256",
+        "stdout", "stderr", "result",
+    }
+    events: list[dict] = []
+    for raw in value[:MAX_TOOL_EVENTS]:
+        if not isinstance(raw, dict):
+            continue
+        event = {key: raw[key] for key in allowed if key in raw}
+        if "path" in event:
+            original_path = event["path"]
+            event["path"] = sanitize_event_path(original_path)
+            if event["path"] is None:
+                event.pop("path")
+                event["path_status"] = "unavailable"
+            else:
+                event["path_status"] = "known_relative"
+        for key in ("stdout", "stderr", "result"):
+            evidence = event.get(key)
+            if isinstance(evidence, dict):
+                event[key] = {
+                    field: evidence[field]
+                    for field in ("bytes", "sha256")
+                    if field in evidence
+                }
+            else:
+                event.pop(key, None)
+        events.append(event)
+    return events
 
 
 def load_run(path: Path) -> dict:
@@ -118,6 +172,8 @@ def sanitize_result(experiment: str, revision: str, row: dict) -> dict:
         "codex_item_counts_by_type": row.get("codex_item_counts_by_type"),
         "reference_trace_status": row.get("reference_trace_status"),
         "reference_files_read": row.get("reference_files_read") or [],
+        "tool_events": sanitize_tool_events(row.get("tool_events")),
+        "tool_events_status": row.get("tool_events_status"),
         "response": row.get("response") or "",
         **usage_fields,
     }
@@ -236,7 +292,7 @@ def main() -> int:
     bundle = {
         "schema": "sovetwave-review-bundle-2",
         "created_at": datetime.now(UTC).isoformat(),
-        "privacy": "command arrays and stderr were omitted; responses and non-secret telemetry were retained",
+        "privacy": "command arrays and stderr were omitted; responses and bounded, redacted tool events were retained",
         "runs": runs,
         "statistics": stats,
         "observations": observations,
@@ -251,6 +307,7 @@ def main() -> int:
         "material_inputs_dirty", "attempt", "recovered", "original_process_status",
         "reference_trace_status", "codex_tool_calls", "codex_usage_events",
         "codex_duplicate_usage_events", "codex_usage_status",
+        "tool_events", "tool_events_status",
         "codex_input_tokens", "codex_cached_input_tokens",
         "codex_cache_write_input_tokens", "codex_output_tokens",
         "codex_reasoning_output_tokens", "codex_anonymous_tool_items",
@@ -260,6 +317,8 @@ def main() -> int:
         csv_row = dict(row)
         if isinstance(csv_row.get("applicable_axes"), list):
             csv_row["applicable_axes"] = json.dumps(csv_row["applicable_axes"], ensure_ascii=False)
+        if isinstance(csv_row.get("tool_events"), list):
+            csv_row["tool_events"] = json.dumps(csv_row["tool_events"], ensure_ascii=False, sort_keys=True)
         csv_observations.append(csv_row)
     write_csv(out / "observations.csv", csv_observations, fields)
     write_csv(out / "statistics.csv", stats, list(stats[0]) if stats else [])

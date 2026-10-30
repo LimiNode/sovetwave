@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import atexit
 from functools import lru_cache
+import hashlib
 import json
 import os
 import re
@@ -31,6 +32,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "behavioral" / "cases"
 DEFAULT_RESULTS = ROOT / "evals" / "behavioral" / "results"
+MAX_TOOL_EVENTS = 256
 SECRET = re.compile(r"(?:sk-[A-Za-z0-9_-]+|Bearer\s+[A-Za-z0-9._-]+|(?:api[_ -]?key|access[_ -]?token)\s*[=:]\s*\S+)", re.IGNORECASE)
 URL_CREDENTIAL = re.compile(r"(https?://)([^/@\s]+@)", re.IGNORECASE)
 SAFE_PROVIDER_KEYS = frozenset({
@@ -518,6 +520,242 @@ def parse_claude_stream_metadata(stream: str) -> tuple[str, list[str], list[str]
     return response, list(dict.fromkeys(tool_names)), list(dict.fromkeys(model_names))
 
 
+def parse_claude_tool_events_with_status(stream: str) -> tuple[list[dict[str, Any]], str]:
+    """Normalize Claude tool events and report whether the trace is complete."""
+    events: list[dict[str, Any]] = []
+    sequence = 0
+    candidate_events = 0
+    parse_errors = 0
+    terminal_event_observed = False
+    terminal_order_valid = True
+    lifecycle_valid = True
+    active_tool_ids: set[str] = set()
+    tool_metadata: dict[str, dict[str, Any]] = {}
+    for line in (stream or "").splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            parse_errors += 1
+            continue
+        if not isinstance(event, dict):
+            parse_errors += 1
+            continue
+        if event.get("type") == "result":
+            if terminal_event_observed:
+                # A second result cannot be assigned to this segment without
+                # a provider segment identity; fail closed.
+                terminal_order_valid = False
+            terminal_event_observed = True
+        message = event.get("message")
+        content = message.get("content") if isinstance(message, dict) else event.get("content")
+        if not isinstance(content, list):
+            continue
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+            block_type = block.get("type")
+            if terminal_event_observed and block_type in {"tool_use", "tool_result"}:
+                # Tool lifecycle events after ``result`` belong to another
+                # segment or malformed telemetry, not this completed run.
+                terminal_order_valid = False
+            if block_type == "tool_use" and isinstance(block.get("name"), str):
+                sequence += 1
+                candidate_events += 1
+                call_id = block.get("id")
+                if not isinstance(call_id, str) or not call_id or call_id in active_tool_ids:
+                    lifecycle_valid = False
+                else:
+                    active_tool_ids.add(call_id)
+                if len(events) >= MAX_TOOL_EVENTS:
+                    continue
+                record: dict[str, Any] = {
+                    "sequence": sequence,
+                    "event": "invoked",
+                    "provider_event": "tool_use",
+                    "call_id": call_id,
+                    "tool_name": block["name"],
+                    "permission": "not_available",
+                }
+                tool_input = block.get("input")
+                raw_path = (
+                    tool_input.get("path") or tool_input.get("file_path")
+                    if isinstance(tool_input, dict) else None
+                )
+                path = _safe_event_path(raw_path)
+                record["path_status"] = _event_path_status(raw_path)
+                if path:
+                    record["path"] = path
+                if isinstance(block.get("id"), str) and block["id"]:
+                    tool_metadata[block["id"]] = {
+                        "tool_name": block["name"],
+                        "path": path,
+                        "path_status": record["path_status"],
+                    }
+                events.append(record)
+            elif block_type == "tool_result":
+                sequence += 1
+                candidate_events += 1
+                call_id = block.get("tool_use_id")
+                if not isinstance(call_id, str) or call_id not in active_tool_ids:
+                    lifecycle_valid = False
+                else:
+                    active_tool_ids.remove(call_id)
+                if len(events) >= MAX_TOOL_EVENTS:
+                    continue
+                metadata = tool_metadata.get(call_id, {}) if isinstance(call_id, str) else {}
+                record = {
+                    "sequence": sequence,
+                    "event": "completed",
+                    "provider_event": "tool_result",
+                    "call_id": call_id,
+                    "tool_name": metadata.get("tool_name"),
+                    "permission": "not_available",
+                }
+                if metadata.get("path"):
+                    record["path"] = metadata["path"]
+                record["path_status"] = metadata.get("path_status", "unavailable")
+                if isinstance(block.get("is_error"), bool):
+                    record["status"] = "failed" if block["is_error"] else "completed"
+                events.append(record)
+    if not (stream or "").strip():
+        status = "unavailable"
+    elif parse_errors:
+        status = "parse_error"
+    elif candidate_events > MAX_TOOL_EVENTS:
+        status = "truncated"
+    elif not terminal_event_observed:
+        status = "incomplete"
+    elif not terminal_order_valid:
+        status = "incomplete"
+    elif not lifecycle_valid or active_tool_ids:
+        status = "incomplete"
+    else:
+        status = "complete"
+    return events, status
+
+
+def parse_claude_tool_events(stream: str) -> list[dict[str, Any]]:
+    """Retain a bounded invocation/completion trace from Claude JSONL output."""
+    events, _ = parse_claude_tool_events_with_status(stream)
+    return events
+
+
+def _safe_event_path(value: Any) -> str | None:
+    """Keep relative artifact identity without leaking an absolute workspace path."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    normalized = value.replace("\\", "/")
+    marker = "skills/sovetwave/"
+    if marker in normalized:
+        return normalized[normalized.index(marker):]
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("/") or re.match(r"^[A-Za-z]:/", normalized):
+        return None
+    if ".." in normalized.split("/"):
+        return None
+    return normalized
+
+
+def _event_path_status(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return "unavailable"
+    normalized = value.replace("\\", "/")
+    if "skills/sovetwave/" in normalized:
+        return "known_relative"
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("/") or re.match(r"^[A-Za-z]:/", normalized):
+        return "unavailable"
+    if ".." in normalized.split("/"):
+        return "unavailable"
+    return "known_relative"
+
+
+def _bounded_text_evidence(value: Any) -> dict[str, Any]:
+    """Record result identity without retaining arbitrary tool output."""
+    if not isinstance(value, str):
+        return {}
+    encoded = value.encode("utf-8", errors="replace")
+    return {
+        "bytes": len(encoded),
+        "sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+
+
+def _codex_tool_event(event_type: str, item: dict[str, Any], sequence: int) -> dict[str, Any] | None:
+    item_type = item.get("type")
+    if not isinstance(item_type, str):
+        return None
+    is_tool = (
+        item_type in {"command_execution", "mcp_tool_call", "collab_tool_call", "web_search", "file_change", "file_read", "tool_result"}
+        or "tool" in item_type
+        or "command" in item_type
+        or "file" in item_type
+    )
+    if not is_tool:
+        return None
+    lifecycle = {
+        "item.started": "invoked",
+        "item.updated": "updated",
+        "item.completed": "completed",
+        "item.failed": "completed",
+    }.get(event_type)
+    record: dict[str, Any] = {
+        "sequence": sequence,
+        "event": lifecycle or "unknown",
+        "provider_event": event_type,
+        "call_id": item.get("id"),
+        "tool_name": item.get("name") if isinstance(item.get("name"), str) else item_type,
+        "item_type": item_type,
+    }
+    if lifecycle:
+        record["lifecycle"] = lifecycle
+    status = item.get("status") or item.get("state")
+    if event_type == "item.failed":
+        status = "failed"
+    elif status is None and event_type == "item.completed":
+        status = "completed"
+    if isinstance(status, str):
+        record["status"] = status
+    for key in ("exit_code", "returncode", "exit_status"):
+        value = item.get(key)
+        if isinstance(value, int) and not isinstance(value, bool):
+            record["exit_code"] = value
+            break
+    if "permission" in item:
+        record["permission"] = item["permission"] if isinstance(item["permission"], str) else "observed"
+    elif item.get("permission_denied") is True or item_type in {"permission_denied", "tool_permission_denied"}:
+        record["permission"] = "denied"
+    else:
+        record["permission"] = "not_available"
+    raw_path = item.get("path") or item.get("file") or item.get("artifact_path")
+    path = _safe_event_path(raw_path)
+    record["path_status"] = _event_path_status(raw_path)
+    if path:
+        record["path"] = path
+    artifact = item.get("artifact")
+    artifact_sha256 = item.get("artifact_sha256")
+    artifact_action = item.get("artifact_action")
+    if isinstance(artifact, dict):
+        artifact_sha256 = artifact.get("sha256", artifact_sha256)
+        artifact_action = artifact.get("action", artifact_action)
+    if isinstance(artifact_sha256, str):
+        record["artifact_sha256"] = artifact_sha256.lower()
+    if isinstance(artifact_action, str):
+        record["artifact_action"] = artifact_action
+    if isinstance(item.get("command"), str):
+        record["command_present"] = True
+        record["command_sha256"] = hashlib.sha256(item["command"].encode("utf-8", errors="replace")).hexdigest()
+    else:
+        record["command_present"] = False
+    for source_key, target_key in (("stdout", "stdout"), ("stderr", "stderr"), ("result", "result")):
+        evidence = _bounded_text_evidence(item.get(source_key))
+        if evidence:
+            record[target_key] = evidence
+    return record
+
+
 def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     """Extract structured usage and tool telemetry from Codex ``--json`` events.
 
@@ -532,6 +770,14 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
     items_by_id: dict[str, str] = {}
     anonymous_items = 0
     reference_reads: list[str] = []
+    tool_events: list[dict[str, Any]] = []
+    event_sequence = 0
+    tool_event_candidates = 0
+    parse_errors = 0
+    terminal_event_observed = False
+    terminal_order_valid = True
+    lifecycle_valid = True
+    active_tool_ids: set[str] = set()
 
     def safe_reference_path(value: Any) -> str | None:
         if not isinstance(value, str):
@@ -545,12 +791,20 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
+            parse_errors += 1
             continue
         if not isinstance(event, dict):
+            parse_errors += 1
             continue
         event_type = event.get("type")
         if isinstance(event_type, str) and event_type not in event_types:
             event_types.append(event_type)
+        if event_type == "turn.completed":
+            if terminal_event_observed:
+                # Without an explicit segment identity, a second terminal
+                # marker cannot be assigned to the same execution safely.
+                terminal_order_valid = False
+            terminal_event_observed = True
         # Codex reports aggregate turn usage on turn.completed. Do not sum
         # arbitrary nested usage objects from progress events.
         if event_type == "turn.completed":
@@ -573,6 +827,37 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
                             usage[key] = value
         item = event.get("item")
         if isinstance(item, dict):
+            if terminal_event_observed and event_type != "turn.completed":
+                # Only provider events after the terminal marker that carry
+                # an execution item can change the evidence for this segment.
+                # Treat them as a boundary violation instead of merging turns.
+                terminal_order_valid = False
+            event_sequence += 1
+            tool_event = _codex_tool_event(
+                event_type if isinstance(event_type, str) else "unknown",
+                item,
+                event_sequence,
+            )
+            if tool_event is not None:
+                tool_event_candidates += 1
+                item_id = item.get("id")
+                if event_type == "item.started":
+                    if not isinstance(item_id, str) or not item_id or item_id in active_tool_ids:
+                        lifecycle_valid = False
+                    else:
+                        active_tool_ids.add(item_id)
+                elif event_type in {"item.completed", "item.failed"}:
+                    if not isinstance(item_id, str) or item_id not in active_tool_ids:
+                        lifecycle_valid = False
+                    else:
+                        active_tool_ids.remove(item_id)
+                elif event_type == "item.updated":
+                    if not isinstance(item_id, str) or item_id not in active_tool_ids:
+                        lifecycle_valid = False
+                else:
+                    lifecycle_valid = False
+                if len(tool_events) < MAX_TOOL_EVENTS:
+                    tool_events.append(tool_event)
             item_type = item.get("type", "")
             item_id = item.get("id")
             if isinstance(item_type, str) and isinstance(item_id, str) and item_id:
@@ -613,6 +898,20 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         usage_status = "valid"
     else:
         usage_status = "missing"
+    if not (stream or "").strip():
+        tool_events_status = "unavailable"
+    elif parse_errors:
+        tool_events_status = "parse_error"
+    elif tool_event_candidates > MAX_TOOL_EVENTS:
+        tool_events_status = "truncated"
+    elif not terminal_event_observed:
+        tool_events_status = "incomplete"
+    elif not terminal_order_valid:
+        tool_events_status = "incomplete"
+    elif not lifecycle_valid or active_tool_ids:
+        tool_events_status = "incomplete"
+    else:
+        tool_events_status = "complete"
     return {
         "usage": usage or None,
         "usage_status": usage_status,
@@ -622,6 +921,8 @@ def parse_codex_json_stream(stream: str) -> dict[str, Any]:
         "tool_calls": unique_tool_calls if items_by_id else None,
         "anonymous_tool_items": anonymous_items,
         "item_counts_by_type": item_counts,
+        "tool_events": tool_events,
+        "tool_events_status": tool_events_status,
         "reference_files_read": reference_reads,
     }
 
@@ -873,6 +1174,8 @@ def run_variant(
             "recovered": recovered,
             "reference_files_read": [],
             "reference_trace_status": "not_available",
+            "tool_events": [],
+            "tool_events_status": "unavailable",
             "skill_revision": repository_revision(),
             "skill_revision_dirty": repository_revision_dirty(),
             "material_inputs_dirty": repository_material_inputs_dirty(),
@@ -933,12 +1236,15 @@ def run_variant(
             result["codex_tool_calls"] = codex_telemetry["tool_calls"]
             result["codex_anonymous_tool_items"] = codex_telemetry["anonymous_tool_items"]
             result["codex_item_counts_by_type"] = codex_telemetry["item_counts_by_type"]
+            result["tool_events"] = codex_telemetry["tool_events"]
+            result["tool_events_status"] = codex_telemetry["tool_events_status"]
             if codex_telemetry["reference_files_read"]:
                 result["reference_files_read"] = codex_telemetry["reference_files_read"]
                 result["reference_trace_status"] = "observed"
         if provider == "claude":
             response, tool_trace, resolved_models = parse_claude_stream_metadata(response)
             result["tool_trace"] = tool_trace
+            result["tool_events"], result["tool_events_status"] = parse_claude_tool_events_with_status(completed.stdout or "")
             result["skill_invoked"] = "Skill" in tool_trace
             result["resolved_models"] = resolved_models
         stderr_model = resolved_model_from_stderr(completed.stderr or "")
