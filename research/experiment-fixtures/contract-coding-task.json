@@ -1,0 +1,45 @@
+{
+  "id": "bundle-sanitization-contract",
+  "repository_revision": "cdbd2827e0f440f171edddefc3e3556a74e5d7a5",
+  "repository_targets": [
+    {
+      "path": "scripts/build_bundle.py",
+      "source_sha256": "aa315513ecdf9acadfe140bc97e6eb25a3c9b5c195883001f1b91a1174ec89eb",
+      "required_marker": "def sanitize_result("
+    },
+    {
+      "path": "tests/behavioral/test_harness.py",
+      "source_sha256": "50c37d6ca74255ccafa2c419946f8395ff54569510524d995476e807ff8b716c",
+      "required_marker": "test_codex_reference_trace_requires_explicit_file_read"
+    }
+  ],
+  "contract": {
+    "required_outputs": [
+      "experiment",
+      "revision",
+      "case_id",
+      "process_status",
+      "response",
+      "reference_trace_status"
+    ],
+    "completed_status": "completed",
+    "allowed_trace_statuses": ["observed", "unavailable", "not_applicable"]
+  },
+  "candidates": {
+    "good": {
+      "experiment": "fixture-experiment",
+      "revision": "fixture-revision",
+      "case_id": "fixture-case",
+      "process_status": "completed",
+      "response": "The contract result is complete.",
+      "reference_trace_status": "unavailable"
+    },
+    "incomplete": {
+      "experiment": "fixture-experiment",
+      "revision": "fixture-revision",
+      "case_id": "fixture-case",
+      "process_status": "completed",
+      "response": "The contract result is incomplete."
+    }
+  }
+}
