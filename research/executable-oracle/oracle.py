@@ -97,11 +97,11 @@ def _pinned_source_identity(task: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _current_checkout_identity() -> dict[str, Any]:
+def _current_checkout_identity(root: Path = ROOT) -> dict[str, Any]:
     errors: list[str] = []
     try:
         revision = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True, stderr=subprocess.DEVNULL
         ).strip()
     except (OSError, subprocess.CalledProcessError):
         revision = None
@@ -110,7 +110,7 @@ def _current_checkout_identity() -> dict[str, Any]:
         dirty = bool(
             subprocess.check_output(
                 ["git", "status", "--porcelain", "--untracked-files=no"],
-                cwd=ROOT,
+                cwd=root,
                 text=True,
                 stderr=subprocess.DEVNULL,
             ).strip()
@@ -119,6 +119,54 @@ def _current_checkout_identity() -> dict[str, Any]:
         dirty = None
         errors.append("current checkout status is unavailable")
     return {"revision": revision, "dirty": dirty, "verified": not errors, "errors": errors}
+
+
+def _tracked_file_identity(
+    relative_path: str,
+    *,
+    root: Path = ROOT,
+    checkout: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Verify that a working-tree file has the bytes stored in the current HEAD."""
+    errors: list[str] = []
+    relative = Path(relative_path)
+    safe_relative = not relative.is_absolute() and ".." not in relative.parts
+    if not safe_relative:
+        errors.append("tracked file path must be a safe relative path")
+
+    current_path = root / relative if safe_relative else root / "__missing__"
+    current_sha256 = _file_hash(current_path) if current_path.is_file() else None
+    if current_sha256 is None:
+        errors.append("working-tree file is unavailable")
+
+    head_blob_sha256: str | None = None
+    if safe_relative:
+        git_path = relative.as_posix()
+        try:
+            head_bytes = subprocess.check_output(
+                ["git", "show", f"HEAD:{git_path}"],
+                cwd=root,
+                stderr=subprocess.DEVNULL,
+            )
+        except (OSError, subprocess.CalledProcessError):
+            errors.append("HEAD blob is unavailable")
+        else:
+            head_blob_sha256 = hashlib.sha256(head_bytes).hexdigest()
+
+    checkout = checkout or _current_checkout_identity(root)
+    if not checkout["verified"]:
+        errors.append("checkout revision is unavailable")
+    if current_sha256 is not None and head_blob_sha256 is not None and current_sha256 != head_blob_sha256:
+        errors.append("working-tree bytes differ from HEAD blob")
+
+    return {
+        "path": relative_path,
+        "revision": checkout["revision"],
+        "current_sha256": current_sha256,
+        "head_blob_sha256": head_blob_sha256,
+        "revision_verified": not errors,
+        "errors": errors,
+    }
 
 
 def _validate_task(task: dict[str, Any]) -> list[str]:
@@ -250,6 +298,12 @@ def run_oracle() -> dict[str, Any]:
         raise ValueError({"task_errors": task_errors, "source_identity": source_identity})
     results = {name: grade_implementation(name, implementation, task) for name, implementation in IMPLEMENTATIONS.items()}
     current_checkout = _current_checkout_identity()
+    oracle_file = _tracked_file_identity(
+        "research/executable-oracle/oracle.py", checkout=current_checkout
+    )
+    trusted_implementations_file = _tracked_file_identity(
+        "research/executable-oracle/trusted_implementations.py", checkout=current_checkout
+    )
     return {
         "schema_version": 1,
         "task_id": task["id"],
@@ -266,14 +320,8 @@ def run_oracle() -> dict[str, Any]:
         "current_checkout": current_checkout,
         "source_identity": source_identity,
         "oracle_identity": {
-            "oracle": {
-                "revision": current_checkout["revision"],
-                "sha256": _file_hash(ORACLE_PATH),
-            },
-            "trusted_implementations": {
-                "revision": current_checkout["revision"],
-                "sha256": _file_hash(IMPLEMENTATIONS_PATH),
-            },
+            "oracle": oracle_file,
+            "trusted_implementations": trusted_implementations_file,
             "execution_boundary": "trusted checked-in callables only; no generated code or subprocess candidate execution",
         },
         "results": results,
@@ -282,6 +330,9 @@ def run_oracle() -> dict[str, Any]:
 
 def selftest() -> dict[str, Any]:
     report = run_oracle()
+    for name in ("oracle", "trusted_implementations"):
+        if not report["oracle_identity"][name]["revision_verified"]:
+            raise ValueError(f"{name} bytes do not match the current HEAD blob")
     if report["results"]["correct_reference"]["status"] != "pass":
         raise ValueError("correct reference must pass every executable case")
     for name in (

@@ -2,7 +2,7 @@
 
 This is the first small evidence-grade execution path for the next coding-agent
 experiment. It uses the existing `validate_applicable_axes(value, *, allowed)`
-contract as a concrete task and runs an independent oracle against four
+contract as a concrete task and runs an independent oracle against six
 trusted, checked-in reference implementations:
 
 - one correct implementation;
@@ -25,8 +25,11 @@ The pinned repository contract is checked with `git show`, SHA-256, and a source
 marker at revision `a188183c16a424ef3848458dadb0df3858eb48fa`. The task-source
 revision, task content hash, oracle implementation revision/content hash,
 trusted-implementation content hash, and current checkout identity are recorded
-as separate provenance fields. The trusted helper implementations run
-in-process; this is deliberately not a sandbox for model-generated code.
+as separate provenance fields. For the two executable files, `revision_verified`
+is true only when their current bytes match the SHA-256 of the corresponding
+`git show HEAD:<path>` blob; an unrelated dirty file does not invalidate that
+per-file result. The trusted helper implementations run in-process; this is
+deliberately not a sandbox for model-generated code.
 `generated_code_executed=false` is an execution boundary, not a claim that a
 filesystem or host guard was observed. A future agent experiment needs a
 separately reviewed isolation boundary before candidate code may be executed.

@@ -1,5 +1,7 @@
 import copy
+import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -25,10 +27,12 @@ class ExecutableOracleTests(unittest.TestCase):
             report["oracle_identity"]["oracle"]["revision"],
             report["current_checkout"]["revision"],
         )
+        self.assertTrue(report["oracle_identity"]["oracle"]["revision_verified"])
         self.assertEqual(
             report["oracle_identity"]["trusted_implementations"]["revision"],
             report["current_checkout"]["revision"],
         )
+        self.assertTrue(report["oracle_identity"]["trusted_implementations"]["revision_verified"])
         self.assertNotEqual(
             report["oracle_identity"]["oracle"]["revision"],
             report["task_contract"]["repository_revision"],
@@ -89,6 +93,48 @@ class ExecutableOracleTests(unittest.TestCase):
                 identity = oracle._pinned_source_identity(task)
                 self.assertFalse(identity["verified"])
                 self.assertTrue(identity["errors"])
+
+    def test_file_provenance_matches_head_blob_and_detects_byte_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "oracle.py").write_bytes(b"oracle = 1\n")
+            (root / "trusted_implementations.py").write_bytes(b"trusted = 1\n")
+            for command in (
+                ["git", "init"],
+                ["git", "config", "user.name", "oracle-test"],
+                ["git", "config", "user.email", "oracle-test@example.invalid"],
+                ["git", "add", "oracle.py", "trusted_implementations.py"],
+                ["git", "commit", "-m", "fixture"],
+            ):
+                subprocess.run(command, cwd=root, check=True, capture_output=True, text=True)
+
+            checkout = oracle._current_checkout_identity(root)
+            clean_oracle = oracle._tracked_file_identity("oracle.py", root=root, checkout=checkout)
+            clean_trusted = oracle._tracked_file_identity(
+                "trusted_implementations.py", root=root, checkout=checkout
+            )
+            self.assertTrue(clean_oracle["revision_verified"])
+            self.assertTrue(clean_trusted["revision_verified"])
+            self.assertEqual(clean_oracle["current_sha256"], clean_oracle["head_blob_sha256"])
+
+            (root / "unrelated.txt").write_bytes(b"dirty but irrelevant\n")
+            unrelated_dirty = oracle._tracked_file_identity("oracle.py", root=root, checkout=checkout)
+            self.assertTrue(unrelated_dirty["revision_verified"])
+
+            (root / "oracle.py").write_bytes(b"oracle = 2\n")
+            changed_oracle = oracle._tracked_file_identity("oracle.py", root=root, checkout=checkout)
+            self.assertFalse(changed_oracle["revision_verified"])
+            self.assertIn("working-tree bytes differ from HEAD blob", changed_oracle["errors"])
+
+            (root / "trusted_implementations.py").write_bytes(b"trusted = 2\n")
+            changed_trusted = oracle._tracked_file_identity(
+                "trusted_implementations.py", root=root, checkout=checkout
+            )
+            self.assertFalse(changed_trusted["revision_verified"])
+
+            missing = oracle._tracked_file_identity("missing.py", root=root, checkout=checkout)
+            self.assertFalse(missing["revision_verified"])
+            self.assertIn("HEAD blob is unavailable", missing["errors"])
 
 
 if __name__ == "__main__":
