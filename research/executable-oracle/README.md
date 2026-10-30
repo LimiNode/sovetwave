@@ -8,17 +8,25 @@ trusted, checked-in reference implementations:
 - one correct implementation;
 - one that accepts duplicate axes;
 - one that accepts unknown axes;
-- one that rejects the optional `None` value.
+- one that rejects the optional `None` value;
+- one that only recognizes the first positive examples;
+- one that raises an unexpected `RuntimeError` for invalid inputs.
 
-The oracle executes seven fixed inputs covering optional, normal, boundary, and
-rejection groups. It reports per-case observations, an independent correctness
-verdict, a completeness verdict, and source/oracle provenance. The expected
-outcome is defined by `task.json`, not by a candidate's self-report.
+The oracle executes nine fixed inputs covering optional, normal, boundary, and
+rejection groups. The positive cases include each allowed axis separately and
+the valid multi-axis combination. Rejected cases must raise the contract's
+`ValueError`; an unrelated exception is reported as an execution error, not as
+a valid rejection. It reports per-case observations, an independent correctness
+verdict, separate case-coverage and required-behaviour completeness metrics, and
+source/oracle provenance. The expected outcome is defined by `task.json`, not
+by a candidate's self-report.
 
 The pinned repository contract is checked with `git show`, SHA-256, and a source
-marker at revision `a188183c16a424ef3848458dadb0df3858eb48fa`. The current
-checkout identity is recorded separately. The trusted helper implementations
-run in-process; this is deliberately not a sandbox for model-generated code.
+marker at revision `a188183c16a424ef3848458dadb0df3858eb48fa`. The task-source
+revision, task content hash, oracle implementation revision/content hash,
+trusted-implementation content hash, and current checkout identity are recorded
+as separate provenance fields. The trusted helper implementations run
+in-process; this is deliberately not a sandbox for model-generated code.
 `generated_code_executed=false` is an execution boundary, not a claim that a
 filesystem or host guard was observed. A future agent experiment needs a
 separately reviewed isolation boundary before candidate code may be executed.

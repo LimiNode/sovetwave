@@ -49,3 +49,17 @@ def rejects_optional_none(value: Any, *, allowed: frozenset[str]) -> None:
     if value is None:
         raise ValueError("applicable_axes is required")
     correct_reference(value, allowed=allowed)
+
+
+def incomplete_reference(value: Any, *, allowed: frozenset[str]) -> None:
+    """Defective reference: recognizes only the first positive examples."""
+    if value is None or value == ["technical_correctness"]:
+        return
+    raise ValueError("unsupported applicable_axes example")
+
+
+def runtime_error_on_rejection(value: Any, *, allowed: frozenset[str]) -> None:
+    """Defective reference: raises an unexpected error for invalid inputs."""
+    if value is None or value == ["technical_correctness"]:
+        return
+    raise RuntimeError("candidate execution failed while rejecting input")

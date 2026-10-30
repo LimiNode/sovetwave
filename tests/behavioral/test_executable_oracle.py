@@ -17,23 +17,62 @@ class ExecutableOracleTests(unittest.TestCase):
         self.assertEqual(report["model_calls"], 0)
         self.assertFalse(report["generated_code_executed"])
         self.assertTrue(report["source_identity"]["verified"])
+        self.assertEqual(
+            report["task_contract"]["repository_revision"],
+            oracle.EXPECTED_TASK_SOURCE_REVISION,
+        )
+        self.assertEqual(
+            report["oracle_identity"]["oracle"]["revision"],
+            report["current_checkout"]["revision"],
+        )
+        self.assertEqual(
+            report["oracle_identity"]["trusted_implementations"]["revision"],
+            report["current_checkout"]["revision"],
+        )
+        self.assertNotEqual(
+            report["oracle_identity"]["oracle"]["revision"],
+            report["task_contract"]["repository_revision"],
+        )
         self.assertEqual(report["results"]["correct_reference"]["status"], "pass")
-        for name in ("accepts_duplicates", "accepts_unknown", "rejects_optional_none"):
+        for name in (
+            "accepts_duplicates",
+            "accepts_unknown",
+            "incomplete_reference",
+            "rejects_optional_none",
+            "runtime_error_on_rejection",
+        ):
             self.assertEqual(report["results"][name]["status"], "reject")
 
     def test_oracle_reports_each_required_case_group(self) -> None:
         report = oracle.run_oracle()
         expected_groups = {"optional", "normal", "boundary", "rejection"}
         result = report["results"]["correct_reference"]
+        self.assertTrue(result["case_coverage_pass"])
+        self.assertTrue(result["requirements_complete"])
         self.assertTrue(result["completeness_pass"])
         self.assertEqual({case["group"] for case in result["case_results"]}, expected_groups)
-        self.assertEqual(result["cases_executed"], 7)
+        self.assertEqual(result["cases_executed"], 9)
+        self.assertEqual(result["required_cases_executed"], 9)
 
     def test_defect_is_localised_to_duplicate_invariant(self) -> None:
         report = oracle.run_oracle()
         result = report["results"]["accepts_duplicates"]
         failures = {case["case_id"] for case in result["case_results"] if not case["passed"]}
         self.assertEqual(failures, {"duplicate-axis"})
+
+    def test_positive_completeness_defect_is_localised(self) -> None:
+        report = oracle.run_oracle()
+        result = report["results"]["incomplete_reference"]
+        failures = {case["case_id"] for case in result["case_results"] if not case["passed"]}
+        self.assertEqual(failures, {"task-completion-axis", "multi-axis"})
+        self.assertTrue(result["case_coverage_pass"])
+        self.assertFalse(result["requirements_complete"])
+
+    def test_unexpected_exception_is_not_a_valid_rejection(self) -> None:
+        report = oracle.run_oracle()
+        result = report["results"]["runtime_error_on_rejection"]
+        self.assertTrue(any(case["execution_error"] for case in result["case_results"]))
+        self.assertTrue(all(not case["passed"] for case in result["case_results"] if case["execution_error"]))
 
     def test_provenance_corruption_is_rejected(self) -> None:
         base = oracle.load_task()

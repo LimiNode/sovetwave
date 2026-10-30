@@ -13,7 +13,9 @@ from trusted_implementations import (
     accepts_duplicates,
     accepts_unknown,
     correct_reference,
+    incomplete_reference,
     rejects_optional_none,
+    runtime_error_on_rejection,
 )
 
 
@@ -21,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 TASK_PATH = ROOT / "research" / "executable-oracle" / "task.json"
 IMPLEMENTATIONS_PATH = ROOT / "research" / "executable-oracle" / "trusted_implementations.py"
 ORACLE_PATH = ROOT / "research" / "executable-oracle" / "oracle.py"
-EXPECTED_REVISION = "a188183c16a424ef3848458dadb0df3858eb48fa"
+EXPECTED_TASK_SOURCE_REVISION = "a188183c16a424ef3848458dadb0df3858eb48fa"
 EXPECTED_SOURCE_SHA256 = "b2932a19df5cab6419e894278139b3e03ef32e0af2288eb12383e18457193621"
 EXECUTION_MODE = "trusted_reference_implementations_only"
 
@@ -72,7 +74,7 @@ def _pinned_source_identity(task: dict[str, Any]) -> dict[str, Any]:
     observed_sha256 = hashlib.sha256(pinned_source).hexdigest() if pinned_source else None
     marker = target.get("required_marker")
     marker_present = isinstance(marker, str) and marker.encode("utf-8") in pinned_source
-    if revision != EXPECTED_REVISION:
+    if revision != EXPECTED_TASK_SOURCE_REVISION:
         errors.append("task revision does not match the frozen oracle revision")
     if expected_sha256 != EXPECTED_SOURCE_SHA256 or observed_sha256 != expected_sha256:
         errors.append("pinned source SHA-256 does not match the frozen contract")
@@ -93,6 +95,30 @@ def _pinned_source_identity(task: dict[str, Any]) -> dict[str, Any]:
             "matches_pinned": current_sha256 == observed_sha256,
         },
     }
+
+
+def _current_checkout_identity() -> dict[str, Any]:
+    errors: list[str] = []
+    try:
+        revision = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        revision = None
+        errors.append("current checkout revision is unavailable")
+    try:
+        dirty = bool(
+            subprocess.check_output(
+                ["git", "status", "--porcelain", "--untracked-files=no"],
+                cwd=ROOT,
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+        )
+    except (OSError, subprocess.CalledProcessError):
+        dirty = None
+        errors.append("current checkout status is unavailable")
+    return {"revision": revision, "dirty": dirty, "verified": not errors, "errors": errors}
 
 
 def _validate_task(task: dict[str, Any]) -> list[str]:
@@ -117,6 +143,16 @@ def _validate_task(task: dict[str, Any]) -> list[str]:
         errors.append("case ids must be unique")
     vocabulary = set(contract.get("outcome_vocabulary", []))
     groups = set(contract.get("required_case_groups", []))
+    required_case_ids = contract.get("required_case_ids")
+    if not isinstance(required_case_ids, list) or not required_case_ids or any(
+        not isinstance(case_id, str) for case_id in required_case_ids
+    ):
+        errors.append("required_case_ids must be a non-empty string list")
+    elif len(set(required_case_ids)) != len(required_case_ids):
+        errors.append("required_case_ids must be unique")
+    case_ids = set(ids)
+    if isinstance(required_case_ids, list) and not set(required_case_ids) <= case_ids:
+        errors.append("required_case_ids must refer to declared cases")
     for case in cases:
         if not isinstance(case, dict):
             errors.append("case must be an object")
@@ -125,28 +161,44 @@ def _validate_task(task: dict[str, Any]) -> list[str]:
             errors.append(f"case has an unknown expected outcome: {case.get('id')}")
         if case.get("group") not in groups:
             errors.append(f"case has an unknown group: {case.get('id')}")
+        if case.get("expected") == "rejected" and case.get("expected_error_type") != "ValueError":
+            errors.append(f"rejected case must require ValueError: {case.get('id')}")
+        if case.get("expected") == "accepted" and "expected_error_type" in case:
+            errors.append(f"accepted case must not declare an error type: {case.get('id')}")
     if groups - {case.get("group") for case in cases if isinstance(case, dict)}:
         errors.append("required case groups are not covered")
     return errors
 
 
 def _run_case(implementation: Implementation, case: dict[str, Any], allowed: frozenset[str]) -> dict[str, Any]:
+    expected = case["expected"]
+    expected_error_type = case.get("expected_error_type")
     try:
         implementation(case.get("value"), allowed=allowed)
-    except Exception as error:  # trusted implementations are expected to reject through exceptions
+    except ValueError as error:
         observed = "rejected"
         error_type = type(error).__name__
+        execution_error = False
+    except Exception as error:
+        observed = "execution_error"
+        error_type = type(error).__name__
+        execution_error = True
     else:
         observed = "accepted"
         error_type = None
-    expected = case["expected"]
+        execution_error = False
+    passed = observed == expected and (
+        expected != "rejected" or error_type == expected_error_type
+    )
     return {
         "case_id": case["id"],
         "group": case["group"],
         "expected": expected,
+        "expected_error_type": expected_error_type,
         "observed": observed,
-        "passed": observed == expected,
+        "passed": passed,
         "error_type": error_type,
+        "execution_error": execution_error,
     }
 
 
@@ -156,14 +208,25 @@ def grade_implementation(name: str, implementation: Implementation, task: dict[s
     cases = contract["cases"]
     case_results = [_run_case(implementation, case, allowed) for case in cases]
     required_groups = set(contract["required_case_groups"])
+    required_case_ids = set(contract["required_case_ids"])
     observed_groups = {result["group"] for result in case_results}
-    completeness_pass = len(case_results) == len(cases) and required_groups <= observed_groups
+    case_coverage_pass = len(case_results) == len(cases) and required_groups <= observed_groups
+    required_results = [result for result in case_results if result["case_id"] in required_case_ids]
+    requirements_complete = (
+        len(required_results) == len(required_case_ids)
+        and all(result["passed"] for result in required_results)
+    )
     correctness_pass = all(result["passed"] for result in case_results)
+    completeness_pass = case_coverage_pass and requirements_complete
     return {
         "implementation": name,
         "status": "pass" if correctness_pass and completeness_pass else "reject",
         "correctness_pass": correctness_pass,
-        "completeness_pass": completeness_pass,
+        "case_coverage_pass": case_coverage_pass,
+        "requirements_complete": requirements_complete,
+        "completeness_pass": case_coverage_pass and requirements_complete,
+        "required_cases_executed": len(required_results),
+        "required_cases_total": len(required_case_ids),
         "cases_executed": len(case_results),
         "case_results": case_results,
     }
@@ -173,7 +236,9 @@ IMPLEMENTATIONS: dict[str, Implementation] = {
     "correct_reference": correct_reference,
     "accepts_duplicates": accepts_duplicates,
     "accepts_unknown": accepts_unknown,
+    "incomplete_reference": incomplete_reference,
     "rejects_optional_none": rejects_optional_none,
+    "runtime_error_on_rejection": runtime_error_on_rejection,
 }
 
 
@@ -184,6 +249,7 @@ def run_oracle() -> dict[str, Any]:
     if task_errors or not source_identity["verified"]:
         raise ValueError({"task_errors": task_errors, "source_identity": source_identity})
     results = {name: grade_implementation(name, implementation, task) for name, implementation in IMPLEMENTATIONS.items()}
+    current_checkout = _current_checkout_identity()
     return {
         "schema_version": 1,
         "task_id": task["id"],
@@ -192,11 +258,22 @@ def run_oracle() -> dict[str, Any]:
         "model_calls": 0,
         "generated_code_executed": False,
         "agent_execution_observed": False,
+        "task_contract": {
+            "repository_revision": source_identity["repository_revision"],
+            "task_sha256": _canonical_hash(task),
+            "source_identity": source_identity,
+        },
+        "current_checkout": current_checkout,
         "source_identity": source_identity,
         "oracle_identity": {
-            "repository_revision": EXPECTED_REVISION,
-            "oracle_sha256": _file_hash(ORACLE_PATH),
-            "implementations_sha256": _file_hash(IMPLEMENTATIONS_PATH),
+            "oracle": {
+                "revision": current_checkout["revision"],
+                "sha256": _file_hash(ORACLE_PATH),
+            },
+            "trusted_implementations": {
+                "revision": current_checkout["revision"],
+                "sha256": _file_hash(IMPLEMENTATIONS_PATH),
+            },
             "execution_boundary": "trusted checked-in callables only; no generated code or subprocess candidate execution",
         },
         "results": results,
@@ -207,7 +284,13 @@ def selftest() -> dict[str, Any]:
     report = run_oracle()
     if report["results"]["correct_reference"]["status"] != "pass":
         raise ValueError("correct reference must pass every executable case")
-    for name in ("accepts_duplicates", "accepts_unknown", "rejects_optional_none"):
+    for name in (
+        "accepts_duplicates",
+        "accepts_unknown",
+        "incomplete_reference",
+        "rejects_optional_none",
+        "runtime_error_on_rejection",
+    ):
         if report["results"][name]["status"] != "reject":
             raise ValueError(f"defective reference {name} must be rejected")
     if report["model_calls"] != 0 or report["generated_code_executed"]:
