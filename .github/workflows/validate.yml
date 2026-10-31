@@ -27,6 +27,8 @@ jobs:
         run: python tests/behavioral/test_experiment_readiness.py
       - name: Test repository-grounded fixture classifiers
         run: python tests/behavioral/test_experiment_fixtures.py
+      - name: Test host pre-execution guard pilot
+        run: python tests/behavioral/test_host_pre_execution_guard.py
 
   installer-smoke:
     name: Installer smoke (${{ matrix.os }})
