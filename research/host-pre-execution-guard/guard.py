@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 import json
+import secrets
+from threading import Lock
 from types import MappingProxyType
 from typing import Any, Callable, Mapping
 
@@ -16,6 +18,7 @@ from typing import Any, Callable, Mapping
 DECISIONS = ("ALLOW", "ASK", "DENY", "UNAVAILABLE", "ERROR")
 POLICY_REVISION = "host-pre-execution-guard-pilot-v1"
 EXECUTION_MODE = "offline_host_mock_only"
+TRUSTED_PRINCIPAL = "trusted-user"
 
 
 class PolicyUnavailable(Exception):
@@ -152,10 +155,10 @@ def _decision(
     )
 
 
-def _valid_approval(request: OperationRequest, approval: Approval | None) -> bool:
+def _approval_matches_request(request: OperationRequest, approval: Approval | None) -> bool:
+    """Check only the request binding; host authority proves issuance and trust."""
     return bool(
         approval
-        and approval.principal == "trusted-user"
         and approval.request_digest == request.request_digest
         and (
             request.approval_identity is None
@@ -200,18 +203,18 @@ def evaluate_policy(request: OperationRequest, approval: Approval | None = None)
                 "trusted confirmation is required before the operation",
                 provenance=provenance,
             )
-        if not _valid_approval(request, approval):
+        if not _approval_matches_request(request, approval):
             return _decision(
                 request,
                 "DENY",
-                "approval is absent, untrusted, or bound to a different operation",
+                "approval is absent or bound to a different operation",
                 approval=approval,
                 provenance=provenance,
             )
         return _decision(
             request,
             "ALLOW",
-            "trusted approval matches the exact operation digest",
+            "approval matches the exact operation digest; host authority must validate issuance",
             approval=approval,
             provenance=provenance,
         )
@@ -225,24 +228,158 @@ def evaluate_policy(request: OperationRequest, approval: Approval | None = None)
     )
 
 
+class HostApprovalAuthority:
+    """Host-owned in-memory authority for exact, one-time approvals."""
+
+    def __init__(self) -> None:
+        self._issued: dict[str, tuple[str, str]] = {}
+        self._lock = Lock()
+
+    def issue(
+        self,
+        request: OperationRequest,
+        *,
+        principal: str = TRUSTED_PRINCIPAL,
+    ) -> Approval:
+        if not isinstance(request, OperationRequest):
+            raise TypeError("request must be an OperationRequest")
+        if not isinstance(principal, str) or not principal.strip():
+            raise ValueError("principal must be a non-empty string")
+
+        approval_id = f"host-{secrets.token_urlsafe(18)}"
+        with self._lock:
+            self._issued[approval_id] = (principal, request.request_digest)
+        return Approval(
+            approval_id=approval_id,
+            principal=principal,
+            request_digest=request.request_digest,
+        )
+
+    def consume(self, request: OperationRequest, approval: Approval | None) -> bool:
+        """Atomically validate and consume one host-issued approval."""
+        if not isinstance(request, OperationRequest) or not isinstance(approval, Approval):
+            return False
+        with self._lock:
+            binding = self._issued.get(approval.approval_id)
+            if binding is None:
+                return False
+            principal, request_digest = binding
+            if principal != TRUSTED_PRINCIPAL:
+                return False
+            if approval.principal != principal or approval.request_digest != request_digest:
+                return False
+            if request.request_digest != request_digest:
+                return False
+            if request.approval_identity is not None and approval.approval_id != request.approval_identity:
+                return False
+            del self._issued[approval.approval_id]
+            return True
+
+
 class GuardedHostMock:
     """A deterministic host boundary whose only side effect is an in-memory counter."""
 
-    def __init__(self, evaluator: Callable[[OperationRequest, Approval | None], DecisionRecord] = evaluate_policy):
+    def __init__(
+        self,
+        evaluator: Callable[[OperationRequest, Approval | None], object] = evaluate_policy,
+        *,
+        approval_authority: HostApprovalAuthority | None = None,
+    ):
         self._evaluator = evaluator
+        self.approval_authority = approval_authority or HostApprovalAuthority()
         self.side_effect_count = 0
         self.executed_action_ids: list[str] = []
 
+    def issue_approval(
+        self,
+        request: OperationRequest,
+        *,
+        principal: str = TRUSTED_PRINCIPAL,
+    ) -> Approval:
+        return self.approval_authority.issue(request, principal=principal)
+
+    @staticmethod
+    def _validate_decision(
+        request: OperationRequest,
+        approval: Approval | None,
+        decision: object,
+    ) -> DecisionRecord:
+        if not isinstance(decision, DecisionRecord):
+            raise TypeError("evaluator did not return a DecisionRecord")
+        if decision.decision not in DECISIONS:
+            raise ValueError("decision value is not recognised by host")
+        if decision.action_id != request.action_id:
+            raise ValueError("decision action_id does not match request")
+        if decision.request_digest != request.request_digest:
+            raise ValueError("decision request_digest does not match request")
+        if decision.policy_revision != POLICY_REVISION:
+            raise ValueError("decision policy_revision is not accepted by host")
+        if not isinstance(decision.reason, str) or not decision.reason.strip():
+            raise ValueError("decision reason is malformed")
+        if not isinstance(decision.provenance, Mapping):
+            raise TypeError("decision provenance is malformed")
+        if decision.approval_id is not None and not isinstance(decision.approval_id, str):
+            raise TypeError("decision approval_id is malformed")
+        if decision.approval_id is not None:
+            if not isinstance(approval, Approval) or decision.approval_id != approval.approval_id:
+                raise ValueError("decision approval_id does not match presented approval")
+        return decision
+
+    @staticmethod
+    def _error_decision(request: OperationRequest, reason: str) -> DecisionRecord:
+        return _decision(
+            request,
+            "ERROR",
+            reason,
+            provenance={"host_validation": "fail_closed"},
+        )
+
     def admit(self, request: OperationRequest, approval: Approval | None = None) -> AdmissionReceipt:
         try:
-            decision = self._evaluator(request, approval)
+            raw_decision = self._evaluator(request, approval)
         except PolicyUnavailable as error:
             decision = _decision(request, "UNAVAILABLE", str(error))
         except Exception as error:
-            decision = _decision(request, "ERROR", f"policy evaluation failed: {type(error).__name__}")
+            decision = self._error_decision(
+                request,
+                f"policy evaluation failed: {type(error).__name__}",
+            )
+        else:
+            try:
+                decision = self._validate_decision(request, approval, raw_decision)
+            except Exception as error:
+                decision = self._error_decision(
+                    request,
+                    f"invalid policy decision: {type(error).__name__}",
+                )
 
         if decision.decision != "ALLOW":
             return AdmissionReceipt(decision=decision, executed=False, side_effect_count=self.side_effect_count)
+
+        if request.action_category == "destructive":
+            decision = _decision(
+                request,
+                "DENY",
+                "destructive action is denied by the host admission invariant",
+                provenance={"host_validation": "destructive_deny"},
+            )
+            return AdmissionReceipt(decision=decision, executed=False, side_effect_count=self.side_effect_count)
+
+        if request.action_category in {"write", "external"}:
+            if not isinstance(approval, Approval) or decision.approval_id != approval.approval_id:
+                decision = self._error_decision(
+                    request,
+                    "ALLOW for write/external action lacks a matching approval",
+                )
+                return AdmissionReceipt(decision=decision, executed=False, side_effect_count=self.side_effect_count)
+            if not self.approval_authority.consume(request, approval):
+                decision = _decision(
+                    request,
+                    "DENY",
+                    "approval was not issued by this host authority or was already consumed",
+                    provenance={"host_validation": "approval_authority_rejected"},
+                )
+                return AdmissionReceipt(decision=decision, executed=False, side_effect_count=self.side_effect_count)
 
         self.side_effect_count += 1
         self.executed_action_ids.append(request.action_id)
@@ -267,10 +404,7 @@ def selftest() -> dict[str, Any]:
     destructive = host.admit(_request("delete-data", "destructive"))
     ask = host.admit(_request("write-data", "write"))
     approved_request = _request("approved-write", "write")
-    approved = host.admit(
-        approved_request,
-        Approval("approval-1", "trusted-user", approved_request.request_digest),
-    )
+    approved = host.admit(approved_request, host.issue_approval(approved_request))
     unavailable = host.admit(_request("unavailable", "write", policy_state="unavailable"))
     error = host.admit(_request("error", "write", policy_state="error"))
     return {
