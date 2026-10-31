@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import sha256
 import json
+import math
 import secrets
 from threading import Lock
 from types import MappingProxyType
@@ -16,6 +17,8 @@ from typing import Any, Callable, Mapping
 
 
 DECISIONS = ("ALLOW", "ASK", "DENY", "UNAVAILABLE", "ERROR")
+SUPPORTED_ACTION_CATEGORIES = frozenset(("read", "write", "external", "destructive"))
+TRUSTED_READ_ORIGINS = frozenset(("system", "user"))
 POLICY_REVISION = "host-pre-execution-guard-pilot-v1"
 EXECUTION_MODE = "offline_host_mock_only"
 TRUSTED_PRINCIPAL = "trusted-user"
@@ -33,9 +36,59 @@ def _canonical_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+def _freeze_json_value(value: Any, active: set[int], path: str) -> Any:
+    """Return an immutable snapshot of the supported JSON value subset."""
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError(f"{path} contains a non-finite number")
+        return value
+    if isinstance(value, Mapping):
+        marker = id(value)
+        if marker in active:
+            raise ValueError(f"{path} contains a cyclic structure")
+        active.add(marker)
+        try:
+            frozen: dict[str, Any] = {}
+            for key, child in value.items():
+                if not isinstance(key, str):
+                    raise TypeError(f"{path} keys must be strings")
+                frozen[key] = _freeze_json_value(child, active, f"{path}.{key}")
+            return MappingProxyType(frozen)
+        finally:
+            active.remove(marker)
+    if isinstance(value, (list, tuple)):
+        marker = id(value)
+        if marker in active:
+            raise ValueError(f"{path} contains a cyclic structure")
+        active.add(marker)
+        try:
+            return tuple(
+                _freeze_json_value(child, active, f"{path}[{index}]")
+                for index, child in enumerate(value)
+            )
+        finally:
+            active.remove(marker)
+    raise TypeError(f"{path} contains unsupported value type {type(value).__name__}")
+
+
+def _thaw_json_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _thaw_json_value(child) for key, child in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw_json_value(child) for child in value]
+    return value
+
+
 @dataclass(frozen=True)
 class OperationRequest:
-    """Typed description of one operation presented to the host guard."""
+    """Typed description of one operation presented to the host guard.
+
+    ``policy_context`` is snapshotted at construction and accepts only an
+    acyclic, JSON-compatible value tree. Invalid context is a construction
+    error, not a policy-evaluation result.
+    """
 
     action_id: str
     tool_identity: str
@@ -60,7 +113,11 @@ class OperationRequest:
                 raise ValueError(f"{name} must be a non-empty string")
         if not isinstance(self.policy_context, Mapping):
             raise ValueError("policy_context must be a mapping")
-        object.__setattr__(self, "policy_context", MappingProxyType(dict(self.policy_context)))
+        object.__setattr__(
+            self,
+            "policy_context",
+            _freeze_json_value(self.policy_context, set(), "policy_context"),
+        )
         if self.approval_identity is not None and (
             not isinstance(self.approval_identity, str) or not self.approval_identity.strip()
         ):
@@ -74,7 +131,7 @@ class OperationRequest:
             "target": self.target,
             "scope": self.scope,
             "trust_origin": self.trust_origin,
-            "policy_context": dict(self.policy_context),
+            "policy_context": _thaw_json_value(self.policy_context),
             "approval_identity": self.approval_identity,
         }
 
@@ -277,7 +334,11 @@ class HostApprovalAuthority:
 
 
 class GuardedHostMock:
-    """A deterministic host boundary whose only side effect is an in-memory counter."""
+    """A deterministic host boundary whose only side effect is an in-memory counter.
+
+    The approval authority is injected through trusted host setup and is not
+    exposed through the agent-facing ``admit`` interface.
+    """
 
     def __init__(
         self,
@@ -286,17 +347,9 @@ class GuardedHostMock:
         approval_authority: HostApprovalAuthority | None = None,
     ):
         self._evaluator = evaluator
-        self.approval_authority = approval_authority or HostApprovalAuthority()
+        self._approval_authority = approval_authority or HostApprovalAuthority()
         self.side_effect_count = 0
         self.executed_action_ids: list[str] = []
-
-    def issue_approval(
-        self,
-        request: OperationRequest,
-        *,
-        principal: str = TRUSTED_PRINCIPAL,
-    ) -> Approval:
-        return self.approval_authority.issue(request, principal=principal)
 
     @staticmethod
     def _validate_decision(
@@ -334,7 +387,59 @@ class GuardedHostMock:
             provenance={"host_validation": "fail_closed"},
         )
 
+    @staticmethod
+    def _host_gate(request: OperationRequest) -> DecisionRecord | None:
+        """Apply mandatory host policy before trusting evaluator output."""
+        category = request.action_category
+        if category not in SUPPORTED_ACTION_CATEGORIES:
+            return _decision(
+                request,
+                "DENY",
+                f"unsupported action category: {category!r}",
+                provenance={"host_validation": "unknown_category"},
+            )
+
+        state = request.policy_context.get("policy_state", "ready")
+        if state == "unavailable":
+            return _decision(
+                request,
+                "UNAVAILABLE",
+                "policy source is unavailable",
+                provenance={"host_validation": "policy_state"},
+            )
+        if state == "error":
+            return _decision(
+                request,
+                "ERROR",
+                "policy state is failed",
+                provenance={"host_validation": "policy_state"},
+            )
+        if state != "ready":
+            return _decision(
+                request,
+                "ERROR",
+                f"unsupported host policy state: {state!r}",
+                provenance={"host_validation": "policy_state"},
+            )
+
+        if category == "read" and request.trust_origin not in TRUSTED_READ_ORIGINS:
+            return _decision(
+                request,
+                "DENY",
+                "read action requires a trusted origin",
+                provenance={"host_validation": "read_trust_origin"},
+            )
+        return None
+
     def admit(self, request: OperationRequest, approval: Approval | None = None) -> AdmissionReceipt:
+        host_gate = self._host_gate(request)
+        if host_gate is not None:
+            return AdmissionReceipt(
+                decision=host_gate,
+                executed=False,
+                side_effect_count=self.side_effect_count,
+            )
+
         try:
             raw_decision = self._evaluator(request, approval)
         except PolicyUnavailable as error:
@@ -372,7 +477,7 @@ class GuardedHostMock:
                     "ALLOW for write/external action lacks a matching approval",
                 )
                 return AdmissionReceipt(decision=decision, executed=False, side_effect_count=self.side_effect_count)
-            if not self.approval_authority.consume(request, approval):
+            if not self._approval_authority.consume(request, approval):
                 decision = _decision(
                     request,
                     "DENY",
@@ -399,12 +504,13 @@ def _request(action_id: str, category: str, *, target: str = "fixture-target", *
 
 
 def selftest() -> dict[str, Any]:
-    host = GuardedHostMock()
+    authority = HostApprovalAuthority()
+    host = GuardedHostMock(approval_authority=authority)
     safe = host.admit(_request("safe-read", "read"))
     destructive = host.admit(_request("delete-data", "destructive"))
     ask = host.admit(_request("write-data", "write"))
     approved_request = _request("approved-write", "write")
-    approved = host.admit(approved_request, host.issue_approval(approved_request))
+    approved = host.admit(approved_request, authority.issue(approved_request))
     unavailable = host.admit(_request("unavailable", "write", policy_state="unavailable"))
     error = host.admit(_request("error", "write", policy_state="error"))
     return {
