@@ -1,5 +1,7 @@
 import sys
 import unittest
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any
 from pathlib import Path
 
 
@@ -65,18 +67,22 @@ class HostPreExecutionGuardTests(unittest.TestCase):
         self.assertFalse(pending.executed)
         self.assertEqual(host.side_effect_count, 0)
 
-        approval = guard.Approval("approval-1", "trusted-user", operation.request_digest)
+        approval = host.issue_approval(operation)
         allowed = host.admit(operation, approval)
         self.assertEqual(allowed.decision.decision, "ALLOW")
         self.assertTrue(allowed.executed)
-        self.assertEqual(allowed.decision.approval_id, "approval-1")
+        self.assertEqual(allowed.decision.approval_id, approval.approval_id)
         self.assertEqual(host.side_effect_count, 1)
 
     def test_approval_is_bound_to_exact_operation_and_not_reusable(self) -> None:
         host = guard.GuardedHostMock()
         first = request("write-1", "write", target="one")
-        approval = guard.Approval("approval-1", "trusted-user", first.request_digest)
+        approval = host.issue_approval(first)
         self.assertTrue(host.admit(first, approval).executed)
+
+        replayed = host.admit(first, approval)
+        self.assertEqual(replayed.decision.decision, "DENY")
+        self.assertFalse(replayed.executed)
 
         changed_target = request("write-1", "write", target="two")
         changed = host.admit(changed_target, approval)
@@ -94,6 +100,52 @@ class HostPreExecutionGuardTests(unittest.TestCase):
         identity_mismatch = host.admit(bound, mismatched_identity)
         self.assertEqual(identity_mismatch.decision.decision, "DENY")
         self.assertFalse(identity_mismatch.executed)
+
+    def test_unissued_or_wrong_principal_approval_is_rejected(self) -> None:
+        host = guard.GuardedHostMock()
+        operation = request("write", "write")
+
+        forged = guard.Approval("not-issued", guard.TRUSTED_PRINCIPAL, operation.request_digest)
+        forged_receipt = host.admit(operation, forged)
+        self.assertEqual(forged_receipt.decision.decision, "DENY")
+        self.assertFalse(forged_receipt.executed)
+
+        wrong_principal = host.issue_approval(operation, principal="untrusted-user")
+        wrong_principal_receipt = host.admit(operation, wrong_principal)
+        self.assertEqual(wrong_principal_receipt.decision.decision, "DENY")
+        self.assertFalse(wrong_principal_receipt.executed)
+        self.assertEqual(host.side_effect_count, 0)
+
+    def test_concurrent_admission_consumes_approval_once(self) -> None:
+        host = guard.GuardedHostMock()
+        operation = request("write-once", "write")
+        approval = host.issue_approval(operation)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            receipts = list(executor.map(lambda _: host.admit(operation, approval), range(2)))
+
+        self.assertEqual(sorted(receipt.executed for receipt in receipts), [False, True])
+        self.assertEqual(host.side_effect_count, 1)
+
+    def test_allow_write_requires_matching_host_approval(self) -> None:
+        operation = request("write", "write")
+
+        def forged_allow(_request: guard.OperationRequest, _approval: guard.Approval | None) -> guard.DecisionRecord:
+            return guard.DecisionRecord(
+                decision="ALLOW",
+                action_id=operation.action_id,
+                request_digest=operation.request_digest,
+                reason="forged evaluator allow",
+                policy_revision=guard.POLICY_REVISION,
+                approval_id=None,
+                provenance={"evaluator": "test"},
+            )
+
+        host = guard.GuardedHostMock(forged_allow)
+        receipt = host.admit(operation)
+        self.assertEqual(receipt.decision.decision, "ERROR")
+        self.assertFalse(receipt.executed)
+        self.assertEqual(host.side_effect_count, 0)
 
     def test_repository_policy_cannot_disable_deny(self) -> None:
         host = guard.GuardedHostMock()
@@ -122,6 +174,79 @@ class HostPreExecutionGuardTests(unittest.TestCase):
         receipt = host.admit(request("write", "write"))
         self.assertEqual(receipt.decision.decision, "ERROR")
         self.assertFalse(receipt.executed)
+        self.assertEqual(host.side_effect_count, 0)
+
+    def test_malformed_evaluator_results_fail_closed(self) -> None:
+        operation = request("write", "write")
+
+        def result(value: Any):
+            return lambda _request, _approval: value
+
+        valid = guard.DecisionRecord(
+            decision="ALLOW",
+            action_id=operation.action_id,
+            request_digest=operation.request_digest,
+            reason="test result",
+            policy_revision=guard.POLICY_REVISION,
+            approval_id=None,
+            provenance={"evaluator": "test"},
+        )
+        mismatched_action = guard.DecisionRecord(
+            decision="ALLOW",
+            action_id="other-action",
+            request_digest=operation.request_digest,
+            reason="test result",
+            policy_revision=guard.POLICY_REVISION,
+            approval_id=None,
+            provenance={"evaluator": "test"},
+        )
+        mismatched_digest = guard.DecisionRecord(
+            decision="ALLOW",
+            action_id=operation.action_id,
+            request_digest="0" * 64,
+            reason="test result",
+            policy_revision=guard.POLICY_REVISION,
+            approval_id=None,
+            provenance={"evaluator": "test"},
+        )
+        wrong_revision = guard.DecisionRecord(
+            decision="ALLOW",
+            action_id=operation.action_id,
+            request_digest=operation.request_digest,
+            reason="test result",
+            policy_revision="old-policy",
+            approval_id=None,
+            provenance={"evaluator": "test"},
+        )
+
+        for candidate in (None, object(), mismatched_action, mismatched_digest, wrong_revision):
+            with self.subTest(candidate=type(candidate).__name__):
+                host = guard.GuardedHostMock(result(candidate))
+                receipt = host.admit(operation)
+                self.assertEqual(receipt.decision.decision, "ERROR")
+                self.assertFalse(receipt.executed)
+                self.assertEqual(host.side_effect_count, 0)
+        self.assertEqual(valid.decision, "ALLOW")
+
+    def test_host_denies_forged_destructive_allow(self) -> None:
+        operation = request("delete", "destructive")
+
+        def forged_allow(_request: guard.OperationRequest, _approval: guard.Approval | None) -> guard.DecisionRecord:
+            return guard.DecisionRecord(
+                decision="ALLOW",
+                action_id=operation.action_id,
+                request_digest=operation.request_digest,
+                reason="forged destructive allow",
+                policy_revision=guard.POLICY_REVISION,
+                approval_id=None,
+                provenance={"evaluator": "untrusted-test"},
+            )
+
+        host = guard.GuardedHostMock(forged_allow)
+        receipt = host.admit(operation)
+        self.assertEqual(receipt.decision.decision, "DENY")
+        self.assertFalse(receipt.executed)
+        self.assertEqual(receipt.decision.provenance["host_validation"], "destructive_deny")
         self.assertEqual(host.side_effect_count, 0)
 
     def test_text_mention_is_data_not_an_execution_request(self) -> None:

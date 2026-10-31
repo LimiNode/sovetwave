@@ -15,16 +15,21 @@ The operation contract records:
 - optional approval identity.
 
 The evaluator returns one of `ALLOW`, `ASK`, `DENY`, `UNAVAILABLE`, or `ERROR`.
-Only `ALLOW` reaches the in-memory mock side effect. `ASK` requires a trusted
-approval bound to the exact request digest. `DENY`, `UNAVAILABLE`, `ERROR`, and
-an unconfirmed `ASK` leave the side-effect counter unchanged.
+The host independently validates the result type, request identity, digest, and
+accepted `POLICY_REVISION`; malformed or mismatched results become controlled
+`ERROR` outcomes. Only a host-validated `ALLOW` reaches the in-memory mock side
+effect. `ASK` requires a host-issued approval bound to the exact request
+digest. `DENY`, `UNAVAILABLE`, `ERROR`, and an unconfirmed `ASK` leave the
+side-effect counter unchanged.
 
 The pilot enforces these boundaries:
 
 - destructive operations are denied before admission;
 - repository policy cannot disable the deny rule;
 - evaluator failure and policy unavailability are fail-closed;
-- approvals cannot be reused for a changed target or another action;
+- approvals are issued by a host-owned in-memory authority and cannot be
+  forged, reused, or applied to a changed target or another action;
+- host-issued approvals are consumed atomically at the admission boundary;
 - every decision carries the request digest, policy revision, reason, and
   evaluator provenance.
 
@@ -43,7 +48,8 @@ currently provides an equivalent interception hook.
 | destructive action | `DENY` | never admitted |
 | policy unavailable | `UNAVAILABLE` | never admitted |
 | evaluator failure | `ERROR` | never admitted |
-| approved exact write/external action | `ALLOW` | admitted once |
+| malformed or mismatched evaluator result | `ERROR` | never admitted |
+| approved exact write/external action | `ALLOW` | admitted once, then approval is consumed |
 
 Run the deterministic pilot without model calls:
 
