@@ -2,7 +2,7 @@
 
 Status: `draft` research note  
 Revision under review: `3fa30fd377dfae8eca8a47fe98548b159128e8e1`  
-Audit date: `2026-11-01`
+Audit date: `2026-11-02`
 
 ## Decision boundary
 
@@ -20,19 +20,51 @@ The target claim is deliberately narrow:
 
 Anything broader requires separate route-by-route evidence.
 
+## Evidence classification
+
+The official pages below are living documentation. They were retrieved on
+`2026-11-02`; neither page pins the complete contract to the local binary
+version. A statement marked `documented` therefore describes the current
+published contract, not automatic compatibility with an older or prerelease
+binary. A statement marked `local observation` came from the installed CLI;
+`not tested` means that no hook was executed, and `unavailable` means that the
+source does not establish the requested property.
+
+Official sources:
+
+- [Codex Hooks](https://learn.chatgpt.com/docs/hooks) — current Codex hook
+  configuration, input/output, trust review, coverage, and failure notes.
+- [Claude Code Hooks Reference](https://code.claude.com/docs/en/hooks) —
+  current Claude Code hook events, schemas, decisions, exit codes, and
+  failure handling.
+
 ## Local CLI observations
 
 These observations come from the installed binaries on the audit machine. They
 are leads for a reproducible spike, not project-wide compatibility claims.
 
-| Host | Version | Observed evidence | What remains unknown |
-|---|---|---|---|
-| Codex CLI | `0.146.0-alpha.3` | `codex features list` reports `hooks` as `stable` and enabled. `codex --help` exposes `--dangerously-bypass-hook-trust`; the help for stream output also exposes `--include-hook-events`. | The stable request schema, decision values, failure/timeout semantics, covered tool routes, and whether a hook can deny before each side effect are not established by CLI help. `plugin_hooks` is reported as removed, so it must not be assumed to be the adapter surface. |
-| Claude Code | `2.1.120` | `claude --help` exposes `--include-hook-events`. The installed release notes document `PreToolUse` hooks, including blocking and permission-decision behaviour. The local installation has a `PreToolUse` configuration entry, but that host-local configuration is not a Sovetwave contract. | The exact portable input/output schema, precedence with permission rules, timeout and non-zero-exit semantics, and coverage of `Bash`, `Write`, `Edit`, MCP, and other routes require a controlled fixture. |
+| Host | Version | Evidence status | Observed evidence | What remains unknown |
+|---|---|---|---|---|
+| Codex CLI | `0.146.0-alpha.3` | `local observation` | `codex features list` reports `hooks` as `stable` and enabled. `codex --help` exposes `--dangerously-bypass-hook-trust`; the help for stream output also exposes `--include-hook-events`. | No hook was executed. The local command output does not establish the request schema, route coverage, or failure semantics for this exact prerelease binary. `plugin_hooks` is reported as removed, so it must not be assumed to be the adapter surface. |
+| Claude Code | `2.1.120` | `local observation` | `claude --help` exposes `--include-hook-events`. The installed release notes mention `PreToolUse`; the local installation has a `PreToolUse` configuration entry, but that host-local configuration is not a Sovetwave contract. | No hook was executed. In particular, the current documentation's `onFailure: "block"` requires Claude Code `2.1.295` or later; it cannot be assumed on `2.1.120`. |
 
 The observations do not establish that either host can load
 `research/host-pre-execution-guard/guard.py` directly. They also do not show
 that a repository-local configuration can weaken a user-level deny rule.
+
+## Published contract versus observed enforcement
+
+The following matrix keeps the documentation claim separate from an execution
+observation.
+
+| Host/version | Hook and documented contract | Failure/timeout contract | Route coverage | Approval behaviour | Known limitation | Local verification |
+|---|---|---|---|---|---|---|
+| Codex CLI `0.146.0-alpha.3` | **Documented, version applicability unconfirmed:** current Codex docs define `PreToolUse`, input fields `tool_name`, `tool_use_id`, and `tool_input`; JSON `permissionDecision: "deny"` or exit code `2` can deny a supported call. `permissionDecision: "ask"` is documented as parsed but unsupported. | **Documented:** callback error, timeout, or malformed response can fail without blocking the tool; explicit denial is different from hook failure. Default timeout is documented for current Codex configuration, not proven for this binary. | **Documented:** Bash, `apply_patch`, MCP, and other local function tools; hosted tools are outside this path and specialized routes may opt out. | `ASK` is not a supported PreToolUse decision in the current docs. Permission approval is a separate `PermissionRequest` path. | Non-managed hooks require trust review; project-local hooks load only when the project layer is trusted. Current docs warn that tool hooks are not a complete enforcement boundary. | **Not tested.** Only CLI help and feature listing were inspected. |
+| Claude Code `2.1.120` | **Documented current contract, version applicability partly unconfirmed:** current docs define `PreToolUse` before tool processing with `tool_name`, `tool_input`, and `tool_use_id`; `permissionDecision` supports allow/deny/ask/defer. Exit code `2` blocks a blockable `PreToolUse` call. | **Documented current contract:** failures are non-blocking by default; `onFailure: "block"` makes a failure block the action, but the docs require `2.1.295+`. Therefore fail-closed is **unavailable/not established** on the installed `2.1.120`. | **Documented:** built-in tools and MCP names; `EndConversation` is excluded. File mentions using `@` can bypass `PreToolUse` because no tool call occurs. | `ask`/`defer` are documented for current `PreToolUse`; exact behaviour on `2.1.120` remains untested. | Permission precedence, trust scope, and non-tool paths still require a fixture. A hook can be present without covering every side effect. | **Not tested.** CLI help and local release notes were inspected; no model or tool call was run. |
+
+The Codex and Claude rows are not interchangeable. In both cases the
+published denial mechanism is stronger than a prompt instruction, but neither
+row proves the Sovetwave fail-closed invariant on the installed version.
 
 ## Candidate contract to verify
 
