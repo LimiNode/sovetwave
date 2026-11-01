@@ -27,6 +27,8 @@ jobs:
         run: python tests/behavioral/test_experiment_readiness.py
       - name: Test repository-grounded fixture classifiers
         run: python tests/behavioral/test_experiment_fixtures.py
+      - name: Test executable oracle vertical slice
+        run: python tests/behavioral/test_executable_oracle.py
 
   installer-smoke:
     name: Installer smoke (${{ matrix.os }})

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "id": "applicable-axes-executable-oracle",
+  "repository_revision": "a188183c16a424ef3848458dadb0df3858eb48fa",
+  "repository_target": {
+    "path": "scripts/eval_schema.py",
+    "source_sha256": "b2932a19df5cab6419e894278139b3e03ef32e0af2288eb12383e18457193621",
+    "required_marker": "def validate_applicable_axes("
+  },
+  "contract": {
+    "function": "validate_applicable_axes",
+    "signature": "(value, *, allowed)",
+    "allowed_axes": ["technical_correctness", "task_completion"],
+    "outcome_vocabulary": ["accepted", "rejected"],
+    "required_case_groups": ["optional", "normal", "boundary", "rejection"],
+    "required_case_ids": [
+      "optional-none",
+      "single-known-axis",
+      "task-completion-axis",
+      "multi-axis",
+      "empty-list",
+      "duplicate-axis",
+      "unknown-axis",
+      "non-list",
+      "blank-axis"
+    ],
+    "cases": [
+      {
+        "id": "optional-none",
+        "group": "optional",
+        "value": null,
+        "expected": "accepted"
+      },
+      {
+        "id": "single-known-axis",
+        "group": "normal",
+        "value": ["technical_correctness"],
+        "expected": "accepted"
+      },
+      {
+        "id": "task-completion-axis",
+        "group": "normal",
+        "value": ["task_completion"],
+        "expected": "accepted"
+      },
+      {
+        "id": "multi-axis",
+        "group": "normal",
+        "value": ["technical_correctness", "task_completion"],
+        "expected": "accepted"
+      },
+      {
+        "id": "empty-list",
+        "group": "boundary",
+        "value": [],
+        "expected": "rejected",
+        "expected_error_type": "ValueError"
+      },
+      {
+        "id": "duplicate-axis",
+        "group": "rejection",
+        "value": ["technical_correctness", "technical_correctness"],
+        "expected": "rejected",
+        "expected_error_type": "ValueError"
+      },
+      {
+        "id": "unknown-axis",
+        "group": "rejection",
+        "value": ["not_a_rubric_axis"],
+        "expected": "rejected",
+        "expected_error_type": "ValueError"
+      },
+      {
+        "id": "non-list",
+        "group": "boundary",
+        "value": "technical_correctness",
+        "expected": "rejected",
+        "expected_error_type": "ValueError"
+      },
+      {
+        "id": "blank-axis",
+        "group": "boundary",
+        "value": [""],
+        "expected": "rejected",
+        "expected_error_type": "ValueError"
+      }
+    ]
+  }
+}
