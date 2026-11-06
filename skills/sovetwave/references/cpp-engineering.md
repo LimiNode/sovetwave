@@ -108,6 +108,7 @@ and test an installed consumer when installation is part of the contract.
 Do not impose individual include-self-containment tests on private leaves
 that are not independent entry points. An umbrella may increase parsing and
 rebuild scope; measure that cost before claiming a performance advantage.
+
 ## Repository and package boundaries
 
 When a C++ project exposes a reusable library or CMake package, treat the
