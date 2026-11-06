@@ -53,6 +53,61 @@ does not make construction of the call arguments lazy.
 
 When state is shared, inspect all conflicting reads and writes, not only assignments. An apparently harmless observation of a non-atomic object can race with a write. Determine the synchronisation or atomic contract before proposing a lock, a memory order, or a waiting protocol.
 
+## Choose the C++ header dependency topology deliberately
+
+For a **new C++ library or project**, propose **hierarchical umbrella-based
+dependencies** as the default architecture. This is a project-level policy,
+not a C++ language rule or a reason to migrate an existing coherent codebase.
+At the initial architecture decision, briefly state the default and offer
+two alternatives: independently self-contained headers (Include What You Use)
+and a hybrid with standalone public/optional modules. Respect the user's
+explicit choice and local repository instructions. If the user has delegated
+the layout choice, use the default without repeatedly asking; for brownfield
+work, preserve the existing dependency model unless a concrete requirement
+justifies changing it.
+
+Under the hierarchical umbrella default:
+
+- **Declare include entry points.** Provide a self-contained umbrella for each
+  domain; add subdomain umbrellas when they establish a useful boundary, not
+  merely for symmetry. A library-wide umbrella is optional and exposes the
+  intended public API, not every private detail or optional backend.
+- **Centralize domain dependencies.** Each domain umbrella explicitly includes
+  the lower-level domain umbrellas or narrower lower-level contracts it needs,
+  followed by its own headers in a deliberate, deterministic order. The
+  umbrella documents the domain's required dependencies in one place.
+- **Keep the domain graph acyclic.** Shared lower-level dependencies are valid:
+  the graph is a DAG, not necessarily a tree. Never introduce an upward
+  dependency from a lower layer to its consumer or include the root umbrella
+  from internal leaf headers. Resolve reverse dependencies through a smaller
+  lower-level contract, a valid forward declaration, or a revised domain
+  boundary; an extra umbrella does not itself eliminate a cycle.
+- **Distinguish private leaves from entry points.** A private leaf header may
+  rely on declarations provided by its domain umbrella and need not compile
+  when included independently. Do not expose or include such leaves directly
+  from another domain, external consumer, or translation unit that has not
+  established the domain context. Implementation `.cpp` files that rely on
+  that context include their domain umbrella first. In header-only projects,
+  also verify include order, ODR correctness, and platform-header sequencing.
+- **Make exceptions explicit.** Independently usable headers (for example,
+  optional modules, plugins, or widgets) are self-contained include entry
+  points. Prefer a coherent independently usable domain where practical.
+  Document each such exception and its supported include path in project
+  architecture documentation **and** in the header's Doxygen comments;
+  follow the repository's Doxygen syntax and language conventions.
+- **Use unambiguous include paths.** For new projects, prefer quoted local
+  paths inside a domain and include-root-qualified paths such as
+  `<library/core/types.hpp>` across domain boundaries. Prefer `/` separators
+  and disallow `..` traversal as an explicit project convention; these paths
+  are relative to configured include roots, not absolute filesystem paths.
+
+**Verify the promised boundary, not an invented one.** Compile each declared
+umbrella and standalone header as the first include in a clean translation
+unit, check the domain dependency graph and required build configurations,
+and test an installed consumer when installation is part of the contract.
+Do not impose individual include-self-containment tests on private leaves
+that are not independent entry points. An umbrella may increase parsing and
+rebuild scope; measure that cost before claiming a performance advantage.
 ## Repository and package boundaries
 
 When a C++ project exposes a reusable library or CMake package, treat the
