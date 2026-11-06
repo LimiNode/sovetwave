@@ -1,0 +1,28 @@
+{
+  "verified_date": "2026-11-06",
+  "method": "SHA-256 recomputed from the existing local source bundles; JSON and Markdown contents inspected",
+  "bundles": {
+    "host-hook-offline-feasibility-20261104": {
+      "evidence-report.md": "3d9456007f13875985a0590da1a551d92240680bd15eed4c700475d81d4ce2bf",
+      "local-cli-help.txt": "e86d10e5f0e3a23f7c10368082f5aba4b5b7ccbf8260453efb478b1ebe3b7a63",
+      "evidence.json": "c8cfbcf321ade851eb35f75dd54bcca92747f84671b5dda8a399f50217597892",
+      "sha256sums_verified": true,
+      "content_status": "artifact-verified; offline discovery remained not_assessable for execution"
+    },
+    "host-hook-local-provider-smoke-20261105": {
+      "evidence-report.md": "4134209b36d4b19bad04182104a1ce11729449699d992bbaa1423324bde4efc0",
+      "evidence.json": "6a1b5ce3c23637533269fbe508a0229e0427af71c10ff55c64bc0170968ba3e4",
+      "hook-event.json": "364f5c7078f11c0749e060ae95ceae4ebfa418c478b6e736fc3e417e4814d689",
+      "sha256sums_verified": true,
+      "content_status": "artifact-verified summary; full tool-result stream absent"
+    },
+    "host-hook-local-provider-matrix-20261105": {
+      "matrix-addendum.json": "96d5ce77415d263e7a310aa8cdd0822720ec08216c365105093da9d24bfee13c",
+      "events.jsonl": "f700f9d07723388a242b771b194f7ee8f521d2a2e63c68cd530d56e3fe55c8a4",
+      "matrix-report.md": "4f5ea299aa3d8da487e55a0a2a8e6eb60c5d5f9a7b730da9e4b11c8759496daf",
+      "sha256sums_verified": true,
+      "content_status": "artifact-verified summary; raw Claude streams absent"
+    }
+  },
+  "redaction": "Committed files omit API credentials, user prompts, home-directory paths, full local fixture paths, and the provider host address."
+}

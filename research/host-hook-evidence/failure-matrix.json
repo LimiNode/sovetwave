@@ -1,0 +1,45 @@
+{
+  "record_date": "2026-11-06",
+  "host": "Claude Code 2.1.120",
+  "route": "Bash / PreToolUse",
+  "provider": "local provider; endpoint host redacted, port 8080",
+  "cases": [
+    {
+      "id": "explicit-deny",
+      "attempted_command": "echo DENY_MARKER > deny-marker.txt",
+      "hook_disposition": "success",
+      "hook_exit_code": 0,
+      "decision": "deny",
+      "marker_exists": false,
+      "status": "agent-reported/locally observed; summary artifact verified"
+    },
+    {
+      "id": "hook-exit-1",
+      "attempted_command": "echo FAIL_MARKER > failure-marker.txt",
+      "hook_disposition": "error",
+      "hook_exit_code": 1,
+      "decision": null,
+      "marker_exists": true,
+      "status": "agent-reported/locally observed; summary artifact verified"
+    },
+    {
+      "id": "malformed-stdout",
+      "attempted_command": "echo MALFORMED_MARKER > malformed-marker.txt",
+      "hook_disposition": "success with invalid JSON stdout",
+      "hook_exit_code": 0,
+      "decision": null,
+      "marker_exists": true,
+      "status": "agent-reported/locally observed; summary artifact verified"
+    },
+    {
+      "id": "hook-timeout",
+      "attempted_command": "echo TIMEOUT_MARKER > timeout-marker.txt",
+      "hook_disposition": "cancelled",
+      "hook_exit_code": 1,
+      "decision": null,
+      "marker_exists": true,
+      "status": "agent-reported/locally observed; summary artifact verified"
+    }
+  ],
+  "not_run": ["absent-hook control", "user/repository precedence", "PowerShell", "Read", "Write", "Edit", "MCP", "Codex"]
+}
