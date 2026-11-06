@@ -68,6 +68,14 @@ justifies changing it.
 
 Under the hierarchical umbrella default:
 
+- **Choose the project layout deliberately.** For a new header-only library,
+  prefer `include/<library_name>/...`; for a library with compiled sources,
+  prefer `src/<library_name>/...` with a related `.hpp` and `.cpp` colocated
+  when that matches the project's ownership model. A root
+  `<library_name>.hpp` is optional: when present, it aggregates the intended
+  public domains and does not pull in optional backends merely for symmetry.
+  A small domain may live entirely in its domain umbrella; do not create an
+  artificial directory depth. Preserve an established brownfield layout.
 - **Declare include entry points.** Provide a self-contained umbrella for each
   domain; add subdomain umbrellas when they establish a useful boundary, not
   merely for symmetry. A library-wide umbrella is optional and exposes the
@@ -82,6 +90,12 @@ Under the hierarchical umbrella default:
   from internal leaf headers. Resolve reverse dependencies through a smaller
   lower-level contract, a valid forward declaration, or a revised domain
   boundary; an extra umbrella does not itself eliminate a cycle.
+- **Separate nesting from dependency direction.** A parent umbrella may
+  aggregate a subdomain, but a standalone subdomain entry point must include
+  only the lower-level contracts it needs and must not include the parent that
+  includes it back. If a subdomain needs a declaration from the parent layer,
+  extract a lower-level contract or revise the domain boundary. Directory
+  nesting is not evidence that the dependency graph should point upward.
 - **Distinguish private leaves from entry points.** A private leaf header may
   rely on declarations provided by its domain umbrella and need not compile
   when included independently. Do not expose or include such leaves directly
@@ -96,10 +110,26 @@ Under the hierarchical umbrella default:
   architecture documentation **and** in the header's Doxygen comments;
   follow the repository's Doxygen syntax and language conventions.
 - **Use unambiguous include paths.** For new projects, prefer quoted local
-  paths inside a domain and include-root-qualified paths such as
-  `<library/core/types.hpp>` across domain boundaries. Prefer `/` separators
-  and disallow `..` traversal as an explicit project convention; these paths
-  are relative to configured include roots, not absolute filesystem paths.
+  paths inside a domain, such as `#include "header.hpp"` for a neighbouring
+  file or `#include "details/helper.hpp"` for a nested private helper. Use
+  include-root-qualified paths such as `<library/core/types.hpp>` across
+  domain boundaries. Prefer `/` separators and disallow `..` traversal as an
+  explicit project convention; these paths are relative to configured include
+  roots, not absolute filesystem paths.
+- **Make translation-unit context explicit.** A `.cpp` may include its own
+  header first when that header is self-contained. If the header is a private
+  leaf whose contract requires a domain umbrella, the `.cpp` includes that
+  umbrella first; do not manufacture a standalone-header requirement merely
+  to preserve the usual include-first idiom. A direct include of the own
+  header after the umbrella is allowed when it improves local clarity, but may
+  be redundant.
+- **Keep cross-domain access at declared boundaries.** Domain umbrellas may
+  use another domain's public umbrella or a narrower declared contract.
+  Private leaves must not reach into a neighbouring domain through relative
+  paths or an undeclared leaf dependency. Independent components such as
+  widgets, plugins, adapters, or helper APIs may have their own entry point
+  when independent use is a real requirement; record that exception in the
+  architecture documentation and the public header's Doxygen comments.
 
 **Verify the promised boundary, not an invented one.** Compile each declared
 umbrella and standalone header as the first include in a clean translation
@@ -108,6 +138,14 @@ and test an installed consumer when installation is part of the contract.
 Do not impose individual include-self-containment tests on private leaves
 that are not independent entry points. An umbrella may increase parsing and
 rebuild scope; measure that cost before claiming a performance advantage.
+
+For a new project, choose one of three explicit profiles: hierarchical
+umbrella-based dependencies (the default), self-contained headers / Include
+What You Use, or a hybrid in which the core uses umbrellas while independently
+consumed modules remain self-contained. State the selected profile once at
+architecture setup, respect an explicit user choice, and do not ask again on
+every file. For an existing project, infer and preserve its coherent profile
+unless a concrete compatibility or build requirement justifies a change.
 
 ## Repository and package boundaries
 
