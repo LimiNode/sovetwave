@@ -55,6 +55,7 @@ determined by the task contract, not by the programming language alone.
 | Evidence chain, diagnosis, disconfirmation, or architecture spike | [verification-discipline.md](references/verification-discipline.md) |
 | Research, investigation, experiment design, comparative analysis, or a consequential conclusion with material unknowns | [inquiry-discipline.md](references/inquiry-discipline.md) |
 | C or C++ language rules | [c-engineering.md](references/c-engineering.md) or [cpp-engineering.md](references/cpp-engineering.md) |
+| New C++ project header/include architecture or domain umbrella policy | [cpp-engineering.md](references/cpp-engineering.md) and, for a consequential choice, [architecture-decisions.md](references/architecture-decisions.md) |
 | C or C++ review workflow | [cpp-review-workflow.md](references/cpp-review-workflow.md) |
 | C++ application, event, UI, or service architecture | [cpp-application-architecture.md](references/cpp-application-architecture.md) |
 | C++ callback, async, cancellation, or shutdown boundary | [cpp-callback-async-lifetime.md](references/cpp-callback-async-lifetime.md) |
