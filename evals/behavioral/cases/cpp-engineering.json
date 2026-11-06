@@ -70,7 +70,7 @@
         "selects hierarchical umbrella-based dependencies as the default for a new project without presenting it as a C++ language rule",
         "names self-contained headers / Include What You Use and Hybrid as alternatives and does not repeatedly ask for a choice when no preference was given",
         "proposes domain umbrellas with an optional public root umbrella and avoids artificial directory depth or optional-backend aggregation",
-        "distinguishes a header-only `include/<library_name>/...` layout from a compiled `src/<library_name>/...` layout and preserves a coherent brownfield layout when one already exists"
+        "distinguishes a header-only `include/<library_name>/...` layout from a compiled `src/<library_name>/...` layout"
       ]
     },
     {
@@ -111,6 +111,16 @@
         "uses local quoted paths only within the current domain and include-root-qualified paths or a public storage contract across domains",
         "does not let a private leaf bypass its own domain umbrella to reach a neighbouring private leaf",
         "allows the independent widget to expose a documented standalone entry point when independent use is an established requirement"
+      ]
+    },
+    {
+      "id": "cpp-header-architecture-brownfield-layout",
+      "prompt": "An existing C++ library has public headers under `include/library/`, implementations under `src/`, a working installed consumer, and no reported include or build defect. A proposal asks to move every `.hpp` beside its `.cpp` merely to match a new-project preference. Review the proposal.",
+      "assertions": [
+        "preserves the established brownfield layout when its public and installed-consumer contracts are working",
+        "does not impose the new-project `src/<library_name>/...` preference as a migration requirement without a concrete compatibility or build need",
+        "identifies the installed consumer and public include contract as relevant evidence",
+        "names a concrete requirement or observed defect that would justify a layout change"
       ]
     }
   ]

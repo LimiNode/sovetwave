@@ -1294,6 +1294,7 @@ class BehavioralHarnessTests(unittest.TestCase):
             "cpp-header-architecture-nested-domain-cycle",
             "cpp-header-architecture-private-leaf-translation-unit",
             "cpp-header-architecture-cross-domain-include-boundary",
+            "cpp-header-architecture-brownfield-layout",
         }
         self.assertTrue(required_ids.issubset(cpp_cases))
         self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))

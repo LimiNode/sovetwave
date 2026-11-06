@@ -139,13 +139,10 @@ Do not impose individual include-self-containment tests on private leaves
 that are not independent entry points. An umbrella may increase parsing and
 rebuild scope; measure that cost before claiming a performance advantage.
 
-For a new project, choose one of three explicit profiles: hierarchical
-umbrella-based dependencies (the default), self-contained headers / Include
-What You Use, or a hybrid in which the core uses umbrellas while independently
-consumed modules remain self-contained. State the selected profile once at
-architecture setup, respect an explicit user choice, and do not ask again on
-every file. For an existing project, infer and preserve its coherent profile
-unless a concrete compatibility or build requirement justifies a change.
+Once a profile is selected, apply it consistently to new domains and keep any
+independent-module exception explicit. For an existing project, infer and
+preserve its coherent profile unless a concrete compatibility or build
+requirement justifies a change.
 
 ## Repository and package boundaries
 
