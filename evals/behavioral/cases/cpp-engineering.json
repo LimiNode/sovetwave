@@ -62,6 +62,66 @@
         "does not claim that thread-safe static initialization makes later mutable access isolated or synchronized",
         "keeps provider callback-target and pending-operation lifetime as a separate contract after the storage fix"
       ]
+    },
+    {
+      "id": "cpp-header-architecture-greenfield-default",
+      "prompt": "Design a new C++ library with `core` and `text` domains. There is no existing layout or explicit team preference. Choose the header dependency architecture, propose the initial directory layout, and explain what alternatives remain available.",
+      "assertions": [
+        "selects hierarchical umbrella-based dependencies as the default for a new project without presenting it as a C++ language rule",
+        "names self-contained headers / Include What You Use and Hybrid as alternatives and does not repeatedly ask for a choice when no preference was given",
+        "proposes domain umbrellas with an optional public root umbrella and avoids artificial directory depth or optional-backend aggregation",
+        "distinguishes a header-only `include/<library_name>/...` layout from a compiled `src/<library_name>/...` layout"
+      ]
+    },
+    {
+      "id": "cpp-header-architecture-explicit-iwyu",
+      "prompt": "A new C++ library has an explicit team requirement: every public header must be self-contained under Include What You Use, and independently consumed widgets must keep their own include entry points. How should the architecture policy respond?",
+      "assertions": [
+        "respects the explicit self-contained-header choice instead of overriding it with the Sovetwave default",
+        "requires each independent header to include its own dependencies and be checked as a first include",
+        "keeps domain umbrellas as optional aggregation rather than making private leaf context a requirement for independent widgets",
+        "requires supported exceptions and public include paths to be documented in architecture material and Doxygen"
+      ]
+    },
+    {
+      "id": "cpp-header-architecture-nested-domain-cycle",
+      "prompt": "`<library/core.hpp>` aggregates `<library/text.hpp>`, while `<library/text.hpp>` includes `<library/core.hpp>` because `text` is stored under the core directory. Review this design and state the smallest correction.",
+      "assertions": [
+        "separates directory nesting from dependency direction and identifies the umbrella cycle",
+        "keeps a parent umbrella as the aggregator while a standalone subdomain entry point includes only lower-level contracts it needs",
+        "proposes extracting a smaller shared contract or revising the domain boundary when the subdomain needs a parent declaration",
+        "does not treat `#pragma once` or another include guard as a fix for a cyclic dependency"
+      ]
+    },
+    {
+      "id": "cpp-header-architecture-private-leaf-translation-unit",
+      "prompt": "`src/library/core/Parser.hpp` is a private leaf that intentionally relies on declarations supplied by `<library/core.hpp>`. `Parser.cpp` currently includes `Parser.hpp` first and fails because the domain context is missing. What include order and compilation checks are justified?",
+      "assertions": [
+        "classifies `Parser.hpp` as a private leaf rather than promising standalone compilation",
+        "requires `Parser.cpp` to establish the domain umbrella context before the private leaf when that context is part of the contract",
+        "allows own-header-first inclusion when a header is genuinely self-contained and does not turn the usual idiom into an unconditional rule",
+        "separately checks the public domain umbrella and any declared independent headers while avoiding an artificial standalone test for the private leaf"
+      ]
+    },
+    {
+      "id": "cpp-header-architecture-cross-domain-include-boundary",
+      "prompt": "A private `ui` leaf includes `../../storage/types.hpp`, and a separate widget is intended for independent consumers. The project has configured `include/` as an include root. Review the include paths and boundaries.",
+      "assertions": [
+        "rejects `../` traversal and backslash separators in project include paths",
+        "uses local quoted paths only within the current domain and include-root-qualified paths or a public storage contract across domains",
+        "does not let a private leaf bypass its own domain umbrella to reach a neighbouring private leaf",
+        "allows the independent widget to expose a documented standalone entry point when independent use is an established requirement"
+      ]
+    },
+    {
+      "id": "cpp-header-architecture-brownfield-layout",
+      "prompt": "An existing C++ library has public headers under `include/library/`, implementations under `src/`, a working installed consumer, and no reported include or build defect. A proposal asks to move every `.hpp` beside its `.cpp` merely to match a new-project preference. Review the proposal.",
+      "assertions": [
+        "preserves the established brownfield layout when its public and installed-consumer contracts are working",
+        "does not impose the new-project `src/<library_name>/...` preference as a migration requirement without a concrete compatibility or build need",
+        "identifies the installed consumer and public include contract as relevant evidence",
+        "names a concrete requirement or observed defect that would justify a layout change"
+      ]
     }
   ]
 }

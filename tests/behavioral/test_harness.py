@@ -1289,9 +1289,20 @@ class BehavioralHarnessTests(unittest.TestCase):
             "cpp-odr-abi-boundary",
             "cpp-uninitialized-state",
             "cpp-function-static-callback-slot-isolation",
+            "cpp-header-architecture-greenfield-default",
+            "cpp-header-architecture-explicit-iwyu",
+            "cpp-header-architecture-nested-domain-cycle",
+            "cpp-header-architecture-private-leaf-translation-unit",
+            "cpp-header-architecture-cross-domain-include-boundary",
+            "cpp-header-architecture-brownfield-layout",
         }
         self.assertTrue(required_ids.issubset(cpp_cases))
         self.assertTrue(all(case["assertions"] for case in cpp_cases.values()))
+        reference = (ROOT / "skills" / "sovetwave" / "references" / "cpp-engineering.md").read_text(encoding="utf-8")
+        self.assertIn("hierarchical umbrella-based\ndependencies", reference)
+        self.assertIn("Separate nesting from dependency direction", reference)
+        self.assertIn("Make translation-unit context explicit", reference)
+        self.assertIn("Keep cross-domain access at declared boundaries", reference)
 
     def test_workflow_and_architecture_suites_have_thematic_coverage(self) -> None:
         cases = load_cases(ROOT / "evals" / "behavioral" / "cases")

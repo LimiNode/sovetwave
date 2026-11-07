@@ -53,6 +53,97 @@ does not make construction of the call arguments lazy.
 
 When state is shared, inspect all conflicting reads and writes, not only assignments. An apparently harmless observation of a non-atomic object can race with a write. Determine the synchronisation or atomic contract before proposing a lock, a memory order, or a waiting protocol.
 
+## Choose the C++ header dependency topology deliberately
+
+For a **new C++ library or project**, propose **hierarchical umbrella-based
+dependencies** as the default architecture. This is a project-level policy,
+not a C++ language rule or a reason to migrate an existing coherent codebase.
+At the initial architecture decision, briefly state the default and offer
+two alternatives: independently self-contained headers (Include What You Use)
+and a hybrid with standalone public/optional modules. Respect the user's
+explicit choice and local repository instructions. If the user has delegated
+the layout choice, use the default without repeatedly asking; for brownfield
+work, preserve the existing dependency model unless a concrete requirement
+justifies changing it.
+
+Under the hierarchical umbrella default:
+
+- **Choose the project layout deliberately.** For a new header-only library,
+  prefer `include/<library_name>/...`; for a library with compiled sources,
+  prefer `src/<library_name>/...` with a related `.hpp` and `.cpp` colocated
+  when that matches the project's ownership model. A root
+  `<library_name>.hpp` is optional: when present, it aggregates the intended
+  public domains and does not pull in optional backends merely for symmetry.
+  A small domain may live entirely in its domain umbrella; do not create an
+  artificial directory depth. Preserve an established brownfield layout.
+- **Declare include entry points.** Provide a self-contained umbrella for each
+  domain; add subdomain umbrellas when they establish a useful boundary, not
+  merely for symmetry. A library-wide umbrella is optional and exposes the
+  intended public API, not every private detail or optional backend.
+- **Centralize domain dependencies.** Each domain umbrella explicitly includes
+  the lower-level domain umbrellas or narrower lower-level contracts it needs,
+  followed by its own headers in a deliberate, deterministic order. The
+  umbrella documents the domain's required dependencies in one place.
+- **Keep the domain graph acyclic.** Shared lower-level dependencies are valid:
+  the graph is a DAG, not necessarily a tree. Never introduce an upward
+  dependency from a lower layer to its consumer or include the root umbrella
+  from internal leaf headers. Resolve reverse dependencies through a smaller
+  lower-level contract, a valid forward declaration, or a revised domain
+  boundary; an extra umbrella does not itself eliminate a cycle.
+- **Separate nesting from dependency direction.** A parent umbrella may
+  aggregate a subdomain, but a standalone subdomain entry point must include
+  only the lower-level contracts it needs and must not include the parent that
+  includes it back. If a subdomain needs a declaration from the parent layer,
+  extract a lower-level contract or revise the domain boundary. Directory
+  nesting is not evidence that the dependency graph should point upward.
+- **Distinguish private leaves from entry points.** A private leaf header may
+  rely on declarations provided by its domain umbrella and need not compile
+  when included independently. Do not expose or include such leaves directly
+  from another domain, external consumer, or translation unit that has not
+  established the domain context. Implementation `.cpp` files that rely on
+  that context include their domain umbrella first. In header-only projects,
+  also verify include order, ODR correctness, and platform-header sequencing.
+- **Make exceptions explicit.** Independently usable headers (for example,
+  optional modules, plugins, or widgets) are self-contained include entry
+  points. Prefer a coherent independently usable domain where practical.
+  Document each such exception and its supported include path in project
+  architecture documentation **and** in the header's Doxygen comments;
+  follow the repository's Doxygen syntax and language conventions.
+- **Use unambiguous include paths.** For new projects, prefer quoted local
+  paths inside a domain, such as `#include "header.hpp"` for a neighbouring
+  file or `#include "details/helper.hpp"` for a nested private helper. Use
+  include-root-qualified paths such as `<library/core/types.hpp>` across
+  domain boundaries. Prefer `/` separators and disallow `..` traversal as an
+  explicit project convention; these paths are relative to configured include
+  roots, not absolute filesystem paths.
+- **Make translation-unit context explicit.** A `.cpp` may include its own
+  header first when that header is self-contained. If the header is a private
+  leaf whose contract requires a domain umbrella, the `.cpp` includes that
+  umbrella first; do not manufacture a standalone-header requirement merely
+  to preserve the usual include-first idiom. A direct include of the own
+  header after the umbrella is allowed when it improves local clarity, but may
+  be redundant.
+- **Keep cross-domain access at declared boundaries.** Domain umbrellas may
+  use another domain's public umbrella or a narrower declared contract.
+  Private leaves must not reach into a neighbouring domain through relative
+  paths or an undeclared leaf dependency. Independent components such as
+  widgets, plugins, adapters, or helper APIs may have their own entry point
+  when independent use is a real requirement; record that exception in the
+  architecture documentation and the public header's Doxygen comments.
+
+**Verify the promised boundary, not an invented one.** Compile each declared
+umbrella and standalone header as the first include in a clean translation
+unit, check the domain dependency graph and required build configurations,
+and test an installed consumer when installation is part of the contract.
+Do not impose individual include-self-containment tests on private leaves
+that are not independent entry points. An umbrella may increase parsing and
+rebuild scope; measure that cost before claiming a performance advantage.
+
+Once a profile is selected, apply it consistently to new domains and keep any
+independent-module exception explicit. For an existing project, infer and
+preserve its coherent profile unless a concrete compatibility or build
+requirement justifies a change.
+
 ## Repository and package boundaries
 
 When a C++ project exposes a reusable library or CMake package, treat the
