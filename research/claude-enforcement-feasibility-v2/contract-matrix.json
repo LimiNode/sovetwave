@@ -1,0 +1,93 @@
+{
+  "schema": "sovetwave.claude-enforcement-feasibility.v2.contract-matrix",
+  "status": "draft",
+  "host": "Claude Code",
+  "installed_version": "2.1.120",
+  "sources": [
+    "https://code.claude.com/docs/en/hooks",
+    "https://code.claude.com/docs/en/settings",
+    "https://code.claude.com/docs/en/permissions"
+  ],
+  "rows": [
+    {
+      "id": "explicit-deny",
+      "condition": "PreToolUse returns hookSpecificOutput.permissionDecision=deny",
+      "published_contract": "documented: current hooks reference defines an explicit deny decision for a matching PreToolUse event",
+      "version_applicability": "partly-confirmed",
+      "local_observation": "locally-observed for Claude Code 2.1.120, Bash, disposable project settings; marker was absent",
+      "evidence_status": "contract-dependent",
+      "required_discriminating_check": "Preserve the complete raw stream and correlate the denial to the attempted tool_result",
+      "notes": "A successful deny on one route is not universal coverage."
+    },
+    {
+      "id": "exit-nonzero",
+      "condition": "Hook exits with a non-zero status other than the documented explicit blocking status",
+      "published_contract": "documented: the current reference distinguishes an explicit blocking exit status from generic hook failure; it does not establish that every non-zero status blocks",
+      "version_applicability": "unconfirmed for 2.1.120",
+      "local_observation": "locally-observed: exit 1 allowed the Bash marker in the preserved matrix",
+      "evidence_status": "contract-dependent",
+      "required_discriminating_check": "Run the same fixture on a pinned version with the documented failure policy and retain raw hook lifecycle plus tool-result events",
+      "notes": "Do not translate exit 1 into DENY without the host contract."
+    },
+    {
+      "id": "malformed-response",
+      "condition": "Hook emits malformed JSON",
+      "published_contract": "documented current failure model; exact disposition is governed by the configured failure policy and version",
+      "version_applicability": "unconfirmed for 2.1.120",
+      "local_observation": "locally-observed: invalid JSON stdout allowed the Bash marker in the preserved matrix",
+      "evidence_status": "contract-dependent",
+      "required_discriminating_check": "Repeat on the pinned target version and record whether the underlying tool starts",
+      "notes": "A parser error is not an explicit deny unless the host says so."
+    },
+    {
+      "id": "timeout",
+      "condition": "Hook exceeds its configured timeout",
+      "published_contract": "documented current failure model; timeout disposition depends on failure policy and host version",
+      "version_applicability": "unconfirmed for 2.1.120",
+      "local_observation": "locally-observed: one-second hook timeout allowed the Bash marker in the preserved matrix",
+      "evidence_status": "contract-dependent",
+      "required_discriminating_check": "Repeat with a pinned binary, a measured timeout, and a side-effect counter",
+      "notes": "The timeout event must be correlated with the exact attempted operation."
+    },
+    {
+      "id": "hook-launch-failure",
+      "condition": "Configured hook cannot be launched",
+      "published_contract": "not established by the reviewed sources for the required fail-closed invariant",
+      "version_applicability": "not-applicable",
+      "local_observation": "not-assessable: no launch-failure fixture was run",
+      "evidence_status": "not_assessable",
+      "required_discriminating_check": "Use a disposable executable path that cannot start and observe the side-effect counter",
+      "notes": "Do not classify launch failure as equivalent to an explicit deny."
+    },
+    {
+      "id": "absent-hook",
+      "condition": "No matching hook is configured or the hook is removed",
+      "published_contract": "not established as a fail-closed condition by the reviewed sources",
+      "version_applicability": "not-applicable",
+      "local_observation": "not-assessable: absent-hook control was not run",
+      "evidence_status": "not_assessable",
+      "required_discriminating_check": "Compare no-hook, matching-hook, and removed-hook controls on the same fixture",
+      "notes": "Absence of a policy mechanism must not be silently treated as denial."
+    },
+    {
+      "id": "on-failure-block-version",
+      "condition": "Hook configuration sets onFailure=block",
+      "published_contract": "documented current reference: failure blocking is available on a newer Claude Code release",
+      "version_applicability": "unconfirmed: current installed version is 2.1.120 and the documented minimum is newer",
+      "local_observation": "not-assessable: no newer pinned binary was executed",
+      "evidence_status": "not_assessable",
+      "required_discriminating_check": "Pin the documented minimum version and test success, exit failure, malformed output, timeout, launch failure, and absent-hook controls",
+      "notes": "A configuration key in a newer reference cannot prove behaviour on 2.1.120."
+    },
+    {
+      "id": "version-identity",
+      "condition": "The enforcement claim is assigned to a host binary",
+      "published_contract": "documented: hook semantics are versioned product behaviour",
+      "version_applicability": "partly-confirmed",
+      "local_observation": "artifact-verified: binary SHA-256 for 2.1.120 is recorded in host-hook-evidence/evidence-summary.json",
+      "evidence_status": "contract-dependent",
+      "required_discriminating_check": "Record binary version and SHA-256 in every future evidence bundle",
+      "notes": "The version identifier is part of the evidence, not a label added after the run."
+    }
+  ]
+}
