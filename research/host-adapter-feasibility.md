@@ -132,3 +132,12 @@ surface area. They do **not** establish an executable Sovetwave adapter or
 pre-execution enforcement. The next discriminating artifact is therefore a
 host-specific offline fixture, not production code. Until that fixture exists,
 the correct status is `investigation target`.
+
+## Follow-up evidence record
+
+The later bounded local observation for Claude Code `2.1.120` is preserved in
+[`research/host-hook-evidence/`](host-hook-evidence/README.md). It records an
+explicit `PreToolUse` denial and a separate failure matrix, while keeping
+full tool-result correlation, user/repository precedence, and universal
+fail-closed enforcement as `not_assessable`. This supplements the feasibility
+boundary; it does not promote the observation to a production adapter.
