@@ -15,8 +15,9 @@ Use a disposable directory outside the repository and record:
 - a side-effect counter or marker whose initial and final state are sealed.
 
 The first target should be the documented release that supports
-`onFailure: "block"`; run `2.1.120` only as a compatibility control. If the
-required binary is unavailable, stop with `NOT_ASSESSABLE`.
+`onFailure: "block"` for `command` and `http` hooks: Claude Code `2.1.295` or
+later. Run `2.1.120` only as a compatibility control. If the required binary
+is unavailable, stop with `NOT_ASSESSABLE`.
 
 ## Fixture matrix
 
@@ -60,7 +61,21 @@ reconstruct the missing edge from the assistant's final text.
 
 ## Decision criteria
 
-### GO for a named host/route adapter
+### GO_ADVISORY for a named host/route helper
+
+This is the weaker result. It is allowed when the following are observed:
+
+- a named, pinned host and route execute the hook before the side effect;
+- explicit deny prevents the side effect;
+- a complete request/result correlation exists; and
+- the documentation and report state that hook failure, configuration
+  authority, or uncovered routes are outside the guarantee when they were not
+  tested.
+
+`GO_ADVISORY` means only a bounded admission helper. It is not approval for a
+security policy, release gate, or production fail-closed enforcement.
+
+### GO_ENFORCEMENT for a named protected scope
 
 All of the following are observed on the same pinned version and fixture:
 
@@ -69,16 +84,27 @@ All of the following are observed on the same pinned version and fixture:
 - a complete request/result correlation exists;
 - success, failure, timeout, malformed output, launch failure, and absent-hook
   dispositions are observed;
-- a repository cannot weaken the trusted policy, or that limitation is
-  explicitly outside the claimed scope; and
-- the fixture is reproducible without a model/API call, or the result is
-  labelled a live-host observation rather than an offline proof.
+- the pinned version supports `onFailure: "block"` for the hook type under
+  test, and that policy blocks the tested failure modes;
+- a repository cannot weaken the trusted managed/user policy for the protected
+  scope;
+- permission `deny`, hook decisions, and any installed mod are tested as
+  separate precedence layers; and
+- every side-effect route in the claimed scope is covered, or the scope is
+  explicitly route-limited.
+
+The fixture must be reproducible without a model/API call, or the result must
+be labelled a live-host observation rather than an offline proof. A missing
+control, unknown precedence rule, or route outside `PreToolUse` is not an
+acceptable limitation for `GO_ENFORCEMENT`; it yields `HOLD` or
+`NOT_ASSESSABLE`.
 
 ### HOLD
 
 Use `HOLD` when a relevant failure mode proceeds, policy authority is
-uncertain, route coverage is incomplete for the intended claim, or the host
-version does not support the required failure policy.
+uncertain, route coverage is incomplete for the intended claim, a mod can
+override the tested boundary, or the host version does not support the
+required failure policy.
 
 ### NOT_ASSESSABLE
 

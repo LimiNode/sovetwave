@@ -2,7 +2,7 @@
 
 Status: `draft` / research-only
 
-Audit date: `2026-11-07`
+Audit date: `2026-11-08`
 
 Base revision: `293151a5543e99a8b8eb2969bf666f583fb261e6`
 
@@ -21,6 +21,13 @@ against policy weakening by repository configuration.
 This is a design-only investigation. It does not install hooks, run Claude or
 Bonsai, make a provider request, modify the historical evidence bundle, or add
 a production adapter.
+
+The preserved negative result is more specific than an absence of evidence:
+on Claude Code `2.1.120`, for the tested disposable `Bash` route and project
+settings, the marker command ran after hook exit `1`, malformed JSON, and a
+timeout. That is `locally-observed` evidence against fail-closed behaviour for
+that setup. It is not a universal statement about other Claude versions,
+routes, or configuration sources.
 
 ## Evidence classes
 
@@ -46,8 +53,12 @@ Normative sources reviewed for this design:
 - [Claude Code settings](https://code.claude.com/docs/en/settings)
 - [Claude Code permissions](https://code.claude.com/docs/en/permissions)
 
-These are living pages. Their current text is a published contract, not proof
-of compatibility with every installed binary. The existing repository note
+These are living pages, reviewed on `2026-11-08`. Their current text is a
+published contract, not proof of compatibility with every installed binary.
+The current hooks reference states that `onFailure: "block"` is available for
+`command` and `http` hooks starting with Claude Code `2.1.295`; it does not
+make an absent hook a denial and does not cover actions outside `PreToolUse`.
+The existing repository note
 `research/host-adapter-feasibility.md` records the review date and the
 version-applicability warning. No network execution or host experiment was
 performed for this PR.
@@ -63,8 +74,8 @@ the committed summaries are not rewritten.
 | Question | Result | Boundary |
 |---|---|---|
 | Can an explicit `PreToolUse` denial stop a side effect? | `locally-observed` for one `Bash` fixture | The sealed hook record and marker result exist, but the complete Claude stream does not. |
-| Does hook failure fail closed on `2.1.120`? | `not_assessable` as a product guarantee; the preserved matrix observed marker creation for exit `1`, malformed output, and timeout | One version, one route, one configuration; no universal claim. |
-| Does `onFailure: "block"` settle the question? | `version-applicability-unconfirmed` | The current reference requires a newer Claude Code version than `2.1.120`; the newer binary was not run. |
+| Does hook failure fail closed on `2.1.120`? | `locally-observed` negative result for the tested `Bash` setup; no product-wide guarantee | The preserved matrix observed marker creation for exit `1`, malformed output, and timeout. One version, one route, one configuration. |
+| Does `onFailure: "block"` settle the question? | `version-applicability-unconfirmed` | The current reference requires Claude Code `2.1.295+` for `command` and `http` hooks; that version was not run, and absent-hook/non-`PreToolUse` paths remain outside the claim. |
 | Can a repository weaken a user-level deny? | `not_assessable` | User/project/managed precedence and trust controls need a dedicated fixture. |
 | Are all side-effect routes covered? | `not_assessable` | Only `Bash` was observed; `Read`, `Write`, `Edit`, MCP, and non-tool paths were not run. |
 
@@ -73,10 +84,25 @@ trusted external execution boundary for any policy that must remain fail
 closed. Prompt discipline, a project-local hook, or the offline mock in
 `research/host-pre-execution-guard/` is not that external boundary.
 
+## Two different GO decisions
+
+The future experiment must report two separate outcomes:
+
+- `GO_ADVISORY`: a named route can use explicit hook decisions as a bounded
+  admission helper. This result carries no guarantee that protected policy
+  survives hook failure, configuration weakening, or an uncovered route.
+- `GO_ENFORCEMENT`: a strict security claim is allowed only after the pinned
+  host proves the failure policy, trusted-settings authority, permission/hook
+  precedence, and route coverage for the stated protected scope.
+
+`GO_ADVISORY` must never be used as a release or production-security approval.
+If the `GO_ENFORCEMENT` conditions are missing, the result is `HOLD` or
+`NOT_ASSESSABLE`, even when the explicit-deny demonstration is successful.
+
 ## Required invariant for a future adapter
 
 For a named Claude Code version and named route, a future adapter may claim
-`GO` only if it demonstrates, with a preserved raw trace, that:
+`GO_ENFORCEMENT` only if it demonstrates, with a preserved raw trace, that:
 
 1. the hook ran before the side effect;
 2. an explicit deterministic denial prevented the side effect;
@@ -84,8 +110,8 @@ For a named Claude Code version and named route, a future adapter may claim
    host identifier);
 4. hook failure, timeout, malformed output, launch failure, and absent-hook
    cases have observed dispositions;
-5. trusted and untrusted configuration precedence is either proven or stated
-   as a limitation; and
+5. trusted and untrusted configuration precedence is proven for the protected
+   scope, rather than merely listed as a limitation; and
 6. the result is reproducible without a model call, or the experiment is
    explicitly scoped as a live-host test rather than an offline proof.
 

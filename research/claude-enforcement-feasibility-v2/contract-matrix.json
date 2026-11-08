@@ -70,14 +70,54 @@
       "notes": "Absence of a policy mechanism must not be silently treated as denial."
     },
     {
+      "id": "permission-deny-precedence",
+      "condition": "A permission deny and a more-specific allow or ask both match",
+      "published_contract": "documented current permissions reference: deny blocks the call; a narrower allow cannot carve an exception out of a deny",
+      "version_applicability": "unconfirmed for 2.1.120",
+      "local_observation": "not-assessable: permission precedence was not run in the preserved hook fixture",
+      "evidence_status": "contract-dependent",
+      "required_discriminating_check": "Pair managed/user/project deny, allow, and ask rules while keeping the hook route fixed",
+      "notes": "This is permission precedence, not scalar settings precedence and not hook-failure semantics."
+    },
+    {
+      "id": "hook-block-precedence",
+      "condition": "A blocking PreToolUse decision and a permission allow both apply",
+      "published_contract": "documented current hooks and permissions references: a blocking hook can stop the call before permission evaluation; a hook allow cannot override a matching permission deny",
+      "version_applicability": "unconfirmed for 2.1.120",
+      "local_observation": "not-assessable: no paired hook/permission precedence fixture was run",
+      "evidence_status": "contract-dependent",
+      "required_discriminating_check": "Run explicit hook block, hook allow, permission allow, and permission deny as separate paired cases",
+      "notes": "Do not collapse both directions into a single generic priority rule."
+    },
+    {
+      "id": "managed-hook-policy",
+      "condition": "Managed settings use allowManagedHooksOnly or disableAllHooks",
+      "published_contract": "documented current hooks reference: managed hooks can be restricted to managed sources, and lower-level disableAllHooks cannot disable managed hooks",
+      "version_applicability": "unconfirmed for 2.1.120",
+      "local_observation": "not-assessable: managed settings were not deployed in the preserved run",
+      "evidence_status": "not_assessable",
+      "required_discriminating_check": "Deploy a disposable managed configuration and attempt project/local/plugin hook changes",
+      "notes": "A managed policy must be identified by source; a project JSON file is not managed authority."
+    },
+    {
+      "id": "mod-precedence",
+      "condition": "A plugin mod handles tool.check after PreToolUse",
+      "published_contract": "documented current permissions reference: mod outcome depends on managed settings or Team/Enterprise login; the mod surface is available in newer Claude Code versions",
+      "version_applicability": "unconfirmed for 2.1.120; current reference identifies 2.1.292+ for the relevant mod interaction",
+      "local_observation": "not-assessable: no mod was installed or exercised",
+      "evidence_status": "not_assessable",
+      "required_discriminating_check": "Run mod absent/approve/deny cases with and without managed/team authority, paired with hook and permission decisions",
+      "notes": "A hook-only result is insufficient when the deployment permits mods."
+    },
+    {
       "id": "on-failure-block-version",
       "condition": "Hook configuration sets onFailure=block",
-      "published_contract": "documented current reference: failure blocking is available on a newer Claude Code release",
-      "version_applicability": "unconfirmed: current installed version is 2.1.120 and the documented minimum is newer",
+      "published_contract": "documented current reference: onFailure=block is available for command and http hooks starting with Claude Code 2.1.295",
+      "version_applicability": "unconfirmed: current installed version is 2.1.120 and no 2.1.295+ binary was executed",
       "local_observation": "not-assessable: no newer pinned binary was executed",
       "evidence_status": "not_assessable",
-      "required_discriminating_check": "Pin the documented minimum version and test success, exit failure, malformed output, timeout, launch failure, and absent-hook controls",
-      "notes": "A configuration key in a newer reference cannot prove behaviour on 2.1.120."
+      "required_discriminating_check": "Pin the documented minimum version and test command and http hooks separately with success, exit failure, malformed output, timeout, launch failure, and absent-hook controls",
+      "notes": "A configuration key in a newer reference cannot prove behaviour on 2.1.120; it also does not make an absent hook or a non-PreToolUse path a denial."
     },
     {
       "id": "version-identity",
