@@ -34,6 +34,14 @@ repository documents when the Sovetwave skill is available, but no new
 model-backed natural-activation run was performed here. That capability is not
 claimed as newly measured evidence for beta.3.
 
+The three requested C++ routing scenarios are covered structurally by the
+offline behavioral cases `cpp-header-architecture-greenfield-default`,
+`cpp-header-architecture-explicit-iwyu`, and
+`cpp-header-architecture-brownfield-layout`. Those checks verify fixture and
+reference routing, not a model's spontaneous activation. Natural activation
+for all three remains `not_assessable` until a separately authorized
+model-backed run exists.
+
 ## Release scope since beta.2
 
 The production-facing skill changes between the previous tag and this base
