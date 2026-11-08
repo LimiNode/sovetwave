@@ -4,7 +4,8 @@ Status: `draft` / readiness review only
 
 Prepared: `2026-11-08`
 
-Candidate base: `293151a5543e99a8b8eb2969bf666f583fb261e6` (`origin/main`)
+Candidate base after PR #68 integration:
+`e71abf53a2390ecab02f76adfdaa9434fc6c7b96` (`origin/main`)
 
 Prepared candidate HEAD: the exact PR head; verify with `git rev-parse HEAD`
 after checkout. The PR metadata is the authoritative record because this file
@@ -15,18 +16,23 @@ Previous release: `v0.5.0-beta.2` at
 
 ## Decision
 
-`HOLD` for publication.
+`GO` recommendation for final publication review; publication itself remains
+pending a separate owner command.
 
 This branch prepares the metadata and release notes for `v0.5.0-beta.3`; it
 does not create a tag or GitHub Release. PR #68 (Claude enforcement feasibility
-v2) is intentionally not in this baseline because it is still a separate Draft
-PR. After #68 receives final approval and is merged, this branch must be
-rebased or recreated from the resulting `main`, and the complete release
-checks must be repeated.
+v2) is now integrated in the candidate tree through merge commit
+`e71abf53a2390ecab02f76adfdaa9434fc6c7b96`; its materials remain design-only
+and do not add a production Claude adapter.
 
 The candidate is otherwise a metadata-only release preparation. No model
 evaluation, host experiment, provider request, production Claude adapter, or
 historical benchmark rewrite is part of this release check.
+
+The release candidate intentionally preserves the activation boundary: the
+repository documents when the Sovetwave skill is available, but no new
+model-backed natural-activation run was performed here. That capability is not
+claimed as newly measured evidence for beta.3.
 
 ## Release scope since beta.2
 
@@ -59,9 +65,9 @@ The release policy keeps research notes and internal curation history out of
 the public changelog. A GitHub prerelease body should repeat the same scope
 and limitations rather than claim a Claude-specific security boundary.
 
-## Checks at the prepared candidate
+## Combined-tree checks at the prepared candidate
 
-The following checks passed before publication of this readiness branch:
+The following checks passed again after merging #68 into the release branch:
 
 | Check | Result |
 |---|---|
@@ -78,13 +84,18 @@ The following checks passed before publication of this readiness branch:
 | POSIX installer smoke | PASS |
 | `git diff --check` | PASS |
 
-Exact-head GitHub Actions is still required for the pushed candidate. A
-passing local suite does not substitute for that CI boundary.
+The post-merge exact-head GitHub Actions run is recorded in the final PR
+metadata. A passing local suite does not substitute for that CI boundary.
+
+The combined tree contains the #68 research files and merge commit
+`e71abf53a2390ecab02f76adfdaa9434fc6c7b96`; it still contains no production
+Claude enforcement implementation. The documented `HOLD` boundary for host
+enforcement and the absence of new model-backed activation evidence remain
+known release limitations.
 
 ## Required checks on the final release candidate
 
-Run these checks after the release branch is refreshed onto the approved
-`main`:
+The final candidate check set is:
 
 1. `python .github/scripts/validate_skill.py skills/sovetwave
    --release-metadata`;
@@ -106,12 +117,10 @@ an unrelated test.
 
 ## Publication gate
 
-Change the verdict to `GO` only when all of these are true:
+The `GO` recommendation is valid only while all of these remain true:
 
-- PR #68 has been separately approved and merged, or is explicitly excluded
-  from the release scope by a new decision;
-- this branch is refreshed onto the final release `main` and its exact commit
-  is recorded;
+- PR #68 is merged and its merge SHA is recorded;
+- this branch is refreshed onto that final release `main`;
 - plugin metadata and the newest changelog heading match;
 - all applicable offline and installer checks pass;
 - exact-head GitHub CI is green on the release candidate; and
@@ -119,4 +128,6 @@ Change the verdict to `GO` only when all of these are true:
   adapter, no universal hook coverage, and no claim that research-only host
   observations are fail-closed security evidence.
 
-Until then, the correct state is `HOLD`, not a prerelease tag.
+These conditions are satisfied for the current candidate. The tag and GitHub
+Release are still intentionally absent; the recommendation does not itself
+authorize publication or merge of PR #69.
