@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.5.0-beta.3 — 2026-11-08
+
+- Added evidence-bound architecture guidance that separates source entailment,
+  authored models, and observed runtime impact.
+- Added a deliberate C++ header dependency policy for new projects, including
+  umbrella boundaries, private leaves, installed package consumers, and
+  brownfield exceptions.
+- Added optional task-contract and isolated `.worktrees` guidance for
+  autonomous multi-stage changes and agent handoffs.
+- Strengthened verification of executable documentation, specialized fast
+  paths, benchmark semantic parity, mutation completeness, and declared
+  compatibility boundaries.
+- Expanded offline fixture and CI validation while keeping host enforcement
+  adapters and research-only experiments outside the production skill.
+
 ## v0.5.0-beta.2 — 2026-09-20
 
 - Added capability-aware inquiry and verification guidance for separating method fidelity from family-level representativeness, exposing residual information, and stopping investigation when a preregistered evidence boundary is met.
