@@ -122,6 +122,31 @@
         "identifies the installed consumer and public include contract as relevant evidence",
         "names a concrete requirement or observed defect that would justify a layout change"
       ]
+    },
+    {
+      "id": "cpp-state-model-independent-properties",
+      "prompt": "A connection has independent properties: encrypted transport, authenticated peer, and retry enabled. A proposal replaces three flags with one exhaustive variant solely to make invalid states unrepresentable. Review the representation.",
+      "assertions": [
+        "keeps independent properties independent unless the contract proves they are mutually exclusive",
+        "does not recommend a large exhaustive variant merely for formal symmetry",
+        "identifies the stable invariant or transition that could justify a smaller state-specific type",
+        "retains runtime validation for external handshakes, payloads, and resource-dependent failures"
+      ]
+    },
+    {
+      "id": "cpp-state-model-mutually-exclusive-transitions",
+      "prompt": "A session is either Connecting, Ready, Closing, or Closed. Public methods currently expose booleans and allow send() after close(). Propose a constructive invariant boundary and its checks.",
+      "assertions": [
+        "models mutually exclusive lifecycle states explicitly rather than preserving contradictory flags",
+        "makes send() unavailable or rejected outside the Ready state through a documented API boundary",
+        "checks payload and external failure conditions separately from the state representation",
+        "tests both rejected transitions and the valid send path"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-state-model-independent-properties",
+        "expect": "mutually exclusive lifecycle states justify an explicit state model while independent properties do not"
+      }
     }
   ]
 }

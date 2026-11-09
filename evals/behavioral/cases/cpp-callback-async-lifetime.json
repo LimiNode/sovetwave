@@ -83,6 +83,31 @@
         "base_case": "cpp-self-join-from-callback",
         "expect": "moving final teardown coordination off the worker removes the self-join path"
       }
+    },
+    {
+      "id": "cpp-raii-registration-token",
+      "prompt": "A single-owner event source returns a move-only subscription token. Destroying the token prevents future delivery and waits for an in-flight callback to finish; the callback target is owned separately. Review whether this RAII boundary is sound.",
+      "assertions": [
+        "accepts a move-only RAII token when it unregisters the exact subscription under a documented single-owner contract",
+        "requires idempotent teardown and an explicit rule for in-flight callbacks",
+        "keeps callback target lifetime separate from the token and does not treat the token as proof that captured this is valid",
+        "checks destruction, move, repeated teardown, and a callback racing with unsubscribe"
+      ]
+    },
+    {
+      "id": "cpp-explicit-unsubscribe-contract",
+      "prompt": "A public event API needs unsubscribe() to report failure, preserve registration ordering, and let shutdown coordinate callbacks before destroying a receiver. A proposal replaces it with a destructor-only RAII token. Review the choice.",
+      "assertions": [
+        "preserves explicit unsubscribe when ordering, error reporting, or visible shutdown coordination is part of the API",
+        "does not require RAII solely for formal symmetry when the explicit contract is already correct",
+        "still defines callback lifetime, in-flight delivery, and idempotence separately",
+        "tests unsubscribe failure or ordering and receiver destruction"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-raii-registration-token",
+        "expect": "RAII is a sound scoped boundary for one owner, but an explicit unsubscribe remains appropriate when the public contract needs visible coordination"
+      }
     }
   ]
 }

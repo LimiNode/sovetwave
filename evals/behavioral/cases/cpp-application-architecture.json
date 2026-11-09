@@ -71,6 +71,31 @@
         "identifies independent deployment or third-party extension as a material trigger for plugins",
         "treats a real public ABI as an expensive compatibility decision requiring the user's choice"
       ]
+    },
+    {
+      "id": "cpp-architecture-owner-thread-state",
+      "prompt": "A UI model is mutable only on the UI thread. A worker publishes immutable snapshots through a queue, and lifecycle states are Loading, Ready, and Closed. Review the boundary and the state model.",
+      "assertions": [
+        "assigns mutable UI-visible state to the UI owner thread and uses an owned snapshot or message boundary from the worker",
+        "models mutually exclusive lifecycle states and rejects transitions that are invalid for the current state",
+        "keeps external payload validation and late shutdown work as separate contracts",
+        "tests a rejected transition, a valid snapshot publication, and shutdown with pending work"
+      ]
+    },
+    {
+      "id": "cpp-architecture-shared-state-contract",
+      "prompt": "Two worker threads intentionally update a shared metrics registry, and readers need a consistent aggregate. A proposal labels the registry owner-thread state to avoid synchronization. Review the proposal.",
+      "assertions": [
+        "rejects owner-thread as a label when multiple threads intentionally mutate the same state",
+        "requires a complete synchronization, message, or immutable-snapshot contract for the shared registry",
+        "does not invent a single-thread transfer when shared access is an established requirement",
+        "tests concurrent updates and consistent reads at the declared boundary"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-architecture-owner-thread-state",
+        "expect": "owner-thread is appropriate for UI-owned mutable state, while deliberately shared state needs its own synchronization contract"
+      }
     }
   ]
 }

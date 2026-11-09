@@ -46,6 +46,27 @@ Smart pointers do not determine the architecture by themselves. Keep callback
 target lifetime, pending operations, and queued delivery as separate contracts
 even after storage has been moved into the owning object.
 
+## Model allowed states and owner-thread boundaries
+
+For a subsystem with mutually exclusive lifecycle states, make the allowed
+states and transitions visible in its API or state model. A state-specific
+operation, tagged representation, or private transition function can reject an
+invalid transition before it changes owned state. It does not validate payloads
+or external events, so keep those checks at the boundary that receives them.
+
+Assign each mutable state either to one owner thread or to a deliberately
+shared synchronization/snapshot boundary. `owner-thread` is a way to remove a
+class of conflicting writers, not a universal answer for state that is
+intentionally shared. If several threads must mutate the same state, define
+the synchronization, message, or immutable-snapshot contract instead of
+silently calling it owner-thread state.
+
+Test the transitions and the boundary: rejected state changes, a valid change,
+late work during shutdown, and two independent owners when isolation is part of
+the contract. Do not make every orthogonal property a single exhaustive state
+machine merely to avoid a boolean; the representation should follow the
+decisions the architecture actually owns.
+
 ## Draw dependency and event flow
 
 Keep platform and UI details pointing toward application operations rather than

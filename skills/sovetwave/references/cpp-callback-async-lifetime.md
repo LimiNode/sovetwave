@@ -52,6 +52,23 @@ explicit stop or cancel event and the point after which handlers stop
 propagating strong ownership. Distinguish memory that is never released from an
 object released later than the caller's stop contract permits.
 
+## Use scoped registration tokens deliberately
+
+RAII is useful for a subscription, callback registration, temporary lease, or
+other right whose lifetime should end with a scope. Prefer a move-only token
+with an explicit owner when destruction can unregister the exact registration
+and the callback contract tolerates destruction at that point. Make
+unregistration idempotent and define whether it waits for an in-flight
+callback, blocks new callbacks, or merely prevents future delivery.
+
+An RAII token does not make a captured `this` valid, cancel a callback that is
+already executing, or establish the lifetime of resources used by the callback.
+Compare it with an explicit unsubscribe operation when shutdown ordering,
+error reporting, or a visible registration phase is part of the API. Do not
+convert a correct single-owner event bus to `shared_ptr`/`weak_ptr` or add a
+token solely for formal symmetry; choose the representation that enforces the
+actual registration and teardown contract at acceptable cost.
+
 ## Design teardown from every execution context
 
 The last strong reference can disappear inside a handler, so a destructor may
