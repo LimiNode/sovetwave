@@ -8,6 +8,8 @@ Checks run without model or host calls:
 
 - `manifest.json` and six fixture contracts parsed and joined: PASS;
 - six task IDs, six fixture IDs, 60-call ceiling, and `HOLD` verdict: PASS;
+- combined candidate `394ca374b20e9b40b285d05492fa9a317ec86463` validated in its
+  integration worktree: `33 suites / 297 cases`;
 - `git diff --check`: PASS;
 - `python evals/validate_evals.py`: `33 suites / 281 cases`;
 - `python .github/scripts/validate_skill.py skills/sovetwave`: PASS;
@@ -17,6 +19,8 @@ Checks run without model or host calls:
   `23 passed, 17 subtests passed`;
 - `python -m json.tool research/beta3-practical-effectiveness/manifest.json`:
   PASS.
+- exact-head CI for the combined candidate: 3/3 success;
+- exact-head CI for this research PR: 3/3 success.
 
 These checks establish only the offline protocol and contract integrity. They
 do not establish that a model, host, generated program, or execution oracle
