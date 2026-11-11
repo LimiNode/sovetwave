@@ -2,13 +2,16 @@
 
 ## Question and non-goals
 
-The primary question is whether the released Sovetwave skill improves
+The primary question is whether the combined post-beta.3 Sovetwave policy
+candidate improves
 engineering correctness, completeness, and maintainability on small C++17
 coding tasks without introducing unnecessary abstractions or regressions.
 
 This protocol does not measure the value of individual rules, prove a general
-model capability, or authorize a release. It does not use the post-beta policy
-PRs as part of the treatment. The treatment is the frozen beta.3 release only.
+model capability, or authorize a release. The published beta.3 release remains
+historical provenance; it is not silently relabelled as the combined candidate.
+An optional beta.3-only ablation may be designed later, but is outside this
+pilot's call ceiling.
 
 ## Arms and identity
 
@@ -16,12 +19,14 @@ The primary comparison uses the same agent, model, host, tool surface,
 permissions, task input, environment, timeout, and repetition plan in two arms:
 
 1. `baseline` — no Sovetwave skill loaded;
-2. `sovetwave-beta3-explicit` — the released beta.3 skill tree loaded and
-   activation recorded in the host/tool trace.
+2. `sovetwave-combined-explicit` — the beta.3 tree plus the finalized policy
+   changes from PR #70 and PR #71, frozen at the candidate commit and loaded
+   explicitly; activation is recorded in the host/tool trace.
 
 Natural activation is a separate 12-call subset over two activation-sensitive
-tasks. It is not pooled with the explicit primary comparison. A final answer
-cannot prove activation; a missing host trace is `unavailable`.
+tasks, using `sovetwave-combined-natural`. It is not pooled with the explicit
+primary comparison. A final answer cannot prove activation; a missing host
+trace is `unavailable`.
 
 The grounded tool-use subset is another separate 12-call subset over the two
 tasks that require an executable oracle. It is not scored as execution success
@@ -35,15 +40,20 @@ Six small synthetic task contracts cover the following risks:
 | --- | --- | --- |
 | `cpp-ownership-callback` | owner and callback lifetime | build, focused lifetime tests, late-callback negative case |
 | `cpp-reentrancy-teardown` | callback reentrancy and shutdown | subprocess timeout, callback-outside-lock check, teardown tests |
-| `cpp-state-transitions` | valid and invalid lifecycle transitions | compile/tests for accepted and rejected operations |
-| `cpp-brownfield-reuse` | brownfield reuse and unnecessary abstraction | repository tests plus bounded diff/contract review |
-| `cpp-greenfield-library` | CMake target and public API boundary | clean build, install, and consumer test |
+| `cpp-state-transitions` | constructive invariants and valid/invalid lifecycle transitions | compile/tests for accepted and rejected operations |
+| `cpp-brownfield-reuse` | layout defaults, house-profile fallback, brownfield preservation, and reuse | repository tests plus bounded diff/contract review |
+| `cpp-greenfield-library` | CMake target, data-domain, owning-umbrella, and public API boundaries | clean build, install, and consumer test |
 | `cpp-untrusted-boundary` | validation before a filesystem side effect | sandbox trace proving rejection before mutation |
 
-Each fixture defines success, boundary, failure, and verification outputs. A
-short happy-path implementation is therefore a failed completeness gate, not a
-smaller successful answer. `fixtures/*.json` contain the contract-level
-requirements and the oracle boundary for later binding.
+Each fixture defines success, boundary, failure, and verification outputs. The
+combined policy-specific checks include repository-local `build/`, `.build/`,
+`.temp/`, and `.worktrees/` handling; automatic house-profile selection and
+brownfield exceptions; owning-umbrella-first versus `.cpp` aggregation; RAII
+self-unsubscription versus explicit unsubscribe; constructive state models; and
+installed CMake consumer correctness. A short happy-path implementation is
+therefore a failed completeness gate, not a smaller successful answer.
+`fixtures/*.json` contain contract-level requirements and the oracle boundary
+for later binding; they are not yet executable repositories.
 
 ## Grading gates
 
@@ -81,10 +91,11 @@ does not become a passing result by inference.
 
 ## Allocation and stopping
 
-The primary pilot is 6 tasks × 3 repetitions × 2 arms = 36 model calls. The
-natural-activation subset adds 2 tasks × 3 repetitions × 2 arms = 12 calls,
-and the grounded tool-use subset adds another 12 calls. The proposed ceiling is
-60 calls total; no calls are authorized by this document.
+After adding the combined-policy coverage, the primary pilot remains 6 tasks ×
+3 repetitions × 2 arms = 36 model calls. The natural-activation subset adds 2
+tasks × 3 repetitions × 2 arms = 12 calls, and the grounded tool-use subset
+adds another 12 calls. This is a recomputed 60-call ceiling, not an inherited
+beta.3-only allocation; no calls are authorized by this document.
 
 Use counterbalanced seeded blocks and freeze the order before execution. Stop
 before comparison if model/host/permissions/environment differ, if any paired

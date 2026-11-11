@@ -1,7 +1,7 @@
 # Sovetwave beta.3 practical-effectiveness evaluation
 
 This directory contains an offline protocol for comparing one coding agent
-with and without the released Sovetwave `v0.5.0-beta.3` skill. It is a
+with and without the combined post-beta.3 Sovetwave policy candidate. It is a
 research-only artifact. It does not call a model, start an agent host, execute
 generated code, or modify the production skill.
 
@@ -20,10 +20,11 @@ Files:
   not executable candidate repositories yet; the preflight must either bind
   reviewed repositories to them or mark the task `NOT_EXECUTED`.
 
-The frozen production reference is beta.3 commit
-`437c8ff116a96c69753bb7db40779d86fd892e00`. The skill tree hash in
-`manifest.json` covers every file below `skills/sovetwave/` using sorted
-relative UTF-8 path, NUL, file bytes, NUL serialization.
+The historical production reference is beta.3 commit
+`437c8ff116a96c69753bb7db40779d86fd892e00`. The candidate combines that tree
+with PR #70 and PR #71 at the unmerged integration commit recorded in
+`manifest.json`. Both skill-tree identities are preserved; the candidate hash
+is not presented as the published beta.3 hash.
 
 The expected offline disposition is `HOLD`: design work may be reviewed, but
 no live comparison may start until the execution preflight closes the listed

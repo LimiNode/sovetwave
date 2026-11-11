@@ -1,12 +1,18 @@
 {
   "schema_version": 1,
   "status": "design_valid_execution_blocked",
-  "purpose": "Offline protocol for a reproducible beta.3 coding-agent effectiveness comparison",
-  "frozen_release": {
+  "purpose": "Offline protocol for a reproducible combined post-beta.3 coding-agent effectiveness comparison",
+  "historical_release": {
     "version": "v0.5.0-beta.3",
     "commit": "437c8ff116a96c69753bb7db40779d86fd892e00",
     "skill_tree_hash_algorithm": "sha256(sorted relative UTF-8 path + NUL + file bytes + NUL for every skills/sovetwave file)",
     "skill_tree_sha256": "f697a34bd68d0a4b197c0646280ba47946c398d245e4fcdc11e9586f32a7d3a1"
+  },
+  "combined_candidate": {
+    "source_prs": [70, 71],
+    "commit": "394ca374b20e9b40b285d05492fa9a317ec86463",
+    "skill_tree_sha256": "62aad1981520d72be6e7266d94bb2be3a9c9d646edced0cd5df24a3b692e6324",
+    "status": "candidate_not_merged"
   },
   "arms": [
     {
@@ -15,25 +21,25 @@
       "activation": "absent"
     },
     {
-      "id": "sovetwave-beta3-explicit",
-      "skill_mode": "production_frozen",
+      "id": "sovetwave-combined-explicit",
+      "skill_mode": "beta3_plus_pr70_pr71_candidate",
       "activation": "explicit",
-      "skill_commit": "437c8ff116a96c69753bb7db40779d86fd892e00",
-      "skill_tree_sha256": "f697a34bd68d0a4b197c0646280ba47946c398d245e4fcdc11e9586f32a7d3a1"
+      "skill_commit": "394ca374b20e9b40b285d05492fa9a317ec86463",
+      "skill_tree_sha256": "62aad1981520d72be6e7266d94bb2be3a9c9d646edced0cd5df24a3b692e6324"
     }
   ],
   "separate_subsets": {
     "natural_activation": {
       "tasks": ["cpp-brownfield-reuse", "cpp-untrusted-boundary"],
       "repetitions": 3,
-      "arms": ["baseline", "sovetwave-beta3-natural"],
+      "arms": ["baseline", "sovetwave-combined-natural"],
       "planned_calls": 12,
       "paired_with_primary": false
     },
     "grounded_tool_use": {
       "tasks": ["cpp-ownership-callback", "cpp-untrusted-boundary"],
       "repetitions": 3,
-      "arms": ["baseline", "sovetwave-beta3-explicit"],
+      "arms": ["baseline", "sovetwave-combined-explicit"],
       "planned_calls": 12,
       "paired_with_primary": false,
       "requires_per_call_trace": true
@@ -42,9 +48,9 @@
   "task_inventory": [
     {"id": "cpp-ownership-callback", "fixture": "fixtures/cpp-ownership-callback.json", "oracle": "isolated CMake/CTest lifetime contract"},
     {"id": "cpp-reentrancy-teardown", "fixture": "fixtures/cpp-reentrancy-teardown.json", "oracle": "isolated subprocess timeout and teardown contract"},
-    {"id": "cpp-state-transitions", "fixture": "fixtures/cpp-state-transitions.json", "oracle": "compile and transition tests"},
-    {"id": "cpp-brownfield-reuse", "fixture": "fixtures/cpp-brownfield-reuse.json", "oracle": "repository tests plus bounded diff review"},
-    {"id": "cpp-greenfield-library", "fixture": "fixtures/cpp-greenfield-library.json", "oracle": "clean install and external consumer"},
+    {"id": "cpp-state-transitions", "fixture": "fixtures/cpp-state-transitions.json", "oracle": "compile and transition tests", "coverage": ["constructive invariants"]},
+    {"id": "cpp-brownfield-reuse", "fixture": "fixtures/cpp-brownfield-reuse.json", "oracle": "repository tests plus bounded diff review", "coverage": ["layout defaults", "automatic house fallback", "brownfield exceptions", "reuse"]},
+    {"id": "cpp-greenfield-library", "fixture": "fixtures/cpp-greenfield-library.json", "oracle": "clean install and external consumer", "coverage": ["CMake target selection", "data-domain boundary", "owning umbrella first", "aggregator negative control"]},
     {"id": "cpp-untrusted-boundary", "fixture": "fixtures/cpp-untrusted-boundary.json", "oracle": "sandbox mutation trace before/after validation"}
   ],
   "gates": ["functionality", "completeness", "safety", "compatibility", "economy_after_hard_gates"],
@@ -57,6 +63,7 @@
     "natural_calls": 12,
     "grounded_tool_calls": 12,
     "maximum_calls": 60,
+    "coverage_audit": "primary tasks expanded to cover PR #70 and PR #71; beta.3-only ablation is not included",
     "randomization": "counterbalanced seeded blocks; seed must be frozen before execution"
   },
   "runtime_binding": {
@@ -66,12 +73,13 @@
     "permissions_profile": null,
     "environment_snapshot": null,
     "fixture_repositories": null,
+    "candidate_merge_status": "not_merged",
     "isolated_executor": null,
     "execution_ready": false
   },
   "verdict": {
     "offline_design": "GO",
     "start_live_evaluation": "HOLD",
-    "reason": "fixture repositories, independent graders, runtime bindings, and isolation evidence are not yet bound"
+    "reason": "combined candidate is not merged and fixture repositories, independent graders, runtime bindings, and isolation evidence are not yet bound"
   }
 }

@@ -5,5 +5,6 @@
   "scenario": "An existing repository has a compatible helper, an established naming/layout profile, and a narrow request that does not justify a new abstraction.",
   "required_outputs": ["repository inspection", "reuse decision", "minimal patch", "focused regression checks"],
   "negative_controls": ["duplicate helper", "global naming migration", "new interface without a boundary"],
+  "combined_policy_coverage": ["repository-local work directories", "automatic house-profile fallback for new projects", "brownfield naming and layout preservation"],
   "oracle": {"kind": "pinned repository plus bounded diff", "evidence": ["existing helper use", "tests", "public contract unchanged", "unrelated diff absent"]}
 }

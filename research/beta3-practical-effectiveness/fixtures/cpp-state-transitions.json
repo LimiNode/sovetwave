@@ -5,5 +5,6 @@
   "scenario": "A session has mutually exclusive Connecting, Ready, Closing, and Closed states, while transport encryption and retry remain independent properties.",
   "required_outputs": ["valid transition model", "rejected send after close", "independent property representation", "transition tests"],
   "negative_controls": ["contradictory flags", "exhaustive variant for unrelated properties", "payload validation omitted"],
+  "combined_policy_coverage": ["constructive invariant boundary", "mutually exclusive lifecycle states", "independent properties remain independent"],
   "oracle": {"kind": "isolated CMake/CTest", "evidence": ["compile", "accepted transitions", "rejected transitions", "external-input validation"]}
 }

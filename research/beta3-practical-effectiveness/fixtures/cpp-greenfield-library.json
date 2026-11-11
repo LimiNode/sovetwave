@@ -5,5 +5,6 @@
   "scenario": "A new small library has a header-only utility, a compiled component, and a public installed consumer; no plugin boundary exists unless the task establishes one.",
   "required_outputs": ["consumer-driven target choice", "public include boundary", "exported package contract", "clean consumer test"],
   "negative_controls": ["SHARED without dynamic deployment", "source-tree-only verification", "umbrella cycle"],
+  "combined_policy_coverage": ["INTERFACE/STATIC/SHARED selection", "installed consumer", "purposeful data domain", "owning umbrella first", "reject .cpp aggregation workaround"],
   "oracle": {"kind": "isolated CMake build/install", "evidence": ["build", "install", "external consumer", "target/link resolution"]}
 }

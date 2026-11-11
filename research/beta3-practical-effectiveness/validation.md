@@ -1,7 +1,8 @@
 # Offline validation record
 
-Revision under review: `437c8ff116a96c69753bb7db40779d86fd892e00` plus the
-research-only files in this directory.
+Historical release: `437c8ff116a96c69753bb7db40779d86fd892e00`.
+Combined candidate: `394ca374b20e9b40b285d05492fa9a317ec86463`, skill-tree
+hash `62aad1981520d72be6e7266d94bb2be3a9c9d646edced0cd5df24a3b692e6324`.
 
 Checks run without model or host calls:
 
