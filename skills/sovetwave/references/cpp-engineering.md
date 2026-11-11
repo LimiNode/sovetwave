@@ -53,6 +53,30 @@ does not make construction of the call arguments lazy.
 
 When state is shared, inspect all conflicting reads and writes, not only assignments. An apparently harmless observation of a non-atomic object can race with a write. Determine the synchronisation or atomic contract before proposing a lock, a memory order, or a waiting protocol.
 
+## Make stable invariants constructive
+
+When a public operation must preserve a stable invariant, first ask whether the
+interface can make the invalid operation unavailable: use a type, private
+construction, a state-specific operation, or an owned transition object when
+that representation matches the actual contract. This is constructive
+enforcement, not a reason to replace every runtime check with a template or a
+large `std::variant`.
+
+Use an explicit state model when alternatives are mutually exclusive and their
+transitions are part of the contract. Keep independent properties independent;
+do not combine unrelated flags into one exhaustive type merely to make the
+diagram look complete. `std::variant` constrains the active alternative, but it
+does not validate the payload, make every transition legal, or remove the
+possibility of `valueless_by_exception` in C++17. Validate external data and
+check each state's own invariant separately.
+
+Prefer the smallest boundary that can reject an invalid transition before its
+side effect. Retain runtime checks where the condition depends on external
+input, concurrency, resource availability, or a failure mode the type system
+cannot express. Verify both rejected transitions and the allowed path; a type
+that is difficult to construct is not evidence that the resulting state is
+correct.
+
 ## Choose the C++ header dependency topology deliberately
 
 For a **new C++ library or project**, propose **hierarchical umbrella-based
