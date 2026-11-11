@@ -1,0 +1,62 @@
+{
+  "status": "HOLD",
+  "checked_date": "2026-11-11",
+  "model_calls": 0,
+  "model_generated_code_executed": false,
+  "control_report": "evidence/control-report.json",
+  "control_report_sha256": "f528326c2f5ddf128beafbfccf5d0bb45bb9315a7ba82f6513bee87b37c9ee5a",
+  "fixture_lock": "executable/content-lock.json",
+  "fixture_lock_sha256": "51328810c1d0686e8abf7fb3ca3b13fd898106c9325a74d84b9ad28e0afcba6b",
+  "executor": {
+    "image_id": "sha256:b584b546129c2e16895bbf98b9f6a3b74f8af6f1bf322eb9fc3c4c6fb182befa",
+    "platform": "linux/amd64",
+    "base_digest": "gcc@sha256:056fa682471704249f619f65ccec87d671ad5f1b20878da54d60b0b863486621",
+    "docker_server_version": "29.6.2",
+    "compiler": "g++ (GCC) 13.4.0",
+    "cmake": "3.25.1",
+    "network": "none",
+    "memory_bytes": 536870912,
+    "cpus": 1,
+    "pids": 64,
+    "writable_tmpfs_bytes": 268435456,
+    "task_timeout_seconds": 90,
+    "output_limit_bytes": 2000000,
+    "candidate_bridge": "NOT_IMPLEMENTED",
+    "tamper_resistant_result_collection": "NOT_ASSESSABLE",
+    "apt_snapshot_pinned": false
+  },
+  "agent_host": {
+    "observed_cli": "Claude Code 2.1.120 (--version only)",
+    "selected_host": null,
+    "selected_host_version": null,
+    "model_id": null,
+    "model_endpoint": null,
+    "sampling_parameters": null,
+    "spending_limit": null,
+    "per_call_token_limit": null,
+    "agent_timeout_seconds": null,
+    "permissions_profile": null,
+    "tool_surface": null,
+    "baseline_global_skill_absence": "NOT_ASSESSABLE",
+    "conflicting_instruction_absence": "NOT_ASSESSABLE",
+    "tool_trace_binding": "NOT_IMPLEMENTED"
+  },
+  "existing_runner_review": {
+    "path": "scripts/run_model_evals.py",
+    "functions": ["make_workspace", "command_for", "execute_command"],
+    "codex": "read-only sandbox; does not implement candidate edit/run bridge",
+    "claude": "Skill,Read,Bash with dontAsk for grounded cases; Bash is not routed through this container executor",
+    "baseline": "temporary workspace and project settings are not independent evidence of absent global skills, plugins, MCP configuration or inherited instructions",
+    "conclusion": "Do not reuse the current runner for generated-code execution without a reviewed isolated bridge"
+  },
+  "allocation": {
+    "seed": 20261111,
+    "primary": 36,
+    "natural": 12,
+    "grounded": 12,
+    "maximum_calls": 60,
+    "complete_pairs": 30,
+    "owner_call_authorization": false
+  },
+  "next_required_check": "Model-free bridge review: isolate agent tools and trusted result collection, prove clean baseline/candidate environments, bind complete artifact/trace collection, then select model/host/budget and request separate live-call authorization"
+}

@@ -6,12 +6,14 @@
     "version": "v0.5.0-beta.3",
     "commit": "437c8ff116a96c69753bb7db40779d86fd892e00",
     "skill_tree_hash_algorithm": "sha256(sorted relative UTF-8 path + NUL + file bytes + NUL for every skills/sovetwave file)",
-    "skill_tree_sha256": "f697a34bd68d0a4b197c0646280ba47946c398d245e4fcdc11e9586f32a7d3a1"
+    "skill_tree_sha256": "f2c7c17a96d0fb4399617b42207fa1c6cd5a5c3c51815a35118d92170c9d3231",
+    "previous_incorrect_sha256": "f697a34bd68d0a4b197c0646280ba47946c398d245e4fcdc11e9586f32a7d3a1"
   },
   "combined_candidate": {
     "source_prs": [70, 71],
     "commit": "394ca374b20e9b40b285d05492fa9a317ec86463",
-    "skill_tree_sha256": "62aad1981520d72be6e7266d94bb2be3a9c9d646edced0cd5df24a3b692e6324",
+    "skill_tree_sha256": "2d696b9b57d000c6cd4e9c7ecd283a22209cfdfc93e1cabcc680b377df6a5044",
+    "previous_incorrect_sha256": "62aad1981520d72be6e7266d94bb2be3a9c9d646edced0cd5df24a3b692e6324",
     "status": "candidate_not_merged"
   },
   "arms": [
@@ -25,12 +27,12 @@
       "skill_mode": "beta3_plus_pr70_pr71_candidate",
       "activation": "explicit",
       "skill_commit": "394ca374b20e9b40b285d05492fa9a317ec86463",
-      "skill_tree_sha256": "62aad1981520d72be6e7266d94bb2be3a9c9d646edced0cd5df24a3b692e6324"
+      "skill_tree_sha256": "2d696b9b57d000c6cd4e9c7ecd283a22209cfdfc93e1cabcc680b377df6a5044"
     }
   ],
   "separate_subsets": {
     "natural_activation": {
-      "tasks": ["cpp-brownfield-reuse", "cpp-untrusted-boundary"],
+      "tasks": ["cpp-brownfield-reuse", "cpp-greenfield-library"],
       "repetitions": 3,
       "arms": ["baseline", "sovetwave-combined-natural"],
       "planned_calls": 12,
@@ -46,11 +48,11 @@
     }
   },
   "task_inventory": [
-    {"id": "cpp-ownership-callback", "fixture": "fixtures/cpp-ownership-callback.json", "oracle": "isolated CMake/CTest lifetime contract"},
+    {"id": "cpp-ownership-callback", "fixture": "fixtures/cpp-ownership-callback.json", "oracle": "isolated g++ lifetime contract"},
     {"id": "cpp-reentrancy-teardown", "fixture": "fixtures/cpp-reentrancy-teardown.json", "oracle": "isolated subprocess timeout and teardown contract"},
     {"id": "cpp-state-transitions", "fixture": "fixtures/cpp-state-transitions.json", "oracle": "compile and transition tests", "coverage": ["constructive invariants"]},
-    {"id": "cpp-brownfield-reuse", "fixture": "fixtures/cpp-brownfield-reuse.json", "oracle": "repository tests plus bounded diff review", "coverage": ["layout defaults", "automatic house fallback", "brownfield exceptions", "reuse"]},
-    {"id": "cpp-greenfield-library", "fixture": "fixtures/cpp-greenfield-library.json", "oracle": "clean install and external consumer", "coverage": ["CMake target selection", "data-domain boundary", "owning umbrella first", "aggregator negative control"]},
+    {"id": "cpp-brownfield-reuse", "fixture": "fixtures/cpp-brownfield-reuse.json", "oracle": "repository tests plus bounded diff review", "coverage": ["established layout preservation", "brownfield exceptions", "reuse"]},
+    {"id": "cpp-greenfield-library", "fixture": "fixtures/cpp-greenfield-library.json", "oracle": "clean install and external consumer", "coverage": ["layout defaults", "automatic house fallback", "CMake target selection", "owning umbrella first", "aggregator negative control"]},
     {"id": "cpp-untrusted-boundary", "fixture": "fixtures/cpp-untrusted-boundary.json", "oracle": "sandbox mutation trace before/after validation"}
   ],
   "gates": ["functionality", "completeness", "safety", "compatibility", "economy_after_hard_gates"],
@@ -64,7 +66,10 @@
     "grounded_tool_calls": 12,
     "maximum_calls": 60,
     "coverage_audit": "primary tasks expanded to cover PR #70 and PR #71; beta.3-only ablation is not included",
-    "randomization": "counterbalanced seeded blocks; seed must be frozen before execution"
+    "randomization": "deterministic shuffled task blocks and alternating arm order",
+    "seed": 20261111,
+    "plan_aliases": {"combined": "explicit candidate in primary/grounded; natural candidate in natural", "tasks": "short keys in executable/tasks.json"},
+    "plan": [{"sequence":1,"experiment":"primary","task":"boundary","repetition":1,"arm":"baseline","position":1},{"sequence":2,"experiment":"primary","task":"boundary","repetition":1,"arm":"combined","position":2},{"sequence":3,"experiment":"primary","task":"boundary","repetition":2,"arm":"combined","position":1},{"sequence":4,"experiment":"primary","task":"boundary","repetition":2,"arm":"baseline","position":2},{"sequence":5,"experiment":"primary","task":"boundary","repetition":3,"arm":"baseline","position":1},{"sequence":6,"experiment":"primary","task":"boundary","repetition":3,"arm":"combined","position":2},{"sequence":7,"experiment":"primary","task":"reentrancy","repetition":1,"arm":"combined","position":1},{"sequence":8,"experiment":"primary","task":"reentrancy","repetition":1,"arm":"baseline","position":2},{"sequence":9,"experiment":"primary","task":"reentrancy","repetition":2,"arm":"baseline","position":1},{"sequence":10,"experiment":"primary","task":"reentrancy","repetition":2,"arm":"combined","position":2},{"sequence":11,"experiment":"primary","task":"reentrancy","repetition":3,"arm":"combined","position":1},{"sequence":12,"experiment":"primary","task":"reentrancy","repetition":3,"arm":"baseline","position":2},{"sequence":13,"experiment":"primary","task":"ownership","repetition":1,"arm":"baseline","position":1},{"sequence":14,"experiment":"primary","task":"ownership","repetition":1,"arm":"combined","position":2},{"sequence":15,"experiment":"primary","task":"ownership","repetition":2,"arm":"combined","position":1},{"sequence":16,"experiment":"primary","task":"ownership","repetition":2,"arm":"baseline","position":2},{"sequence":17,"experiment":"primary","task":"ownership","repetition":3,"arm":"baseline","position":1},{"sequence":18,"experiment":"primary","task":"ownership","repetition":3,"arm":"combined","position":2},{"sequence":19,"experiment":"primary","task":"greenfield","repetition":1,"arm":"combined","position":1},{"sequence":20,"experiment":"primary","task":"greenfield","repetition":1,"arm":"baseline","position":2},{"sequence":21,"experiment":"primary","task":"greenfield","repetition":2,"arm":"baseline","position":1},{"sequence":22,"experiment":"primary","task":"greenfield","repetition":2,"arm":"combined","position":2},{"sequence":23,"experiment":"primary","task":"greenfield","repetition":3,"arm":"combined","position":1},{"sequence":24,"experiment":"primary","task":"greenfield","repetition":3,"arm":"baseline","position":2},{"sequence":25,"experiment":"primary","task":"state","repetition":1,"arm":"baseline","position":1},{"sequence":26,"experiment":"primary","task":"state","repetition":1,"arm":"combined","position":2},{"sequence":27,"experiment":"primary","task":"state","repetition":2,"arm":"combined","position":1},{"sequence":28,"experiment":"primary","task":"state","repetition":2,"arm":"baseline","position":2},{"sequence":29,"experiment":"primary","task":"state","repetition":3,"arm":"baseline","position":1},{"sequence":30,"experiment":"primary","task":"state","repetition":3,"arm":"combined","position":2},{"sequence":31,"experiment":"primary","task":"brownfield","repetition":1,"arm":"combined","position":1},{"sequence":32,"experiment":"primary","task":"brownfield","repetition":1,"arm":"baseline","position":2},{"sequence":33,"experiment":"primary","task":"brownfield","repetition":2,"arm":"baseline","position":1},{"sequence":34,"experiment":"primary","task":"brownfield","repetition":2,"arm":"combined","position":2},{"sequence":35,"experiment":"primary","task":"brownfield","repetition":3,"arm":"combined","position":1},{"sequence":36,"experiment":"primary","task":"brownfield","repetition":3,"arm":"baseline","position":2},{"sequence":37,"experiment":"natural","task":"brownfield","repetition":1,"arm":"baseline","position":1},{"sequence":38,"experiment":"natural","task":"brownfield","repetition":1,"arm":"combined","position":2},{"sequence":39,"experiment":"natural","task":"brownfield","repetition":2,"arm":"combined","position":1},{"sequence":40,"experiment":"natural","task":"brownfield","repetition":2,"arm":"baseline","position":2},{"sequence":41,"experiment":"natural","task":"brownfield","repetition":3,"arm":"baseline","position":1},{"sequence":42,"experiment":"natural","task":"brownfield","repetition":3,"arm":"combined","position":2},{"sequence":43,"experiment":"natural","task":"greenfield","repetition":1,"arm":"combined","position":1},{"sequence":44,"experiment":"natural","task":"greenfield","repetition":1,"arm":"baseline","position":2},{"sequence":45,"experiment":"natural","task":"greenfield","repetition":2,"arm":"baseline","position":1},{"sequence":46,"experiment":"natural","task":"greenfield","repetition":2,"arm":"combined","position":2},{"sequence":47,"experiment":"natural","task":"greenfield","repetition":3,"arm":"combined","position":1},{"sequence":48,"experiment":"natural","task":"greenfield","repetition":3,"arm":"baseline","position":2},{"sequence":49,"experiment":"grounded","task":"boundary","repetition":1,"arm":"baseline","position":1},{"sequence":50,"experiment":"grounded","task":"boundary","repetition":1,"arm":"combined","position":2},{"sequence":51,"experiment":"grounded","task":"boundary","repetition":2,"arm":"combined","position":1},{"sequence":52,"experiment":"grounded","task":"boundary","repetition":2,"arm":"baseline","position":2},{"sequence":53,"experiment":"grounded","task":"boundary","repetition":3,"arm":"baseline","position":1},{"sequence":54,"experiment":"grounded","task":"boundary","repetition":3,"arm":"combined","position":2},{"sequence":55,"experiment":"grounded","task":"ownership","repetition":1,"arm":"combined","position":1},{"sequence":56,"experiment":"grounded","task":"ownership","repetition":1,"arm":"baseline","position":2},{"sequence":57,"experiment":"grounded","task":"ownership","repetition":2,"arm":"baseline","position":1},{"sequence":58,"experiment":"grounded","task":"ownership","repetition":2,"arm":"combined","position":2},{"sequence":59,"experiment":"grounded","task":"ownership","repetition":3,"arm":"combined","position":1},{"sequence":60,"experiment":"grounded","task":"ownership","repetition":3,"arm":"baseline","position":2}]
   },
   "runtime_binding": {
     "model_id": null,
@@ -72,14 +77,15 @@
     "tool_surface": null,
     "permissions_profile": null,
     "environment_snapshot": null,
-    "fixture_repositories": null,
+    "fixture_repositories": "executable/content-lock.json",
     "candidate_merge_status": "not_merged",
-    "isolated_executor": null,
+    "isolated_executor": "trusted controls verified; candidate bridge and evaluator tamper boundary not approved",
+    "preflight_record": "runtime-preflight.json",
     "execution_ready": false
   },
   "verdict": {
     "offline_design": "GO",
     "start_live_evaluation": "HOLD",
-    "reason": "combined candidate is not merged and fixture repositories, independent graders, runtime bindings, and isolation evidence are not yet bound"
+    "reason": "trusted fixture controls pass; candidate bridge, tamper-resistant result collection, clean baseline evidence, model/host bindings and owner call authorization remain absent; candidate is not merged"
   }
 }

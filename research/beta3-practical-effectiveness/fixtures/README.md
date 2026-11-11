@@ -1,11 +1,13 @@
 # Fixture contract status
 
-The six JSON files in this directory are immutable task contracts for the
-offline design review. They specify the repository shape, required behaviour,
-negative controls, and the oracle boundary. They deliberately do not contain
-model-generated code and are not an execution result.
+The six JSON files specify repository shape, required behaviour, negative
+controls, and oracle boundaries. Each now binds an executable starter and
+reference tree through `executable_fixture`. They contain no model-generated
+code and are not model evaluation results. Freeze their content lock before
+authorizing any live run; do not revise requirements after inspecting results.
 
-Before a live run, a separate preflight must bind each contract to a reviewed
-synthetic repository (or a pinned real fixture), implement and test its oracle,
-and record the fixture hashes. Until then, every proposed observation for that
-task is `NOT_EXECUTED` or `NOT_ASSESSABLE`.
+Trusted reference/mutant/starter controls validate the bounded oracles. Before
+a live run, the agent bridge and arm isolation still require review. Every
+model observation remains `NOT_EXECUTED`; controls do not establish model
+quality. Semantic constraints not exercised by an oracle remain
+`NOT_ASSESSABLE`, never an inferred PASS.

@@ -1,0 +1,44 @@
+{
+  "ownership": {
+    "id": "cpp-ownership-callback",
+    "prompt": "Complete Source in api.hpp. Synchronous single-threaded publish invokes current subscriptions. subscribe returns a move-only token; reset and destruction prevent future delivery and are idempotent. A callback may reset its own token without waiting for itself. Moving transfers the registration; tokens may outlive the source. Preserve the API. Demonstrate teardown and late delivery safety. Explicit reset remains available for ordered shutdown.",
+    "editable": ["api.hpp"],
+    "mutant": {"file": "api.hpp", "before": "owner->callbacks.erase(id)", "after": "owner->callbacks.count(id)"},
+    "expected_failure": "runtime_contract"
+  },
+  "reentrancy": {
+    "id": "cpp-reentrancy-teardown",
+    "prompt": "Complete Dispatcher in api.hpp. One start per instance creates a worker which waits for one submission or stop. Accepted pending work is drained before exit. The callback may call request_stop synchronously. submit returns false after stop. join runs on the external coordinator, never in the callback. Destruction stops and joins; test idle shutdown and repeated independent lifecycles. Preserve the API.",
+    "editable": ["api.hpp"],
+    "mutant": {"file": "api.hpp", "before": "lock.unlock(); // call-out boundary", "after": "// Defect: callback invoked with the mutex still held"},
+    "expected_failure": "runtime_contract"
+  },
+  "state": {
+    "id": "cpp-state-transitions",
+    "prompt": "Complete Session in api.hpp. Initially Connecting; ready succeeds only once from Connecting. send accepts nonempty payloads of at most eight bytes only while Ready. close is terminal and idempotent. Encryption and retry are independent properties. Reject invalid calls without side effects. Preserve the API; implementation representation is your choice.",
+    "editable": ["api.hpp"],
+    "mutant": {"file": "api.hpp", "before": "state == State::Ready &&", "after": "true &&"},
+    "expected_failure": "runtime_contract"
+  },
+  "brownfield": {
+    "id": "cpp-brownfield-reuse",
+    "prompt": "Complete Configuration::ParseValue in api.hpp using the existing parsing contract. Preserve the public API and established STYLE.md conventions. Failure must leave the caller's output unchanged. Inspect the existing helper before choosing an implementation. Do not edit unrelated files; use the established temporary/build locations for any probes.",
+    "editable": ["api.hpp"],
+    "mutant": {"file": "api.hpp", "before": "return ParseNonNegative(text, result);", "after": "result = 0; return true;"},
+    "expected_failure": "runtime_contract"
+  },
+  "greenfield": {
+    "id": "cpp-greenfield-library",
+    "prompt": "Build a small new C++17 integer sample library. Public entry point <demo.hpp> exposes AudioPlayer with bool add_sample(int) and int total() const. Samples in [-100,100] add to the initially zero total; other values are rejected unchanged. Test sequences keep the total representable as int. Also expose constexpr bool sample_in_range(int) with the same range predicate. Export compiled sampler::sampler and header-only sampler::sample_constants targets through find_package(sampler CONFIG REQUIRED); the utility must work without linking the compiled component. No dynamic loading or ABI deployment is required. Choose project style and file organization; no local convention exists. Prepare separate task-scoped areas for a demo build, experimental build, probe log and a later isolated worktree, ignore working artifacts in Git, and explain leftovers. Verify each .cpp independently and the installed consumer.",
+    "editable": ["*"],
+    "mutant": {"file": "CMakeLists.txt", "before": "install(EXPORT samplerTargets NAMESPACE sampler:: FILE samplerConfig.cmake DESTINATION lib/cmake/sampler)", "after": "# Defect: no installed CMake package"},
+    "expected_failure": "consumer_configure"
+  },
+  "boundary": {
+    "id": "cpp-untrusted-boundary",
+    "prompt": "Complete store(root, name, payload) in api.hpp. The caller owns a pre-created root with no concurrent path replacement. Accept only 1..16 ASCII lowercase letters, digits or '-' in a flat filename and at most 16 payload bytes. Reject symlink targets and all invalid input before opening anything for write. A valid call writes exactly the payload and returns true; validation rejection returns false and leaves the filesystem unchanged. Operational I/O failure returns false; atomic rollback of I/O failure is outside this pilot. Preserve the API; no configuration override is provided.",
+    "editable": ["api.hpp"],
+    "mutant": {"file": "api.hpp", "before": "if (name.empty() ||", "after": "{ std::ofstream early(root / name); early << payload; } if (name.empty() ||"},
+    "expected_failure": "runtime_contract"
+  }
+}

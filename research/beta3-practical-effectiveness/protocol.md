@@ -41,8 +41,8 @@ Six small synthetic task contracts cover the following risks:
 | `cpp-ownership-callback` | owner and callback lifetime | build, focused lifetime tests, late-callback negative case |
 | `cpp-reentrancy-teardown` | callback reentrancy and shutdown | subprocess timeout, callback-outside-lock check, teardown tests |
 | `cpp-state-transitions` | constructive invariants and valid/invalid lifecycle transitions | compile/tests for accepted and rejected operations |
-| `cpp-brownfield-reuse` | layout defaults, house-profile fallback, brownfield preservation, and reuse | repository tests plus bounded diff/contract review |
-| `cpp-greenfield-library` | CMake target, data-domain, owning-umbrella, and public API boundaries | clean build, install, and consumer test |
+| `cpp-brownfield-reuse` | established `.tmp`/`out` layout, naming preservation, and reuse | repository tests, unchanged protected files, and bounded diff/trace review |
+| `cpp-greenfield-library` | automatic house fallback, working areas, CMake target, owning-umbrella, and public API boundaries | filesystem/include inspection, clean build, install, and consumer test |
 | `cpp-untrusted-boundary` | validation before a filesystem side effect | sandbox trace proving rejection before mutation |
 
 Each fixture defines success, boundary, failure, and verification outputs. The
@@ -52,8 +52,11 @@ brownfield exceptions; owning-umbrella-first versus `.cpp` aggregation; RAII
 self-unsubscription versus explicit unsubscribe; constructive state models; and
 installed CMake consumer correctness. A short happy-path implementation is
 therefore a failed completeness gate, not a smaller successful answer.
-`fixtures/*.json` contain contract-level requirements and the oracle boundary
-for later binding; they are not yet executable repositories.
+`fixtures/*.json` bind the executable trees in `executable/fixtures/`.
+Readiness is recorded per task in `validation.md`. Filesystem checks establish
+submitted directory layout, not an actual Git worktree or historical build
+location. Helper reuse, abstraction economy, target-choice rationale, and any
+unexercised architecture claims require the separate semantic/trace review.
 
 ## Grading gates
 
@@ -104,12 +107,23 @@ oracle cannot establish deny-before-side-effect.
 
 ## Offline checkpoint and verdict
 
-Offline checks are limited to JSON parsing, manifest identity checks, fixture
-contract completeness, and the repository's existing design validators. The
-protocol is `design_valid=true` but `execution_ready=false` until the
-preflight supplies executable repositories, graders, and runtime bindings.
+Offline checks include raw-byte skill identities, content locks, complete-pair
+allocation, status handling, archive validation, and the Docker trusted-control
+suite. The protocol remains `execution_ready=false` until a reviewed agent
+bridge supplies runtime bindings, clean baseline evidence, and candidate traces.
 
 Therefore the verdict for starting the actual evaluation is **HOLD**. The
-minimum next action is a separate reviewed execution-preflight artifact; do
-not run a model until it reports all required bindings and an isolated oracle
-check as `PASS`.
+minimum next action is a reviewed, model-free agent-bridge preflight. Do not
+run a model until required bindings and isolation checks pass and the owner
+separately authorizes a bounded run.
+
+## Blinded semantic review
+
+After machine hard gates, export task contract, anonymized patch, and bounded
+execution evidence with a random item ID. Withhold arm, activation, model,
+repetition, and mapping key until every review is finalized. Preserve machine
+scores unchanged. Review helper reuse, naming beyond the checked file stem,
+target rationale, unnecessary domains/abstractions, and observed working-area
+use separately; missing traces are `NOT_ASSESSABLE`. Use a second reviewer for
+disagreements before unblinding. This is metadata blinding, not a promise that
+code or prose cannot hint at the arm. No LLM judge calls are authorized here.

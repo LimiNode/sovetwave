@@ -1,10 +1,12 @@
 {
   "id": "cpp-state-transitions",
   "language": "C++17",
-  "fixture_status": "contract_only",
-  "scenario": "A session has mutually exclusive Connecting, Ready, Closing, and Closed states, while transport encryption and retry remain independent properties.",
+  "fixture_status": "executable_controls_prepared",
+  "executable_fixture": "executable/fixtures/state",
+  "scenario": "A session has mutually exclusive Connecting, Ready, and terminal Closed states, while encryption and retry remain independent properties.",
   "required_outputs": ["valid transition model", "rejected send after close", "independent property representation", "transition tests"],
   "negative_controls": ["contradictory flags", "exhaustive variant for unrelated properties", "payload validation omitted"],
   "combined_policy_coverage": ["constructive invariant boundary", "mutually exclusive lifecycle states", "independent properties remain independent"],
-  "oracle": {"kind": "isolated CMake/CTest", "evidence": ["compile", "accepted transitions", "rejected transitions", "external-input validation"]}
+  "limitations": ["Immediate close only; no asynchronous Closing phase", "Representation economy is a separate blinded review"],
+  "oracle": {"kind": "isolated g++ test executable", "evidence": ["compile", "accepted transitions", "rejected transitions", "external-input validation"]}
 }
