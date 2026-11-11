@@ -13,7 +13,8 @@ Apply rules in this order:
 2. applicable repository instructions such as `AGENTS.md` and checked style
    guides;
 3. the nearest established style in the owned subsystem;
-4. an explicitly selected house profile;
+4. the Sovetwave house profile as the default for a new project without a
+   competing style decision;
 5. otherwise, preserve the surrounding code and do not invent a convention.
 
 Classify a finding as a language invariant, standard or library contract,
@@ -38,6 +39,10 @@ that recommendation accurately.
 
 ## Name by role and scope
 
+For a new project with no user-selected or repository-local style, activate the
+Sovetwave house profile automatically. This is a fallback for choosing names and
+documentation in new code, not a migration order for an existing repository.
+
 Under the house profile:
 
 - prefix private data members with `m_`;
@@ -56,9 +61,10 @@ For a new C++ project that has selected this fallback profile, use one explicit
 naming register rather than leaving agents to guess: `snake_case` for methods,
 free functions, and local variables; `m_` plus `snake_case` for private data
 members; and a consistent `PascalCase` profile for classes and enumerations.
-When one file owns one primary class, use that class name as the file stem;
-when several peer entities form one small implementation, use a descriptive
-`snake_case` stem. Keep the `.cpp` and `.hpp` stems aligned. Public API
+When one file owns one primary class, use a `camelCase` file stem derived from
+the `PascalCase` class name (`AudioPlayer` → `audioPlayer.hpp`); when several
+peer entities form one small implementation, use a descriptive `snake_case`
+stem. Keep the `.cpp` and `.hpp` stems aligned. Public API
 documentation uses the selected Doxygen markers and concise technical English
 when that is the repository's documented profile.
 

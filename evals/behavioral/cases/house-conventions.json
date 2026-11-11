@@ -55,11 +55,12 @@
     },
     {
       "id": "house-new-cpp-naming-profile",
-      "prompt": "A new C++ project has no local naming or file-layout policy. Choose a concrete fallback profile for methods, variables, private fields, classes, enums, paired `.cpp`/`.hpp` files, and public API documentation.",
+      "prompt": "A new C++ project has no local naming or file-layout policy and the user has not selected a style. Apply the Sovetwave fallback profile for methods, variables, private fields, classes, enums, paired `.cpp`/`.hpp` files, and public API documentation.",
       "assertions": [
+        "activates the Sovetwave fallback without requiring a separate style-selection prompt when no competing instruction exists",
         "chooses snake_case for methods, free functions, and variables and m_ plus snake_case for private fields",
         "selects one explicit PascalCase-style register for classes and enums instead of leaving the case ambiguous",
-        "keeps paired .cpp and .hpp stems aligned and allows a descriptive snake_case file for several peer entities",
+        "uses a camelCase stem derived from a PascalCase primary class name, keeps paired .cpp and .hpp stems aligned, and allows a descriptive snake_case file for several peer entities",
         "uses the selected Doxygen markers and concise technical English for public API documentation",
         "labels the profile as a project convention and does not present it as a C++ language rule"
       ]
