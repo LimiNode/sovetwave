@@ -1,0 +1,9 @@
+{
+  "id": "cpp-reentrancy-teardown",
+  "language": "C++17",
+  "fixture_status": "contract_only",
+  "scenario": "An event source invokes a receiver that may synchronously stop it while worker shutdown and callback delivery are in flight.",
+  "required_outputs": ["state transition before callback", "callback outside contended lock", "two-phase shutdown", "bounded teardown test"],
+  "negative_controls": ["join current worker", "wait while holding worker lock", "recursive mutex hiding a half-updated state"],
+  "oracle": {"kind": "isolated subprocess", "evidence": ["reentrant callback test", "late callback test", "timeout", "thread teardown result"]}
+}

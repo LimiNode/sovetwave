@@ -1,0 +1,9 @@
+{
+  "id": "cpp-untrusted-boundary",
+  "language": "C++17",
+  "fixture_status": "contract_only",
+  "scenario": "A command accepts a path and configuration value from an untrusted boundary before writing inside a sandboxed fixture root.",
+  "required_outputs": ["boundary validation", "rejection result", "no side effect before rejection", "accepted safe path"],
+  "negative_controls": ["path traversal", "configuration weakening", "write before validation"],
+  "oracle": {"kind": "isolated sandbox with filesystem trace", "evidence": ["input classification", "exit status", "pre/post tree hash", "side-effect trace"]}
+}

@@ -1,0 +1,9 @@
+{
+  "id": "cpp-ownership-callback",
+  "language": "C++17",
+  "fixture_status": "contract_only",
+  "scenario": "A finite asynchronous operation registers a callback while the owner may be destroyed and a late completion may arrive.",
+  "required_outputs": ["owned callback state", "safe late completion", "explicit cancellation or stop contract", "focused tests"],
+  "negative_controls": ["dangling this capture", "callback after owner destruction", "unbounded self-renewing ownership"],
+  "oracle": {"kind": "isolated CMake/CTest", "evidence": ["build", "lifetime tests", "late-callback test", "sanitizer result"]}
+}

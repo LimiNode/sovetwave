@@ -1,0 +1,9 @@
+{
+  "id": "cpp-state-transitions",
+  "language": "C++17",
+  "fixture_status": "contract_only",
+  "scenario": "A session has mutually exclusive Connecting, Ready, Closing, and Closed states, while transport encryption and retry remain independent properties.",
+  "required_outputs": ["valid transition model", "rejected send after close", "independent property representation", "transition tests"],
+  "negative_controls": ["contradictory flags", "exhaustive variant for unrelated properties", "payload validation omitted"],
+  "oracle": {"kind": "isolated CMake/CTest", "evidence": ["compile", "accepted transitions", "rejected transitions", "external-input validation"]}
+}
