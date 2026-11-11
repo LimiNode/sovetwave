@@ -172,6 +172,31 @@
         "base_case": "cpp-data-domain-shared-types",
         "expect": "a narrow data domain is justified by genuinely shared contracts, while domain-exclusive types stay with their owning domain"
       }
+    },
+    {
+      "id": "cpp-owning-umbrella-first",
+      "prompt": "A new library uses the hierarchical umbrella-based profile. `src/library/audio/playout_cursor.cpp` belongs to `audio`, and `src/library/protocol/control/control_codec.cpp` belongs to the `protocol/control` subdomain. Each `.cpp` must compile as its own translation unit. Choose the first include and the remaining include order.",
+      "assertions": [
+        "starts each implementation with the public umbrella of its owning domain or nearest applicable subdomain",
+        "keeps standard-library and local private implementation headers after the owning umbrella",
+        "does not require repeating the own leaf header when the umbrella already includes it",
+        "treats the owning umbrella first rule as a selected project convention rather than a C++ language requirement"
+      ]
+    },
+    {
+      "id": "cpp-umbrella-aggregator-avoidance",
+      "prompt": "A private leaf header relies on its domain umbrella. An agent proposes a wrapper translation unit that aggregates several `.cpp` files, forced includes, or a unity build so every leaf appears self-contained. Review the proposal under the hierarchical umbrella-based profile.",
+      "assertions": [
+        "rejects `.cpp` aggregators, forced includes, PCH, and mandatory unity builds as substitutes for the owning umbrella contract",
+        "keeps each `.cpp` as an independently compiled translation unit with the owning umbrella first",
+        "does not impose standalone compilation on a private leaf whose documented contract inherits umbrella context",
+        "allows a separately documented standalone entry point or brownfield exception without generalizing it to every leaf"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-owning-umbrella-first",
+        "expect": "the selected hierarchical profile uses an owning umbrella per translation unit, while aggregators and forced context are rejected as architecture workarounds"
+      }
     }
   ]
 }

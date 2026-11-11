@@ -116,13 +116,17 @@ Under the hierarchical umbrella default:
   domain boundaries. Prefer `/` separators and disallow `..` traversal as an
   explicit project convention; these paths are relative to configured include
   roots, not absolute filesystem paths.
-- **Make translation-unit context explicit.** A `.cpp` may include its own
-  header first when that header is self-contained. If the header is a private
-  leaf whose contract requires a domain umbrella, the `.cpp` includes that
-  umbrella first; do not manufacture a standalone-header requirement merely
-  to preserve the usual include-first idiom. A direct include of the own
-  header after the umbrella is allowed when it improves local clarity, but may
-  be redundant.
+- **Make translation-unit context explicit.** Under the selected hierarchical
+  umbrella-based profile, each independently compiled `.cpp` starts with the
+  public umbrella of its owning domain or nearest applicable subdomain. That
+  umbrella supplies the declaration context and inter-domain dependencies;
+  local private headers and required standard-library headers follow it. The
+  own leaf header need not be repeated when the umbrella already includes it.
+  A project may instead choose self-contained headers, or document a standalone
+  entry-point exception, but that is a different contract rather than an
+  accidental fallback. Do not add `.cpp` aggregators, forced includes, PCH, or
+  unity builds to hide a missing owning-umbrella boundary. For an existing
+  brownfield project, preserve its explicit include contract.
 - **Keep cross-domain access at declared boundaries.** Domain umbrellas may
   use another domain's public umbrella or a narrower declared contract.
   Private leaves must not reach into a neighbouring domain through relative
