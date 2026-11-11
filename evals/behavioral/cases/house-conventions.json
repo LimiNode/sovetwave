@@ -52,6 +52,32 @@
         "does not recommend a repository-wide rename without an explicit scoped migration goal",
         "reports no defect when no violated target rule or behavioral consequence is established"
       ]
+    },
+    {
+      "id": "house-new-cpp-naming-profile",
+      "prompt": "A new C++ project has no local naming or file-layout policy. Choose a concrete fallback profile for methods, variables, private fields, classes, enums, paired `.cpp`/`.hpp` files, and public API documentation.",
+      "assertions": [
+        "chooses snake_case for methods, free functions, and variables and m_ plus snake_case for private fields",
+        "selects one explicit PascalCase-style register for classes and enums instead of leaving the case ambiguous",
+        "keeps paired .cpp and .hpp stems aligned and allows a descriptive snake_case file for several peer entities",
+        "uses the selected Doxygen markers and concise technical English for public API documentation",
+        "labels the profile as a project convention and does not present it as a C++ language rule"
+      ]
+    },
+    {
+      "id": "house-existing-cpp-naming-preserved",
+      "prompt": "An established C++ repository consistently uses `camelCase`, `AudioPlayer.hpp`, and grouped helper types in that file. A new class must be added without a requested migration. How should the agent name and place it?",
+      "assertions": [
+        "preserves the coherent existing camelCase and file-grouping convention for the new class",
+        "does not rename existing files or force one-class-per-file as a universal rule",
+        "states that the new-project fallback profile does not override an established brownfield convention",
+        "keeps any broader naming migration outside the requested change"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "house-new-cpp-naming-profile",
+        "expect": "the explicit fallback profile guides a new project, while a coherent existing convention remains authoritative"
+      }
     }
   ]
 }

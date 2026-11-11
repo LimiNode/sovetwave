@@ -82,6 +82,31 @@
         "states that successful execution does not expand the publication boundary",
         "hands off the artifact and any remaining publication decision"
       ]
+    },
+    {
+      "id": "workflow-new-repo-work-directories",
+      "prompt": "A new repository has no local policy for build and temporary files. Establish a default layout for deliberate builds, experimental builds, probes, and isolated Git worktrees before starting a multi-step task.",
+      "assertions": [
+        "uses repository-local build, .build, .temp, and .worktrees directories with distinct purposes",
+        "adds the chosen directories to ignore configuration unless a tracked artifact is an explicit contract",
+        "uses predictable task-specific subdirectories and reports leftovers at handoff",
+        "does not create outside-project temporary directories without a technical reason or delete another owner's worktree"
+      ]
+    },
+    {
+      "id": "workflow-existing-layout-and-external-temp",
+      "prompt": "An existing repository consistently uses `.tmp/` rather than `.temp/`. A compiler tool requires an external scratch directory, and another agent owns a worktree. Plan the file handling and cleanup.",
+      "assertions": [
+        "preserves the established .tmp name and does not propose a repository-wide layout migration",
+        "allows the external scratch directory only with the tool's technical requirement and reports its location",
+        "uses task-specific local paths where possible and reports remaining temporary files",
+        "does not delete the other agent's worktree as cleanup"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "workflow-new-repo-work-directories",
+        "expect": "new repositories receive a repository-local default, while existing layouts and technically required external scratch paths are preserved explicitly"
+      }
     }
   ]
 }

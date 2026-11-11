@@ -122,6 +122,56 @@
         "identifies the installed consumer and public include contract as relevant evidence",
         "names a concrete requirement or observed defect that would justify a layout change"
       ]
+    },
+    {
+      "id": "cpp-cmake-target-selection",
+      "prompt": "A new CMake project contains a header-only utility and a small compiled library. There is no runtime plugin or separately deployed ABI. Choose target kinds and explain what evidence would justify a different choice.",
+      "assertions": [
+        "chooses INTERFACE for the header-only utility and STATIC as the uncomplicated default for the small compiled library",
+        "does not choose SHARED merely because CMake supports it",
+        "names runtime loading, DLL distribution, or a separately deployed ABI as reasons to consider SHARED",
+        "ties the target choice to the consumer and compatibility contract rather than personal preference"
+      ]
+    },
+    {
+      "id": "cpp-cmake-shared-plugin-contract",
+      "prompt": "A library must be loaded as a DLL plugin by an independently deployed host. Review a proposal that keeps it STATIC and ignores ABI, ownership, and installation contracts.",
+      "assertions": [
+        "selects SHARED or the platform-equivalent dynamic target because runtime loading is an established requirement",
+        "requires an explicit ABI, ownership, versioning, and installation contract before treating the choice as complete",
+        "does not claim that SHARED is a universal default for every compiled library",
+        "verifies an installed consumer or plugin-loading boundary rather than only the source-tree build"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-cmake-target-selection",
+        "expect": "STATIC is the simple default for a small library without dynamic deployment, while a real plugin boundary justifies SHARED plus its compatibility contract"
+      }
+    },
+    {
+      "id": "cpp-data-domain-shared-types",
+      "prompt": "Several application domains exchange the same DTOs, enumerations, and conversion functions. A proposal keeps duplicating them in each domain. Review the domain boundary.",
+      "assertions": [
+        "allows a purposeful data domain for genuinely shared DTOs, enumerations, constants, or conversions",
+        "uses one owned boundary rather than duplicating the shared types across domains",
+        "keeps the data domain narrow and aligned with dependency direction",
+        "does not treat the existence of structs alone as sufficient evidence for a data domain"
+      ]
+    },
+    {
+      "id": "cpp-data-domain-local-ownership",
+      "prompt": "A `Waveform` structure and its conversion helpers are used only by the `audio` domain. An agent proposes moving them into a generic `data` folder because they are structs. Evaluate the proposal.",
+      "assertions": [
+        "keeps the audio-owned type and helpers in the audio domain when no cross-domain contract exists",
+        "rejects creating a data bucket solely because the entities are structs or conversions",
+        "would introduce a data domain only after a real shared consumer and boundary are established",
+        "preserves ownership and dependency direction over classification by type shape"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-data-domain-shared-types",
+        "expect": "a narrow data domain is justified by genuinely shared contracts, while domain-exclusive types stay with their owning domain"
+      }
     }
   ]
 }

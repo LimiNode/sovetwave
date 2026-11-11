@@ -160,6 +160,29 @@ contract gives a concrete reason to change it. Likewise, dependency folders
 or submodules do not establish ownership by their physical presence; identify
 the acquisition mechanism, pinned version, and target boundary explicitly.
 
+## Choose CMake targets and data domains deliberately
+
+For a new CMake project, choose the target kind from the consumer contract:
+use `INTERFACE` for a header-only library and `STATIC` as the uncomplicated
+default for a small compiled library. Choose `SHARED` when runtime loading,
+DLL distribution, or a separately deployed ABI is an actual requirement, and
+state the corresponding ownership and compatibility contract. Do not turn
+every dependency into a shared library merely because CMake permits it.
+
+Keep dependency acquisition separate from the target type. Source kept in the
+repository may be managed as a pinned Git submodule or another deliberate
+vendoring arrangement; an installed dependency should normally be consumed via
+`find_package` and its imported target. A submodule is not a substitute for a
+CMake target, and a header-only submodule can still provide an `INTERFACE`
+target. When the project installs a library for external consumers, verify the
+installed package and exported target rather than only the source-tree build.
+
+Use a `data` domain only when several domains genuinely share DTOs,
+enumerations, constants, or conversions. Keep types owned exclusively by a
+domain such as `audio` in that domain. Do not create `data` automatically or
+use it as a bucket for unrelated types; the domain boundary should follow
+ownership and dependency direction, not the fact that a type is a struct.
+
 ## Use tools as evidence, not verdicts
 
 Combine the smallest reproducer with compiler warnings, static analysis, sanitizers, and more than one relevant build configuration when practical. A sanitizer report is evidence of a defect; a clean sanitizer run covers only the executed path and does not prove the absence of every defect.

@@ -52,6 +52,21 @@ Under the house profile:
   requirements. Use them only when the repository has adopted them and they add
   information beyond the type.
 
+For a new C++ project that has selected this fallback profile, use one explicit
+naming register rather than leaving agents to guess: `snake_case` for methods,
+free functions, and local variables; `m_` plus `snake_case` for private data
+members; and a consistent `PascalCase` profile for classes and enumerations.
+When one file owns one primary class, use that class name as the file stem;
+when several peer entities form one small implementation, use a descriptive
+`snake_case` stem. Keep the `.cpp` and `.hpp` stems aligned. Public API
+documentation uses the selected Doxygen markers and concise technical English
+when that is the repository's documented profile.
+
+These are defaults for a new project, not a reason to rename a coherent
+brownfield codebase. If an existing repository has selected `camelCase`, a
+different class register, or a different file grouping, preserve it and make
+the local convention explicit before adding new names.
+
 Do not impose one universal spelling for methods or free functions. Real
 projects can consistently choose `camelCase` or `snake_case`; follow the
 applicable repository contract. Preserve public API spelling unless the task
