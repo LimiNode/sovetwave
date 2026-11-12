@@ -21,6 +21,7 @@ def load(name, path):
 
 preflight = load('cpp_preflight', BASE / 'preflight.py')
 inside = load('cpp_inside', BASE / 'executable/inside.py')
+bridge = load('cpp_bridge', BASE / 'bridge.py')
 
 
 class PreflightTests(unittest.TestCase):
@@ -77,7 +78,9 @@ class PreflightTests(unittest.TestCase):
 
     def test_machine_gates_require_evidence_and_do_not_grade_economy(self):
         gates = inside.grade_gates('state', [], {'compile', 'runtime_contract', 'unrelated_diff'})
-        self.assertTrue(all(gate['status'] == 'NOT_ASSESSABLE' for gate in gates.values()))
+        self.assertTrue(all(gates[name]['status'] == 'NOT_ASSESSABLE'
+                            for name in ('functionality', 'completeness', 'compatibility', 'safety')))
+        self.assertEqual(gates['policy_adherence']['status'], 'NOT_ASSESSABLE')
         self.assertFalse(gates['economy']['review_eligible'])
         checks = [{'id': key, 'status': 'PASS'} for key in ('compile', 'runtime_contract', 'unrelated_diff')]
         gates = inside.grade_gates('state', checks, {c['id'] for c in checks})
@@ -87,6 +90,18 @@ class PreflightTests(unittest.TestCase):
         gates = inside.grade_gates('state', checks, {c['id'] for c in checks})
         self.assertEqual(gates['safety']['status'], 'FAIL')
         self.assertFalse(gates['economy']['review_eligible'])
+
+    def test_policy_failure_does_not_become_engineering_failure(self):
+        shared = set(inside.GREENFIELD_SHARED_CHECKS)
+        policy = set(inside.GREENFIELD_POLICY_CHECKS)
+        checks = [{'id': key, 'status': 'PASS'} for key in shared]
+        checks += [{'id': key, 'status': 'FAIL' if key == 'naming_fallback' else 'PASS'}
+                   for key in policy]
+        gates = inside.grade_gates('greenfield', checks, shared)
+        self.assertTrue(all(gates[name]['status'] == 'PASS'
+                            for name in ('functionality', 'completeness', 'compatibility', 'safety')))
+        self.assertEqual(gates['policy_adherence']['status'], 'FAIL')
+        self.assertTrue(gates['economy']['review_eligible'])
 
     def test_archive_rejects_traversal_links_duplicate_and_oversize(self):
         for names, kind in [(['../escape'], 'file'), (['a', 'a'], 'file'), (['/absolute'], 'file'),
@@ -152,12 +167,58 @@ class PreflightTests(unittest.TestCase):
         self.assertTrue(report['memory_probe']['container_state']['OOMKilled'])
         self.assertEqual(report['termination_probe']['status'], 'TIMEOUT')
         self.assertEqual(report['reset_probe']['status'], 'PASS')
+        bridge_path = BASE / runtime['mock_agent_bridge']['report']
+        bridge_report = json.loads(bridge_path.read_text())
+        self.assertEqual(hashlib.sha256(bridge_path.read_bytes()).hexdigest(),
+                         runtime['mock_agent_bridge']['report_sha256'])
+        self.assertEqual(bridge_report['status'], 'PASS')
+        self.assertEqual(bridge_report['model_calls'], 0)
+        self.assertEqual(bridge_report['candidate_execution'], 'NOT_EXECUTED')
+        self.assertEqual(bridge_report['host_execution'], 'NOT_IMPLEMENTED')
+        self.assertEqual(bridge_report['grader_tamper_resistance'], 'NOT_ASSESSABLE')
         paths = set()
         for line in (BASE / 'SHA256SUMS.txt').read_text().splitlines():
             digest, path = line.split('  ', 1)
             self.assertNotIn(path, paths)
             paths.add(path)
             self.assertEqual(hashlib.sha256((BASE / path).read_bytes()).hexdigest(), digest, path)
+
+    def test_mock_agent_bridge_is_fail_closed_and_does_not_execute(self):
+        report = bridge.selftest()
+        self.assertEqual(report['status'], 'PASS')
+        self.assertEqual(report['model_calls'], 0)
+        self.assertEqual(report['candidate_execution'], 'NOT_EXECUTED')
+        self.assertEqual(report['host_execution'], 'NOT_IMPLEMENTED')
+        self.assertEqual(report['grader_tamper_resistance'], 'NOT_ASSESSABLE')
+        self.assertTrue(all(row['status'] == 'PASS' for row in report['checks']))
+
+    def test_candidate_allowlist_rejects_trusted_paths(self):
+        data = bridge.build_archive({'test.cpp': b'int main(){}\n'})
+        with self.assertRaises(ValueError):
+            bridge.inspect_archive(data, 'ownership')
+        with self.assertRaises(ValueError):
+            bridge.build_archive({'inside.py': b'forged\n'})
+        with self.assertRaises(ValueError):
+            bridge.inspect_archive(bridge.build_archive({'extra.cpp': b'int main(){}\n'}), 'ownership')
+
+    def test_bridge_completion_contract_handles_timeout_and_rejects_residue(self):
+        self.assertEqual(bridge.validate_completion({'artifact_complete': True}),
+                         {'status': 'PASS', 'candidate_execution': 'NOT_EXECUTED'})
+        self.assertEqual(bridge.validate_completion({'artifact_complete': True, 'timed_out': True}),
+                         {'status': 'TIMEOUT', 'candidate_execution': 'TERMINATED'})
+        for record in ({'artifact_complete': True, 'child_pids': [7]},
+                       {'artifact_complete': True, 'output_bytes': bridge.MAX_ARCHIVE_BYTES + 1},
+                       {'artifact_complete': False}):
+            with self.assertRaises(ValueError):
+                bridge.validate_completion(record)
+
+    def test_baseline_procedure_checks_workspace_but_not_global_host_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            status = bridge.clean_workspace_status(Path(directory))
+            self.assertEqual(status['status'], 'PASS')
+            self.assertEqual(status['host_global_configuration'], 'NOT_ASSESSABLE')
+            (Path(directory) / 'AGENTS.md').write_text('unexpected')
+            self.assertEqual(bridge.clean_workspace_status(Path(directory))['status'], 'FAIL')
 
 
 if __name__ == '__main__':

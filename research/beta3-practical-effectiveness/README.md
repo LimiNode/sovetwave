@@ -6,8 +6,9 @@ research-only artifact. It does not call a model, start an agent host, or modify
 the production skill. Trusted reference, defective, and starter controls can
 be compiled and run only in the Docker boundary described in `executor.md`.
 
-The protocol is intentionally fail-closed. The task contracts and grading
-gates have executable controls, but live evaluation remains blocked until a
+The protocol is intentionally fail-closed. The task contracts and executable
+controls distinguish shared engineering gates from the separate Sovetwave
+`policy_adherence` dimension; live evaluation remains blocked until a
 reviewed agent bridge binds model and host identity, permissions, clean arm
 environments, tool traces, and candidate artifact provenance.
 

@@ -8,6 +8,7 @@ From the repository root:
 python research/beta3-practical-effectiveness/preflight.py --offline
 python research/beta3-practical-effectiveness/preflight.py --build-image
 python research/beta3-practical-effectiveness/preflight.py --selftest --image sha256:<returned-image-id> --output <new-report.json>
+python research/beta3-practical-effectiveness/bridge.py --selftest
 python research/beta3-practical-effectiveness/preflight.py --prepare state --output research/beta3-practical-effectiveness/executable/.temp/new-state
 ```
 
@@ -38,8 +39,12 @@ generation workspace. Only the starter and exact prompt are agent inputs.
 The control report records submitted/post-run file hashes, exact check IDs,
 exit codes and diagnostics. A missing required check cannot yield PASS. The
 `machine_gates` field maps required check IDs to functionality, completeness,
-compatibility and safety statuses, limited to exercised contracts. Economy
-remains NOT_ASSESSABLE; review becomes eligible only after those gates pass.
+compatibility and safety statuses, limited to shared task contracts. The
+separate `policy_adherence` gate records Sovetwave conventions (`owning umbrella
+first`, file naming, and no `.cpp` aggregation) without changing those
+engineering statuses. A policy failure is a measurable treatment outcome, not
+a correctness failure. Economy remains NOT_ASSESSABLE; review becomes eligible
+after the four shared engineering gates pass, regardless of policy score.
 The boundary task additionally uses syscall evidence for a rejected traversal;
 ASan/UBSan cover exercised paths only. The oracle permits alternative API-
 compatible implementations, but greenfield layout checks intentionally test

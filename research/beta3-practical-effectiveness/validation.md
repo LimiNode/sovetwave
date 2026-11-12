@@ -1,6 +1,6 @@
 # Executable preflight validation record
 
-Status: trusted-control preflight PASS; live evaluation HOLD. Date: 2026-11-11.
+Status: trusted-control preflight PASS; live evaluation HOLD. Date: 2026-11-12.
 No model calls, agent sessions, or model-generated program executions occurred.
 
 ## Identities and coverage corrections
@@ -36,14 +36,14 @@ Every row has a pinned starter, exact task prompt, reference and mutant, trusted
 test source, content digest and deterministic fresh-copy setup. Provenance PASS
 below refers only to fixtures/controls; model-run provenance is NOT_EXECUTED.
 
-| Task | Fixture | Bounded oracle controls | Container isolation | Fixture provenance | Remaining observation blockers |
-| --- | --- | --- | --- | --- | --- |
-| ownership | prepared | PASS: reference accepted; mutant/starter rejected | PASS | PASS | bridge/traces; no async/concurrent lifetime claim |
-| reentrancy | prepared | PASS: reference accepted; held-lock mutant times out; starter rejected | PASS | PASS | bridge/traces; external teardown only, no TSan claim |
-| state | prepared | PASS: reference accepted; invalid-send mutant/starter rejected | PASS | PASS | bridge/traces; representation economy needs review |
-| brownfield | prepared | PASS: reference accepted; parser mutant/starter rejected | PASS | PASS | helper reuse and actual scratch/build locations need trace/review |
-| greenfield | prepared | PASS: reference accepted; installed-package mutant/starter rejected | PASS | PASS | complete naming/target rationale needs review; directory presence is not a real worktree |
-| boundary | prepared | PASS: reference accepted; early-write mutant/starter rejected | PASS | PASS | bridge/traces; no concurrent replacement or I/O rollback claim |
+| Task | Fixture | Engineering gates | Policy adherence | Container isolation | Fixture provenance | Remaining observation blockers |
+| --- | --- | --- | --- | --- | --- | --- |
+| ownership | prepared | PASS: reference accepted; mutant/starter rejected | NOT_ASSESSABLE | PASS | PASS | bridge/traces; no async/concurrent lifetime claim |
+| reentrancy | prepared | PASS: reference accepted; held-lock mutant times out; starter rejected | NOT_ASSESSABLE | PASS | PASS | bridge/traces; external teardown only, no TSan claim |
+| state | prepared | PASS: reference accepted; invalid-send mutant/starter rejected | NOT_ASSESSABLE | PASS | PASS | bridge/traces; representation economy needs review |
+| brownfield | prepared | PASS: reference accepted; parser mutant/starter rejected | NOT_ASSESSABLE | PASS | PASS | helper reuse and actual scratch/build locations need trace/review |
+| greenfield | prepared | PASS: reference accepted; installed-package mutant/starter rejected | PASS: umbrella, naming, non-aggregation | PASS | PASS | complete naming/target rationale needs review; directory presence is not a real worktree |
+| boundary | prepared | PASS: reference accepted; early-write mutant/starter rejected | NOT_ASSESSABLE | PASS | PASS | bridge/traces; no concurrent replacement or I/O rollback claim |
 
 Greenfield inspects actual submitted paths/ignore rules and first includes, then
 builds, installs, and runs an independent consumer. It checks imported STATIC/
@@ -52,6 +52,12 @@ installed utility-only consumer without the compiled component. Other tasks comp
 tests against the submitted API using C++17 plus ASan/UBSan. Protected-file
 hashes reject unrelated edits. Boundary additionally checks a rejected
 traversal's syscalls for write attempts. Tests establish only exercised paths.
+The report records `functionality`, `completeness`, `compatibility` and `safety`
+as shared engineering dimensions. `umbrella_first`, `naming_fallback` and
+`no_cpp_aggregation` are recorded only as `policy_adherence`; a functionally
+correct implementation that fails one of those checks remains engineering-pass
+and policy-fail. Economy is `NOT_ASSESSABLE` until the shared engineering gates
+pass and a separate blinded review is performed.
 
 ## Isolation controls and evidence
 
@@ -74,6 +80,22 @@ pinned and bit-for-bit rebuild reproducibility is not claimed.
 - A prior low file-size limit prevented GCC from producing binaries; corrected
   to 64 MiB per file. Neither configuration defect counted as a task failure.
 
+Every control report now exposes four shared engineering gates—functionality,
+completeness, compatibility and safety—and a separate `policy_adherence` gate.
+The greenfield naming, owning-umbrella and no-aggregation checks are policy
+measurements; they cannot turn a functionally correct alternative into an
+engineering-correctness failure. Working-directory and ignore checks remain in
+completeness because the task prompt explicitly requires those artifacts.
+The installed utility consumer is also executed independently of the compiled
+library. The model-free bridge selftest (`evidence/bridge-report.json`) also
+passes 12 controller checks: allowlisted environment construction, clean
+workspace roots, immutable
+archive hashing, forged-byte, missing-manifest, trusted-path and incomplete-
+transfer rejection, plus background-process, output-flood, interrupted-transfer
+and timeout-completion handling. It does not start a host, run a candidate, or establish tamper-resistant
+grading. Candidate archives are restricted to the task editable scope and
+cannot carry trusted oracle paths.
+
 These controls validate the host boundary under the tested Docker setup, not
 tamper-resistant grading against adversarial programs. Candidate and evaluator
 currently share a UID and image-visible tests/references. No host-side candidate CLI is
@@ -84,14 +106,17 @@ reviewed before model-generated submissions are enabled.
 
 - `preflight.py --offline`: raw skill identities, 36 locked files and 30 pairs PASS;
 - `preflight.py --selftest --image <runtime-preflight image>`: control suite PASS;
-- focused `test_cpp_preflight.py`: 12 tests PASS;
-- full `python -m pytest -q`: 235 passed, 41 subtests passed;
+- focused `test_cpp_preflight.py`: 17 tests PASS;
+- full `python -m pytest -q`: 240 passed, 41 subtests passed;
 - `python evals/validate_evals.py`: 33 suites / 281 cases;
 - skill metadata, voice-card selector and `git diff --check`: PASS.
 
 Focused tests cover NUL/raw bytes, content-lock drift, duplicate/missing pairs,
 counterbalance, forbidden mounts/env forwarding, unsafe archives, missing or
-duplicate checks, distinct statuses, and repeatable Git setup without resets.
+duplicate checks, distinct statuses, repeatable Git setup without resets, and
+the regression in which a policy-only failure leaves the engineering gates
+passing while `policy_adherence` fails. They also verify the mock-agent bridge
+and its recorded evidence hash.
 GitHub workflow now runs these offline tests. Docker controls are separately
 recorded local checks, not implied by the three existing CI jobs.
 

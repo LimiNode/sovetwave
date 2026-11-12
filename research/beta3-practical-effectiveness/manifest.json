@@ -81,6 +81,7 @@
     "candidate_merge_status": "not_merged",
     "isolated_executor": "trusted controls verified; candidate bridge and evaluator tamper boundary not approved",
     "preflight_record": "runtime-preflight.json",
+    "mock_agent_bridge": "evidence/bridge-report.json",
     "execution_ready": false
   },
   "verdict": {

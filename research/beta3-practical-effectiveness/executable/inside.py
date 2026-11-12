@@ -45,7 +45,13 @@ def command(checks, name, args, cwd, timeout=25, extra_env=None):
     return code == 0
 
 
-def candidate_from_stdin(destination):
+RESERVED_CANDIDATE_TOP_LEVEL = {
+    '.git', 'fixtures', 'reference', 'grader', 'oracle', 'starter',
+    'inside.py', 'tasks.json', 'content-lock.json', 'Dockerfile',
+}
+
+
+def candidate_from_stdin(destination, allowed_files=None):
     # Only regular files and directories; no links, devices, traversal, or bombs.
     blob = sys.stdin.buffer.read(2_000_001)
     if len(blob) > 2_000_000:
@@ -60,6 +66,10 @@ def candidate_from_stdin(destination):
             if (not path.parts or path.is_absolute() or '..' in path.parts or '\\' in member.name
                     or ':' in member.name or path.as_posix() in seen):
                 raise ValueError('unsafe candidate path')
+            if allowed_files is not None and path.as_posix() not in allowed_files:
+                raise ValueError('candidate path outside editable scope')
+            if path.parts[0] in RESERVED_CANDIDATE_TOP_LEVEL:
+                raise ValueError('candidate path reaches trusted control content')
             seen.add(path.as_posix())
             if not member.isfile():
                 raise ValueError('only regular candidate files accepted')
@@ -81,7 +91,8 @@ def run_task(task, variant):
     if variant == 'candidate':
         shutil.rmtree(repo)
         repo.mkdir()
-        candidate_from_stdin(repo)
+        editable = set(spec['editable']) if spec['editable'] != ['*'] else None
+        candidate_from_stdin(repo, editable)
     elif variant != 'starter':
         shutil.copytree(fixture / 'reference', repo, dirs_exist_ok=True)
     if variant == 'mutant':
@@ -120,7 +131,8 @@ def run_task(task, variant):
                     trace[-4000:])
         else:
             checks.append({'id': 'runtime_contract', 'status': 'NOT_EXECUTED'})
-    expected = {'unrelated_diff', 'compile', 'runtime_contract'} if task != 'greenfield' else GREENFIELD_CHECKS
+    expected = ({'unrelated_diff', 'compile', 'runtime_contract'}
+                if task != 'greenfield' else GREENFIELD_SHARED_CHECKS)
     if task == 'boundary':
         expected = expected | {'invalid_trace_execution', 'reject_before_write'}
     status, missing = summarize(checks, expected)
@@ -149,9 +161,11 @@ def summarize(checks, expected):
 
 
 def grade_gates(task, checks, expected):
-    """Bounded exercised contracts only; semantic economy is never inferred."""
-    functional = {'consumer_runtime'} if task == 'greenfield' else {'compile', 'runtime_contract'}
-    compatibility = {'consumer_configure', 'consumer_build', 'consumer_runtime'} if task == 'greenfield' else {'compile', 'unrelated_diff'}
+    """Separate shared engineering contracts from Sovetwave policy conventions."""
+    functional = ({'consumer_runtime', 'utility_runtime'}
+                  if task == 'greenfield' else {'compile', 'runtime_contract'})
+    compatibility = ({'consumer_configure', 'consumer_build', 'consumer_runtime', 'utility_runtime'}
+                     if task == 'greenfield' else {'compile', 'unrelated_diff'})
     safety = {'consumer_runtime'} if task == 'greenfield' else {'runtime_contract'}
     if task == 'boundary':
         safety |= {'invalid_trace_execution', 'reject_before_write'}
@@ -160,15 +174,30 @@ def grade_gates(task, checks, expected):
                            'compatibility': compatibility, 'safety': safety}.items():
         status, missing = summarize([c for c in checks if c['id'] in required], required)
         gates[name] = {'status': status, 'required_checks': sorted(required), 'missing': missing,
-                       'scope': 'exercised fixture contract, not universal correctness'}
-    gates['economy'] = {'status': 'NOT_ASSESSABLE', 'review_eligible': all(
-        gate['status'] == 'PASS' for gate in gates.values()), 'method': 'separate blinded semantic review'}
+                       'scope': 'shared task contract, exercised fixture path; not universal correctness'}
+    policy_required = GREENFIELD_POLICY_CHECKS if task == 'greenfield' else set()
+    if policy_required:
+        policy_status, policy_missing = summarize(
+            [c for c in checks if c['id'] in policy_required], policy_required)
+    else:
+        policy_status, policy_missing = 'NOT_ASSESSABLE', []
+    gates['policy_adherence'] = {
+        'status': policy_status,
+        'required_checks': sorted(policy_required),
+        'missing': policy_missing,
+        'scope': 'Sovetwave convention; not an engineering-correctness gate',
+    }
+    engineering_pass = all(gates[name]['status'] == 'PASS'
+                           for name in ('functionality', 'completeness', 'compatibility', 'safety'))
+    gates['economy'] = {'status': 'NOT_ASSESSABLE', 'review_eligible': engineering_pass,
+                        'method': 'separate blinded semantic review after engineering gates'}
     return gates
 
 
-GREENFIELD_CHECKS = {'configure', 'build_install', 'consumer_configure', 'consumer_build',
-                    'consumer_runtime', 'umbrella_first', 'no_cpp_aggregation',
-                    'naming_fallback', 'work_directories', 'ignored_work_directories'}
+GREENFIELD_POLICY_CHECKS = {'umbrella_first', 'no_cpp_aggregation', 'naming_fallback'}
+GREENFIELD_SHARED_CHECKS = {'configure', 'build_install', 'consumer_configure', 'consumer_build',
+                           'consumer_runtime', 'utility_runtime', 'work_directories',
+                           'ignored_work_directories'}
 
 
 def greenfield(repo, checks):
@@ -195,6 +224,7 @@ def greenfield(repo, checks):
         return
     if command(checks, 'consumer_build', ['cmake', '--build', '/work/consumer', '-j1'], WORK):
         command(checks, 'consumer_runtime', ['/work/consumer/consumer'], WORK, timeout=5)
+        command(checks, 'utility_runtime', ['/work/consumer/utility_consumer'], WORK, timeout=5)
 
 
 def isolation_probe():

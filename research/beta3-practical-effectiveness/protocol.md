@@ -50,8 +50,10 @@ combined policy-specific checks include repository-local `build/`, `.build/`,
 `.temp/`, and `.worktrees/` handling; automatic house-profile selection and
 brownfield exceptions; owning-umbrella-first versus `.cpp` aggregation; RAII
 self-unsubscription versus explicit unsubscribe; constructive state models; and
-installed CMake consumer correctness. A short happy-path implementation is
-therefore a failed completeness gate, not a smaller successful answer.
+installed CMake consumer correctness. A short happy-path implementation that
+misses an explicit task requirement fails the completeness gate. A
+policy-conforming implementation is not automatically a more correct
+implementation; the policy score remains a separate outcome.
 `fixtures/*.json` bind the executable trees in `executable/fixtures/`.
 Readiness is recorded per task in `validation.md`. Filesystem checks establish
 submitted directory layout, not an actual Git worktree or historical build
@@ -63,12 +65,16 @@ unexercised architecture claims require the separate semantic/trace review.
 Grade each observation independently on these hard gates:
 
 - **functionality** — required operation and public contract pass;
-- **completeness** — normal, boundary, failure, and verification paths pass;
+- **completeness** — explicit task requirements, including required build and
+  consumer paths, pass;
 - **safety** — no confirmed lifetime, reentrancy, or untrusted-input defect;
 - **compatibility** — existing brownfield contract or installed consumer stays
   valid;
+- **policy_adherence** — Sovetwave conventions such as owning umbrella order,
+  default naming, and non-aggregation are recorded separately and never turn a
+  functionally correct implementation into an engineering failure;
 - **economy** — unnecessary abstractions, states, dependencies, and unrelated
-  edits are recorded only after the hard gates pass.
+  edits are reviewed only after the four shared engineering gates pass.
 
 Allowed statuses are `PASS`, `FAIL`, `INVALID`, `NOT_EXECUTED`, and
 `NOT_ASSESSABLE`. Cost, token count, and code size never compensate for a
@@ -86,6 +92,12 @@ Before any model call, the preflight must provide:
 - per-call tool trajectories, generated-file manifest, stdout/stderr, exit
   status, and oracle result;
 - a cleanup policy that does not delete unrelated worktrees or artifacts.
+
+The current model-free bridge verifies an allowlisted candidate archive and
+clean controller environment construction, but it does not start an agent or
+execute a candidate. A future bridge must keep candidate compilation/execution
+and trusted result collection in separate trust boundaries; the current Docker
+selftest intentionally does not claim that property.
 
 Generated C++ must never run in the ordinary repository or developer shell.
 Missing traces, missing artifact provenance, a broken isolation boundary, or an

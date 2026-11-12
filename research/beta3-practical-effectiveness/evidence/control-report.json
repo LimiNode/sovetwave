@@ -13,13 +13,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:28:44.272126326Z",
+          "FinishedAt": "2026-11-12T03:06:45.877782848Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:28:42.006684035Z",
+          "StartedAt": "2026-11-12T03:06:43.552494138Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -70,7 +70,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -80,11 +80,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -94,15 +94,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -133,13 +139,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:28:40.888374714Z",
+          "FinishedAt": "2026-11-12T03:06:42.637129059Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:28:38.223241557Z",
+          "StartedAt": "2026-11-12T03:06:39.773376417Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -190,7 +196,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -200,11 +206,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": true,
               "status": "NOT_ASSESSABLE"
             },
@@ -214,15 +220,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             }
           },
@@ -252,13 +264,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:28:46.63502464Z",
+          "FinishedAt": "2026-11-12T03:06:48.269310498Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:28:45.27437825Z",
+          "StartedAt": "2026-11-12T03:06:46.832009374Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -309,7 +321,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -319,11 +331,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -333,15 +345,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -374,13 +392,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:28:58.780331312Z",
+          "FinishedAt": "2026-11-12T03:07:00.244372285Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:28:51.278304265Z",
+          "StartedAt": "2026-11-12T03:06:52.698454344Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -431,7 +449,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -441,11 +459,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -455,15 +473,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -494,13 +518,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:28:50.209230359Z",
+          "FinishedAt": "2026-11-12T03:06:51.769286554Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:28:47.677976411Z",
+          "StartedAt": "2026-11-12T03:06:49.158793108Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -551,7 +575,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -561,11 +585,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": true,
               "status": "NOT_ASSESSABLE"
             },
@@ -575,15 +599,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             }
           },
@@ -613,13 +643,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:02.025602541Z",
+          "FinishedAt": "2026-11-12T03:07:03.32597524Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:28:59.861957857Z",
+          "StartedAt": "2026-11-12T03:07:01.153653826Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -670,7 +700,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -680,11 +710,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -694,15 +724,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -735,13 +771,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:05.895614905Z",
+          "FinishedAt": "2026-11-12T03:07:06.868180316Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:05.060452991Z",
+          "StartedAt": "2026-11-12T03:07:06.049014879Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -792,7 +828,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -802,11 +838,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -816,15 +852,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -855,13 +897,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:04.047733067Z",
+          "FinishedAt": "2026-11-12T03:07:05.113576138Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:03.14551488Z",
+          "StartedAt": "2026-11-12T03:07:04.292953756Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -912,7 +954,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -922,11 +964,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": true,
               "status": "NOT_ASSESSABLE"
             },
@@ -936,15 +978,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             }
           },
@@ -974,13 +1022,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:07.738819343Z",
+          "FinishedAt": "2026-11-12T03:07:08.668946293Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:06.929986912Z",
+          "StartedAt": "2026-11-12T03:07:07.817846273Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -1031,7 +1079,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -1041,11 +1089,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -1055,15 +1103,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -1096,13 +1150,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:11.733805395Z",
+          "FinishedAt": "2026-11-12T03:07:12.415340079Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:10.874332239Z",
+          "StartedAt": "2026-11-12T03:07:11.548464497Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -1153,7 +1207,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -1163,11 +1217,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -1177,15 +1231,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -1222,13 +1282,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:09.811358628Z",
+          "FinishedAt": "2026-11-12T03:07:10.664941721Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:08.793523107Z",
+          "StartedAt": "2026-11-12T03:07:09.586768174Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -1279,7 +1339,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -1289,11 +1349,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": true,
               "status": "NOT_ASSESSABLE"
             },
@@ -1303,15 +1363,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             }
           },
@@ -1347,13 +1413,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:13.745829973Z",
+          "FinishedAt": "2026-11-12T03:07:14.25315953Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:12.879948378Z",
+          "StartedAt": "2026-11-12T03:07:13.417946209Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -1404,7 +1470,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -1414,11 +1480,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -1428,15 +1494,21 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
               "required_checks": [
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -1475,13 +1547,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:18.8100564Z",
+          "FinishedAt": "2026-11-12T03:07:19.194563865Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:17.575415894Z",
+          "StartedAt": "2026-11-12T03:07:17.893695123Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -1555,20 +1627,23 @@
             "compatibility": {
               "missing": [
                 "consumer_build",
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
               "required_checks": [
                 "consumer_build",
                 "consumer_configure",
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "completeness": {
               "missing": [
                 "consumer_build",
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
               "required_checks": [
                 "build_install",
@@ -1577,28 +1652,38 @@
                 "consumer_configure",
                 "consumer_runtime",
                 "ignored_work_directories",
-                "naming_fallback",
-                "no_cpp_aggregation",
-                "umbrella_first",
+                "utility_runtime",
                 "work_directories"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
             "functionality": {
               "missing": [
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
               "required_checks": [
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "NOT_ASSESSABLE"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [
+                "naming_fallback",
+                "no_cpp_aggregation",
+                "umbrella_first"
+              ],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "PASS"
             },
             "safety": {
               "missing": [
@@ -1607,13 +1692,14 @@
               "required_checks": [
                 "consumer_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "NOT_ASSESSABLE"
             }
           },
           "missing": [
             "consumer_build",
-            "consumer_runtime"
+            "consumer_runtime",
+            "utility_runtime"
           ],
           "post_files": {
             ".build/probe/marker.txt": "3aba3558f80cad51591ac379822c0f0d55d1c33af5d1c7f96d494f01c3d24a37",
@@ -1659,13 +1745,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:16.539327716Z",
+          "FinishedAt": "2026-11-12T03:07:16.946640869Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:14.829487396Z",
+          "StartedAt": "2026-11-12T03:07:15.190644544Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -1743,6 +1829,12 @@
               "exit": 0,
               "id": "consumer_runtime",
               "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "utility_runtime",
+              "status": "PASS"
             }
           ],
           "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
@@ -1753,9 +1845,10 @@
               "required_checks": [
                 "consumer_build",
                 "consumer_configure",
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -1767,25 +1860,34 @@
                 "consumer_configure",
                 "consumer_runtime",
                 "ignored_work_directories",
-                "naming_fallback",
-                "no_cpp_aggregation",
-                "umbrella_first",
+                "utility_runtime",
                 "work_directories"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": true,
               "status": "NOT_ASSESSABLE"
             },
             "functionality": {
               "missing": [],
               "required_checks": [
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [
+                "naming_fallback",
+                "no_cpp_aggregation",
+                "umbrella_first"
+              ],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
               "status": "PASS"
             },
             "safety": {
@@ -1793,7 +1895,7 @@
               "required_checks": [
                 "consumer_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             }
           },
@@ -1841,13 +1943,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:20.103214244Z",
+          "FinishedAt": "2026-11-12T03:07:20.368692001Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:19.872700431Z",
+          "StartedAt": "2026-11-12T03:07:20.094725214Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -1910,14 +2012,16 @@
               "missing": [
                 "consumer_build",
                 "consumer_configure",
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
               "required_checks": [
                 "consumer_build",
                 "consumer_configure",
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "NOT_ASSESSABLE"
             },
             "completeness": {
@@ -1925,7 +2029,8 @@
                 "build_install",
                 "consumer_build",
                 "consumer_configure",
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
               "required_checks": [
                 "build_install",
@@ -1934,28 +2039,38 @@
                 "consumer_configure",
                 "consumer_runtime",
                 "ignored_work_directories",
-                "naming_fallback",
-                "no_cpp_aggregation",
-                "umbrella_first",
+                "utility_runtime",
                 "work_directories"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
             "functionality": {
               "missing": [
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
               "required_checks": [
-                "consumer_runtime"
+                "consumer_runtime",
+                "utility_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "NOT_ASSESSABLE"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [
+                "naming_fallback",
+                "no_cpp_aggregation",
+                "umbrella_first"
+              ],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "FAIL"
             },
             "safety": {
               "missing": [
@@ -1964,7 +2079,7 @@
               "required_checks": [
                 "consumer_runtime"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "NOT_ASSESSABLE"
             }
           },
@@ -1972,7 +2087,8 @@
             "build_install",
             "consumer_build",
             "consumer_configure",
-            "consumer_runtime"
+            "consumer_runtime",
+            "utility_runtime"
           ],
           "post_files": {
             "README.md": "1e53ad91bb26d1d72eec5cb212b802171c477b405392d29cbe8ef9bc3d9ec887"
@@ -2002,13 +2118,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:27.052501933Z",
+          "FinishedAt": "2026-11-12T03:07:27.013641718Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:24.627146588Z",
+          "StartedAt": "2026-11-12T03:07:24.538143567Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -2070,7 +2186,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -2082,11 +2198,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -2096,8 +2212,14 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
@@ -2106,7 +2228,7 @@
                 "reject_before_write",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -2137,13 +2259,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:23.542910598Z",
+          "FinishedAt": "2026-11-12T03:07:23.598939337Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:21.193728819Z",
+          "StartedAt": "2026-11-12T03:07:21.265270557Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -2205,7 +2327,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -2217,11 +2339,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": true,
               "status": "NOT_ASSESSABLE"
             },
@@ -2231,8 +2353,14 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
@@ -2241,7 +2369,7 @@
                 "reject_before_write",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             }
           },
@@ -2271,13 +2399,13 @@
           "Dead": false,
           "Error": "",
           "ExitCode": 0,
-          "FinishedAt": "2026-11-11T12:29:29.781618853Z",
+          "FinishedAt": "2026-11-12T03:07:29.597507569Z",
           "OOMKilled": false,
           "Paused": false,
           "Pid": 0,
           "Restarting": false,
           "Running": false,
-          "StartedAt": "2026-11-11T12:29:28.129775016Z",
+          "StartedAt": "2026-11-12T03:07:27.945251879Z",
           "Status": "exited"
         },
         "isolation_config": {
@@ -2339,7 +2467,7 @@
                 "compile",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "PASS"
             },
             "completeness": {
@@ -2351,11 +2479,11 @@
                 "runtime_contract",
                 "unrelated_diff"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             },
             "economy": {
-              "method": "separate blinded semantic review",
+              "method": "separate blinded semantic review after engineering gates",
               "review_eligible": false,
               "status": "NOT_ASSESSABLE"
             },
@@ -2365,8 +2493,14 @@
                 "compile",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
             },
             "safety": {
               "missing": [],
@@ -2375,7 +2509,7 @@
                 "reject_before_write",
                 "runtime_contract"
               ],
-              "scope": "exercised fixture contract, not universal correctness",
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
               "status": "FAIL"
             }
           },
@@ -2397,7 +2531,7 @@
     }
   ],
   "generated_code_executed": false,
-  "image": "sha256:b584b546129c2e16895bbf98b9f6a3b74f8af6f1bf322eb9fc3c4c6fb182befa",
+  "image": "sha256:cea81f5eb5bd1674af73139deb05970c8453d6050d59bb528e7fe5d37414df45",
   "isolation_probe": {
     "args": [
       "--probe"
@@ -2407,13 +2541,13 @@
       "Dead": false,
       "Error": "",
       "ExitCode": 0,
-      "FinishedAt": "2026-11-11T12:28:37.117881525Z",
+      "FinishedAt": "2026-11-12T03:06:38.875965497Z",
       "OOMKilled": false,
       "Paused": false,
       "Pid": 0,
       "Restarting": false,
       "Running": false,
-      "StartedAt": "2026-11-11T12:28:36.670915774Z",
+      "StartedAt": "2026-11-12T03:06:37.907497559Z",
       "Status": "exited"
     },
     "isolation_config": {
@@ -2518,7 +2652,7 @@
           "status": "PASS"
         }
       ],
-      "fixture_lock_sha256": "51328810c1d0686e8abf7fb3ca3b13fd898106c9325a74d84b9ad28e0afcba6b",
+      "fixture_lock_sha256": "ea9943c4362b22254bd721d964c38f4aa7545533ea86ec7c551f6a14e3f9d5cc",
       "status": "PASS",
       "toolchain": {
         "cmake": "cmake version 3.25.1",
@@ -2537,13 +2671,13 @@
       "Dead": false,
       "Error": "",
       "ExitCode": 137,
-      "FinishedAt": "2026-11-11T12:29:36.415786479Z",
+      "FinishedAt": "2026-11-12T03:07:35.992817678Z",
       "OOMKilled": true,
       "Paused": false,
       "Pid": 0,
       "Restarting": false,
       "Running": false,
-      "StartedAt": "2026-11-11T12:29:35.531079422Z",
+      "StartedAt": "2026-11-12T03:07:35.002905679Z",
       "Status": "exited"
     },
     "diagnostic": "",
@@ -2603,13 +2737,13 @@
       "Dead": false,
       "Error": "",
       "ExitCode": 0,
-      "FinishedAt": "2026-11-11T12:29:34.475256123Z",
+      "FinishedAt": "2026-11-12T03:07:34.061711585Z",
       "OOMKilled": false,
       "Paused": false,
       "Pid": 0,
       "Restarting": false,
       "Running": false,
-      "StartedAt": "2026-11-11T12:29:34.008089918Z",
+      "StartedAt": "2026-11-12T03:07:33.506710319Z",
       "Status": "exited"
     },
     "isolation_config": {
@@ -2714,7 +2848,7 @@
           "status": "PASS"
         }
       ],
-      "fixture_lock_sha256": "51328810c1d0686e8abf7fb3ca3b13fd898106c9325a74d84b9ad28e0afcba6b",
+      "fixture_lock_sha256": "ea9943c4362b22254bd721d964c38f4aa7545533ea86ec7c551f6a14e3f9d5cc",
       "status": "PASS",
       "toolchain": {
         "cmake": "cmake version 3.25.1",
@@ -2733,13 +2867,13 @@
       "Dead": false,
       "Error": "",
       "ExitCode": 137,
-      "FinishedAt": "2026-11-11T12:29:32.93048694Z",
+      "FinishedAt": "2026-11-12T03:07:32.531320898Z",
       "OOMKilled": false,
       "Paused": false,
       "Pid": 0,
       "Restarting": false,
       "Running": false,
-      "StartedAt": "2026-11-11T12:29:30.936102137Z",
+      "StartedAt": "2026-11-12T03:07:30.545808418Z",
       "Status": "exited"
     },
     "isolation_config": {
