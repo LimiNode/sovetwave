@@ -53,6 +53,30 @@ does not make construction of the call arguments lazy.
 
 When state is shared, inspect all conflicting reads and writes, not only assignments. An apparently harmless observation of a non-atomic object can race with a write. Determine the synchronisation or atomic contract before proposing a lock, a memory order, or a waiting protocol.
 
+## Make stable invariants constructive
+
+When a public operation must preserve a stable invariant, first ask whether the
+interface can make the invalid operation unavailable: use a type, private
+construction, a state-specific operation, or an owned transition object when
+that representation matches the actual contract. This is constructive
+enforcement, not a reason to replace every runtime check with a template or a
+large `std::variant`.
+
+Use an explicit state model when alternatives are mutually exclusive and their
+transitions are part of the contract. Keep independent properties independent;
+do not combine unrelated flags into one exhaustive type merely to make the
+diagram look complete. `std::variant` constrains the active alternative, but it
+does not validate the payload, make every transition legal, or remove the
+possibility of `valueless_by_exception` in C++17. Validate external data and
+check each state's own invariant separately.
+
+Prefer the smallest boundary that can reject an invalid transition before its
+side effect. Retain runtime checks where the condition depends on external
+input, concurrency, resource availability, or a failure mode the type system
+cannot express. Verify both rejected transitions and the allowed path; a type
+that is difficult to construct is not evidence that the resulting state is
+correct.
+
 ## Choose the C++ header dependency topology deliberately
 
 For a **new C++ library or project**, propose **hierarchical umbrella-based
@@ -116,13 +140,17 @@ Under the hierarchical umbrella default:
   domain boundaries. Prefer `/` separators and disallow `..` traversal as an
   explicit project convention; these paths are relative to configured include
   roots, not absolute filesystem paths.
-- **Make translation-unit context explicit.** A `.cpp` may include its own
-  header first when that header is self-contained. If the header is a private
-  leaf whose contract requires a domain umbrella, the `.cpp` includes that
-  umbrella first; do not manufacture a standalone-header requirement merely
-  to preserve the usual include-first idiom. A direct include of the own
-  header after the umbrella is allowed when it improves local clarity, but may
-  be redundant.
+- **Make translation-unit context explicit.** Under the selected hierarchical
+  umbrella-based profile, each independently compiled `.cpp` starts with the
+  public umbrella of its owning domain or nearest applicable subdomain. That
+  umbrella supplies the declaration context and inter-domain dependencies;
+  local private headers and required standard-library headers follow it. The
+  own leaf header need not be repeated when the umbrella already includes it.
+  A project may instead choose self-contained headers, or document a standalone
+  entry-point exception, but that is a different contract rather than an
+  accidental fallback. Do not add `.cpp` aggregators, forced includes, PCH, or
+  unity builds to hide a missing owning-umbrella boundary. For an existing
+  brownfield project, preserve its explicit include contract.
 - **Keep cross-domain access at declared boundaries.** Domain umbrellas may
   use another domain's public umbrella or a narrower declared contract.
   Private leaves must not reach into a neighbouring domain through relative
@@ -159,6 +187,29 @@ layout unless the public interface, build reproducibility, or maintenance
 contract gives a concrete reason to change it. Likewise, dependency folders
 or submodules do not establish ownership by their physical presence; identify
 the acquisition mechanism, pinned version, and target boundary explicitly.
+
+## Choose CMake targets and data domains deliberately
+
+For a new CMake project, choose the target kind from the consumer contract:
+use `INTERFACE` for a header-only library and `STATIC` as the uncomplicated
+default for a small compiled library. Choose `SHARED` when runtime loading,
+DLL distribution, or a separately deployed ABI is an actual requirement, and
+state the corresponding ownership and compatibility contract. Do not turn
+every dependency into a shared library merely because CMake permits it.
+
+Keep dependency acquisition separate from the target type. Source kept in the
+repository may be managed as a pinned Git submodule or another deliberate
+vendoring arrangement; an installed dependency should normally be consumed via
+`find_package` and its imported target. A submodule is not a substitute for a
+CMake target, and a header-only submodule can still provide an `INTERFACE`
+target. When the project installs a library for external consumers, verify the
+installed package and exported target rather than only the source-tree build.
+
+Use a `data` domain only when several domains genuinely share DTOs,
+enumerations, constants, or conversions. Keep types owned exclusively by a
+domain such as `audio` in that domain. Do not create `data` automatically or
+use it as a bucket for unrelated types; the domain boundary should follow
+ownership and dependency direction, not the fact that a type is a struct.
 
 ## Use tools as evidence, not verdicts
 

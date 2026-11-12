@@ -22,6 +22,26 @@ Do not require a comprehensive plan, architecture document, report file, or
 fixed stage list for a change that does not need one. Create persistent planning
 or decision artefacts only when the repository workflow or user requires them.
 
+## Keep temporary work inside the repository by default
+
+For a new repository without an established layout, keep ordinary build and
+investigation artefacts under predictable repository-local directories:
+
+- `build/` for deliberate builds, demos, or release candidates;
+- `.build/` for temporary or experimental builds;
+- `.temp/` for intermediate files, logs, and probes;
+- `.worktrees/` for isolated Git worktrees.
+
+Add the chosen directories to the repository's ignore configuration unless a
+tracked artefact is an explicit project contract. Do not create temporary
+directories outside the project without a technical reason such as a tool,
+filesystem, or isolation boundary. Use task-specific subdirectories and report
+what remains after handoff; do not delete another owner's worktree as cleanup.
+
+This is a default for new projects, not a migration rule. In an existing
+repository, preserve an established name such as `.tmp/` and its working
+conventions unless the task explicitly includes a layout change.
+
 ## Prime the relevant path
 
 Read repository instructions and discover only the toolchain facts required by

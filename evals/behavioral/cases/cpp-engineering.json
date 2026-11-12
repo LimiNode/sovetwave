@@ -122,6 +122,106 @@
         "identifies the installed consumer and public include contract as relevant evidence",
         "names a concrete requirement or observed defect that would justify a layout change"
       ]
+    },
+    {
+      "id": "cpp-cmake-target-selection",
+      "prompt": "A new CMake project contains a header-only utility and a small compiled library. There is no runtime plugin or separately deployed ABI. Choose target kinds and explain what evidence would justify a different choice.",
+      "assertions": [
+        "chooses INTERFACE for the header-only utility and STATIC as the uncomplicated default for the small compiled library",
+        "does not choose SHARED merely because CMake supports it",
+        "names runtime loading, DLL distribution, or a separately deployed ABI as reasons to consider SHARED",
+        "ties the target choice to the consumer and compatibility contract rather than personal preference"
+      ]
+    },
+    {
+      "id": "cpp-cmake-shared-plugin-contract",
+      "prompt": "A library must be loaded as a DLL plugin by an independently deployed host. Review a proposal that keeps it STATIC and ignores ABI, ownership, and installation contracts.",
+      "assertions": [
+        "selects SHARED or the platform-equivalent dynamic target because runtime loading is an established requirement",
+        "requires an explicit ABI, ownership, versioning, and installation contract before treating the choice as complete",
+        "does not claim that SHARED is a universal default for every compiled library",
+        "verifies an installed consumer or plugin-loading boundary rather than only the source-tree build"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-cmake-target-selection",
+        "expect": "STATIC is the simple default for a small library without dynamic deployment, while a real plugin boundary justifies SHARED plus its compatibility contract"
+      }
+    },
+    {
+      "id": "cpp-data-domain-shared-types",
+      "prompt": "Several application domains exchange the same DTOs, enumerations, and conversion functions. A proposal keeps duplicating them in each domain. Review the domain boundary.",
+      "assertions": [
+        "allows a purposeful data domain for genuinely shared DTOs, enumerations, constants, or conversions",
+        "uses one owned boundary rather than duplicating the shared types across domains",
+        "keeps the data domain narrow and aligned with dependency direction",
+        "does not treat the existence of structs alone as sufficient evidence for a data domain"
+      ]
+    },
+    {
+      "id": "cpp-data-domain-local-ownership",
+      "prompt": "A `Waveform` structure and its conversion helpers are used only by the `audio` domain. An agent proposes moving them into a generic `data` folder because they are structs. Evaluate the proposal.",
+      "assertions": [
+        "keeps the audio-owned type and helpers in the audio domain when no cross-domain contract exists",
+        "rejects creating a data bucket solely because the entities are structs or conversions",
+        "would introduce a data domain only after a real shared consumer and boundary are established",
+        "preserves ownership and dependency direction over classification by type shape"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-data-domain-shared-types",
+        "expect": "a narrow data domain is justified by genuinely shared contracts, while domain-exclusive types stay with their owning domain"
+      }
+    },
+    {
+      "id": "cpp-owning-umbrella-first",
+      "prompt": "A new library uses the hierarchical umbrella-based profile. `src/library/audio/playout_cursor.cpp` belongs to `audio`, and `src/library/protocol/control/control_codec.cpp` belongs to the `protocol/control` subdomain. Each `.cpp` must compile as its own translation unit. Choose the first include and the remaining include order.",
+      "assertions": [
+        "starts each implementation with the public umbrella of its owning domain or nearest applicable subdomain",
+        "keeps standard-library and local private implementation headers after the owning umbrella",
+        "does not require repeating the own leaf header when the umbrella already includes it",
+        "treats the owning umbrella first rule as a selected project convention rather than a C++ language requirement"
+      ]
+    },
+    {
+      "id": "cpp-umbrella-aggregator-avoidance",
+      "prompt": "A private leaf header relies on its domain umbrella. An agent proposes a wrapper translation unit that aggregates several `.cpp` files, forced includes, or a unity build so every leaf appears self-contained. Review the proposal under the hierarchical umbrella-based profile.",
+      "assertions": [
+        "rejects `.cpp` aggregators, forced includes, PCH, and mandatory unity builds as substitutes for the owning umbrella contract",
+        "keeps each `.cpp` as an independently compiled translation unit with the owning umbrella first",
+        "does not impose standalone compilation on a private leaf whose documented contract inherits umbrella context",
+        "allows a separately documented standalone entry point or brownfield exception without generalizing it to every leaf"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-owning-umbrella-first",
+        "expect": "the selected hierarchical profile uses an owning umbrella per translation unit, while aggregators and forced context are rejected as architecture workarounds"
+      }
+    },
+    {
+      "id": "cpp-state-model-independent-properties",
+      "prompt": "A connection has independent properties: encrypted transport, authenticated peer, and retry enabled. A proposal replaces three flags with one exhaustive variant solely to make invalid states unrepresentable. Review the representation.",
+      "assertions": [
+        "keeps independent properties independent unless the contract proves they are mutually exclusive",
+        "does not recommend a large exhaustive variant merely for formal symmetry",
+        "identifies the stable invariant or transition that could justify a smaller state-specific type",
+        "retains runtime validation for external handshakes, payloads, and resource-dependent failures"
+      ]
+    },
+    {
+      "id": "cpp-state-model-mutually-exclusive-transitions",
+      "prompt": "A session is either Connecting, Ready, Closing, or Closed. Public methods currently expose booleans and allow send() after close(). Propose a constructive invariant boundary and its checks.",
+      "assertions": [
+        "models mutually exclusive lifecycle states explicitly rather than preserving contradictory flags",
+        "makes send() unavailable or rejected outside the Ready state through a documented API boundary",
+        "checks payload and external failure conditions separately from the state representation",
+        "tests both rejected transitions and the valid send path"
+      ],
+      "relation": {
+        "kind": "contrast",
+        "base_case": "cpp-state-model-independent-properties",
+        "expect": "mutually exclusive lifecycle states justify an explicit state model while independent properties do not"
+      }
     }
   ]
 }
