@@ -1,0 +1,2900 @@
+{
+  "cases": [
+    {
+      "mutant": {
+        "args": [
+          "--task",
+          "ownership",
+          "--variant",
+          "mutant"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:06:45.877782848Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:06:43.552494138Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/ownership/test.cpp:15: int main(): Assertion `calls == 2' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "0804f3b903ac1f9465386370e6e21656d9d6cb578c80abe70c886905b4cd862f"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "0804f3b903ac1f9465386370e6e21656d9d6cb578c80abe70c886905b4cd862f"
+          },
+          "task": "ownership",
+          "variant": "mutant"
+        },
+        "status": "FAIL"
+      },
+      "oracle_control": "PASS",
+      "reference": {
+        "args": [
+          "--task",
+          "ownership",
+          "--variant",
+          "reference"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:06:42.637129059Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:06:39.773376417Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "runtime_contract",
+              "status": "PASS"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": true,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "d3c8e205a16a2cc4764ac0312cb321687b1b853f2efe169bcc42f07af8e2d95c"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "PASS",
+          "submitted_files": {
+            "api.hpp": "d3c8e205a16a2cc4764ac0312cb321687b1b853f2efe169bcc42f07af8e2d95c"
+          },
+          "task": "ownership",
+          "variant": "reference"
+        },
+        "status": "PASS"
+      },
+      "starter": {
+        "args": [
+          "--task",
+          "ownership",
+          "--variant",
+          "starter"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:06:48.269310498Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:06:46.832009374Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/ownership/test.cpp:11: int main(): Assertion `calls == 1' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "2b07092392585d58155931a07b0c5e2992205da60f4a7dbeaa28985555045c4f"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "2b07092392585d58155931a07b0c5e2992205da60f4a7dbeaa28985555045c4f"
+          },
+          "task": "ownership",
+          "variant": "starter"
+        },
+        "status": "FAIL"
+      },
+      "task": "ownership"
+    },
+    {
+      "mutant": {
+        "args": [
+          "--task",
+          "reentrancy",
+          "--variant",
+          "mutant"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:00.244372285Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:06:52.698454344Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": "timeout",
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "6452691016de94da3e6861aa36daac1e48d6ae85b45e79cedd863ac134eb0e29"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "6452691016de94da3e6861aa36daac1e48d6ae85b45e79cedd863ac134eb0e29"
+          },
+          "task": "reentrancy",
+          "variant": "mutant"
+        },
+        "status": "FAIL"
+      },
+      "oracle_control": "PASS",
+      "reference": {
+        "args": [
+          "--task",
+          "reentrancy",
+          "--variant",
+          "reference"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:06:51.769286554Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:06:49.158793108Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "runtime_contract",
+              "status": "PASS"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": true,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "431b71f4fdc39f8414531b5c96db6cd0f47d2dd258d5d6cb7423b99536b14d47"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "PASS",
+          "submitted_files": {
+            "api.hpp": "431b71f4fdc39f8414531b5c96db6cd0f47d2dd258d5d6cb7423b99536b14d47"
+          },
+          "task": "reentrancy",
+          "variant": "reference"
+        },
+        "status": "PASS"
+      },
+      "starter": {
+        "args": [
+          "--task",
+          "reentrancy",
+          "--variant",
+          "starter"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:03.32597524Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:01.153653826Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/reentrancy/test.cpp:14: int main(): Assertion `dispatcher.submit()' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "a038d5d393fcab61bf327a0204056eb027a20e0d1209292e9c604f1906c4eded"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "a038d5d393fcab61bf327a0204056eb027a20e0d1209292e9c604f1906c4eded"
+          },
+          "task": "reentrancy",
+          "variant": "starter"
+        },
+        "status": "FAIL"
+      },
+      "task": "reentrancy"
+    },
+    {
+      "mutant": {
+        "args": [
+          "--task",
+          "state",
+          "--variant",
+          "mutant"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:06.868180316Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:06.049014879Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/state/test.cpp:5: int main(): Assertion `!session.send(\"a\")' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "537848da3c14bba1a3b987e4bcf1c042a4b95299dfd8121dfb815e2694783de8"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "537848da3c14bba1a3b987e4bcf1c042a4b95299dfd8121dfb815e2694783de8"
+          },
+          "task": "state",
+          "variant": "mutant"
+        },
+        "status": "FAIL"
+      },
+      "oracle_control": "PASS",
+      "reference": {
+        "args": [
+          "--task",
+          "state",
+          "--variant",
+          "reference"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:05.113576138Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:04.292953756Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "runtime_contract",
+              "status": "PASS"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": true,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "1516ebedc7f000ccfe8653884e6f782b2476e891f809b8a805ea33d7123c0da0"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "PASS",
+          "submitted_files": {
+            "api.hpp": "1516ebedc7f000ccfe8653884e6f782b2476e891f809b8a805ea33d7123c0da0"
+          },
+          "task": "state",
+          "variant": "reference"
+        },
+        "status": "PASS"
+      },
+      "starter": {
+        "args": [
+          "--task",
+          "state",
+          "--variant",
+          "starter"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:08.668946293Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:07.817846273Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/state/test.cpp:5: int main(): Assertion `!session.send(\"a\")' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "8f9d19dc6757c7a9625008addc6a82955ef13e51142ab212c86076bc7fc8107f"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "8f9d19dc6757c7a9625008addc6a82955ef13e51142ab212c86076bc7fc8107f"
+          },
+          "task": "state",
+          "variant": "starter"
+        },
+        "status": "FAIL"
+      },
+      "task": "state"
+    },
+    {
+      "mutant": {
+        "args": [
+          "--task",
+          "brownfield",
+          "--variant",
+          "mutant"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:12.415340079Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:11.548464497Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/brownfield/test.cpp:7: int main(): Assertion `config.ParseValue(\"101\", value) && value == 101' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            ".gitignore": "97a5624b4561fe3966ee86090a373b5bcb9d1d0c73c7050c4bf7188e6ac55141",
+            "STYLE.md": "5ed4f3f7ef92e937519977804991a016a875e5fdb3ec5b1aed89ea58abe81dac",
+            "api.hpp": "777bdb736d2a6ed2f6821a536491f5890b7915432a9074399401addf89181e26",
+            "existing.hpp": "591e0ea5c515acc34c50e4ed9511c9de8c860d63b906f1eb28b7613ced52de5b"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            ".gitignore": "97a5624b4561fe3966ee86090a373b5bcb9d1d0c73c7050c4bf7188e6ac55141",
+            "STYLE.md": "5ed4f3f7ef92e937519977804991a016a875e5fdb3ec5b1aed89ea58abe81dac",
+            "api.hpp": "777bdb736d2a6ed2f6821a536491f5890b7915432a9074399401addf89181e26",
+            "existing.hpp": "591e0ea5c515acc34c50e4ed9511c9de8c860d63b906f1eb28b7613ced52de5b"
+          },
+          "task": "brownfield",
+          "variant": "mutant"
+        },
+        "status": "FAIL"
+      },
+      "oracle_control": "PASS",
+      "reference": {
+        "args": [
+          "--task",
+          "brownfield",
+          "--variant",
+          "reference"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:10.664941721Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:09.586768174Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "runtime_contract",
+              "status": "PASS"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": true,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            ".gitignore": "97a5624b4561fe3966ee86090a373b5bcb9d1d0c73c7050c4bf7188e6ac55141",
+            "STYLE.md": "5ed4f3f7ef92e937519977804991a016a875e5fdb3ec5b1aed89ea58abe81dac",
+            "api.hpp": "3098bd7d9650154cc179967f6cbb52aa5aed8b2606971574e232f5f95ab89747",
+            "existing.hpp": "591e0ea5c515acc34c50e4ed9511c9de8c860d63b906f1eb28b7613ced52de5b"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "PASS",
+          "submitted_files": {
+            ".gitignore": "97a5624b4561fe3966ee86090a373b5bcb9d1d0c73c7050c4bf7188e6ac55141",
+            "STYLE.md": "5ed4f3f7ef92e937519977804991a016a875e5fdb3ec5b1aed89ea58abe81dac",
+            "api.hpp": "3098bd7d9650154cc179967f6cbb52aa5aed8b2606971574e232f5f95ab89747",
+            "existing.hpp": "591e0ea5c515acc34c50e4ed9511c9de8c860d63b906f1eb28b7613ced52de5b"
+          },
+          "task": "brownfield",
+          "variant": "reference"
+        },
+        "status": "PASS"
+      },
+      "starter": {
+        "args": [
+          "--task",
+          "brownfield",
+          "--variant",
+          "starter"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:14.25315953Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:13.417946209Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/brownfield/test.cpp:6: int main(): Assertion `config.ParseValue(\"0\", value) && value == 0' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            ".gitignore": "97a5624b4561fe3966ee86090a373b5bcb9d1d0c73c7050c4bf7188e6ac55141",
+            "STYLE.md": "5ed4f3f7ef92e937519977804991a016a875e5fdb3ec5b1aed89ea58abe81dac",
+            "api.hpp": "618f0f88eca90e4dfc1b87dcdb7bdbba26b70b8a3d33cd4d597ca63dbaecc56e",
+            "existing.hpp": "591e0ea5c515acc34c50e4ed9511c9de8c860d63b906f1eb28b7613ced52de5b"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            ".gitignore": "97a5624b4561fe3966ee86090a373b5bcb9d1d0c73c7050c4bf7188e6ac55141",
+            "STYLE.md": "5ed4f3f7ef92e937519977804991a016a875e5fdb3ec5b1aed89ea58abe81dac",
+            "api.hpp": "618f0f88eca90e4dfc1b87dcdb7bdbba26b70b8a3d33cd4d597ca63dbaecc56e",
+            "existing.hpp": "591e0ea5c515acc34c50e4ed9511c9de8c860d63b906f1eb28b7613ced52de5b"
+          },
+          "task": "brownfield",
+          "variant": "starter"
+        },
+        "status": "FAIL"
+      },
+      "task": "brownfield"
+    },
+    {
+      "mutant": {
+        "args": [
+          "--task",
+          "greenfield",
+          "--variant",
+          "mutant"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:19.194563865Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:17.893695123Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "",
+              "id": "umbrella_first",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "id": "no_cpp_aggregation",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "id": "naming_fallback",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "Filesystem observation only; does not establish a real Git worktree or invocation history",
+              "id": "work_directories",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "id": "ignored_work_directories",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "-- The CXX compiler identification is GNU 13.4.0\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/local/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- Configuring done\n-- Generating done\n-- Build files have been written to: /work/cmake-build\n",
+              "exit": 0,
+              "id": "configure",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "[ 50%] Building CXX object CMakeFiles/sampler.dir/src/demo/audioPlayer.cpp.o\n[100%] Linking CXX static library libsampler.a\n[100%] Built target sampler\nInstall the project...\n-- Install configuration: \"Debug\"\n-- Installing: /work/install/lib/libsampler.a\n-- Installing: /work/install/include\n-- Installing: /work/install/include/demo.hpp\n-- Installing: /work/install/include/demo\n-- Installing: /work/install/include/demo/audioPlayer.hpp\n",
+              "exit": 0,
+              "id": "build_install",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "-- The CXX compiler identification is GNU 13.4.0\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/local/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:3 (find_package):\n  Could not find a package configuration file provided by \"sampler\" with any\n  of the following names:\n\n    samplerConfig.cmake\n    sampler-config.cmake\n\n  Add the installation prefix of \"sampler\" to CMAKE_PREFIX_PATH or set\n  \"sampler_DIR\" to a directory containing one of the above files.  If\n  \"sampler\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!\nSee also \"/work/consumer/CMakeFiles/CMakeOutput.log\".\n",
+              "exit": 1,
+              "id": "consumer_configure",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [
+                "consumer_build",
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "required_checks": [
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "completeness": {
+              "missing": [
+                "consumer_build",
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "required_checks": [
+                "build_install",
+                "configure",
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "ignored_work_directories",
+                "utility_runtime",
+                "work_directories"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "required_checks": [
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "NOT_ASSESSABLE"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [
+                "naming_fallback",
+                "no_cpp_aggregation",
+                "umbrella_first"
+              ],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "PASS"
+            },
+            "safety": {
+              "missing": [
+                "consumer_runtime"
+              ],
+              "required_checks": [
+                "consumer_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "NOT_ASSESSABLE"
+            }
+          },
+          "missing": [
+            "consumer_build",
+            "consumer_runtime",
+            "utility_runtime"
+          ],
+          "post_files": {
+            ".build/probe/marker.txt": "3aba3558f80cad51591ac379822c0f0d55d1c33af5d1c7f96d494f01c3d24a37",
+            ".gitignore": "634c2c3485e7657aab429b38b446e7fc59e1570fbff5f29fad1ad1b93981b5cd",
+            ".temp/probe.txt": "a87c542e56f8988a989cba09e213f2acefc28e918c9665cb844cffe9533456a0",
+            ".worktrees/follow-up/marker.txt": "b15e0bd4e6bbd581ab970906efea45f3f9c85dfe050c2a081356ccc16183ed73",
+            "CMakeLists.txt": "6746b81bfa3c5a1674ed896756cbe9cf7e139a0ee5919183f66b7e5839f63138",
+            "README.md": "1e53ad91bb26d1d72eec5cb212b802171c477b405392d29cbe8ef9bc3d9ec887",
+            "build/demo/marker.txt": "b4bcc7873e3f3115beea095f6d05aeb1e0cdec4550695c4271575b1a5760b632",
+            "src/demo.hpp": "8b412d2a0a44f6dd7cc7268e8557e1f8b0abe4368063f932e30e32fdadd79a19",
+            "src/demo/audioPlayer.cpp": "c299ad8323aa40bf76c4255dbdba708c49f444a065b8f185edce2760a87e5234",
+            "src/demo/audioPlayer.hpp": "ccaca0c89e5ccdc21bf9e6b3095c833b332474479baaf9b7650d815bd7144886"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            ".build/probe/marker.txt": "3aba3558f80cad51591ac379822c0f0d55d1c33af5d1c7f96d494f01c3d24a37",
+            ".gitignore": "634c2c3485e7657aab429b38b446e7fc59e1570fbff5f29fad1ad1b93981b5cd",
+            ".temp/probe.txt": "a87c542e56f8988a989cba09e213f2acefc28e918c9665cb844cffe9533456a0",
+            ".worktrees/follow-up/marker.txt": "b15e0bd4e6bbd581ab970906efea45f3f9c85dfe050c2a081356ccc16183ed73",
+            "CMakeLists.txt": "6746b81bfa3c5a1674ed896756cbe9cf7e139a0ee5919183f66b7e5839f63138",
+            "README.md": "1e53ad91bb26d1d72eec5cb212b802171c477b405392d29cbe8ef9bc3d9ec887",
+            "build/demo/marker.txt": "b4bcc7873e3f3115beea095f6d05aeb1e0cdec4550695c4271575b1a5760b632",
+            "src/demo.hpp": "8b412d2a0a44f6dd7cc7268e8557e1f8b0abe4368063f932e30e32fdadd79a19",
+            "src/demo/audioPlayer.cpp": "c299ad8323aa40bf76c4255dbdba708c49f444a065b8f185edce2760a87e5234",
+            "src/demo/audioPlayer.hpp": "ccaca0c89e5ccdc21bf9e6b3095c833b332474479baaf9b7650d815bd7144886"
+          },
+          "task": "greenfield",
+          "variant": "mutant"
+        },
+        "status": "FAIL"
+      },
+      "oracle_control": "PASS",
+      "reference": {
+        "args": [
+          "--task",
+          "greenfield",
+          "--variant",
+          "reference"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:16.946640869Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:15.190644544Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "",
+              "id": "umbrella_first",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "id": "no_cpp_aggregation",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "id": "naming_fallback",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "Filesystem observation only; does not establish a real Git worktree or invocation history",
+              "id": "work_directories",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "id": "ignored_work_directories",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "-- The CXX compiler identification is GNU 13.4.0\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/local/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- Configuring done\n-- Generating done\n-- Build files have been written to: /work/cmake-build\n",
+              "exit": 0,
+              "id": "configure",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "[ 50%] Building CXX object CMakeFiles/sampler.dir/src/demo/audioPlayer.cpp.o\n[100%] Linking CXX static library libsampler.a\n[100%] Built target sampler\nInstall the project...\n-- Install configuration: \"Debug\"\n-- Installing: /work/install/lib/libsampler.a\n-- Installing: /work/install/include\n-- Installing: /work/install/include/demo.hpp\n-- Installing: /work/install/include/demo\n-- Installing: /work/install/include/demo/audioPlayer.hpp\n-- Installing: /work/install/lib/cmake/sampler/samplerConfig.cmake\n-- Installing: /work/install/lib/cmake/sampler/samplerConfig-debug.cmake\n",
+              "exit": 0,
+              "id": "build_install",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "-- The CXX compiler identification is GNU 13.4.0\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/local/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- Configuring done\n-- Generating done\n-- Build files have been written to: /work/consumer\n",
+              "exit": 0,
+              "id": "consumer_configure",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "[ 25%] Building CXX object CMakeFiles/consumer.dir/main.cpp.o\n[ 50%] Linking CXX executable consumer\n[ 50%] Built target consumer\n[ 75%] Building CXX object CMakeFiles/utility_consumer.dir/utility.cpp.o\n[100%] Linking CXX executable utility_consumer\n[100%] Built target utility_consumer\n",
+              "exit": 0,
+              "id": "consumer_build",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "consumer_runtime",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "utility_runtime",
+              "status": "PASS"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "build_install",
+                "configure",
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "ignored_work_directories",
+                "utility_runtime",
+                "work_directories"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": true,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [
+                "naming_fallback",
+                "no_cpp_aggregation",
+                "umbrella_first"
+              ],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "PASS"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "consumer_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            ".build/probe/marker.txt": "3aba3558f80cad51591ac379822c0f0d55d1c33af5d1c7f96d494f01c3d24a37",
+            ".gitignore": "634c2c3485e7657aab429b38b446e7fc59e1570fbff5f29fad1ad1b93981b5cd",
+            ".temp/probe.txt": "a87c542e56f8988a989cba09e213f2acefc28e918c9665cb844cffe9533456a0",
+            ".worktrees/follow-up/marker.txt": "b15e0bd4e6bbd581ab970906efea45f3f9c85dfe050c2a081356ccc16183ed73",
+            "CMakeLists.txt": "9c37ef91ed54367fc6a7346b58bf200fc3aee2315d3093af8c25a7caa5645868",
+            "README.md": "1e53ad91bb26d1d72eec5cb212b802171c477b405392d29cbe8ef9bc3d9ec887",
+            "build/demo/marker.txt": "b4bcc7873e3f3115beea095f6d05aeb1e0cdec4550695c4271575b1a5760b632",
+            "src/demo.hpp": "8b412d2a0a44f6dd7cc7268e8557e1f8b0abe4368063f932e30e32fdadd79a19",
+            "src/demo/audioPlayer.cpp": "c299ad8323aa40bf76c4255dbdba708c49f444a065b8f185edce2760a87e5234",
+            "src/demo/audioPlayer.hpp": "ccaca0c89e5ccdc21bf9e6b3095c833b332474479baaf9b7650d815bd7144886"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "PASS",
+          "submitted_files": {
+            ".build/probe/marker.txt": "3aba3558f80cad51591ac379822c0f0d55d1c33af5d1c7f96d494f01c3d24a37",
+            ".gitignore": "634c2c3485e7657aab429b38b446e7fc59e1570fbff5f29fad1ad1b93981b5cd",
+            ".temp/probe.txt": "a87c542e56f8988a989cba09e213f2acefc28e918c9665cb844cffe9533456a0",
+            ".worktrees/follow-up/marker.txt": "b15e0bd4e6bbd581ab970906efea45f3f9c85dfe050c2a081356ccc16183ed73",
+            "CMakeLists.txt": "9c37ef91ed54367fc6a7346b58bf200fc3aee2315d3093af8c25a7caa5645868",
+            "README.md": "1e53ad91bb26d1d72eec5cb212b802171c477b405392d29cbe8ef9bc3d9ec887",
+            "build/demo/marker.txt": "b4bcc7873e3f3115beea095f6d05aeb1e0cdec4550695c4271575b1a5760b632",
+            "src/demo.hpp": "8b412d2a0a44f6dd7cc7268e8557e1f8b0abe4368063f932e30e32fdadd79a19",
+            "src/demo/audioPlayer.cpp": "c299ad8323aa40bf76c4255dbdba708c49f444a065b8f185edce2760a87e5234",
+            "src/demo/audioPlayer.hpp": "ccaca0c89e5ccdc21bf9e6b3095c833b332474479baaf9b7650d815bd7144886"
+          },
+          "task": "greenfield",
+          "variant": "reference"
+        },
+        "status": "PASS"
+      },
+      "starter": {
+        "args": [
+          "--task",
+          "greenfield",
+          "--variant",
+          "starter"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:20.368692001Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:20.094725214Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "",
+              "id": "umbrella_first",
+              "status": "FAIL"
+            },
+            {
+              "diagnostic": "",
+              "id": "no_cpp_aggregation",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "id": "naming_fallback",
+              "status": "FAIL"
+            },
+            {
+              "diagnostic": "Filesystem observation only; does not establish a real Git worktree or invocation history",
+              "id": "work_directories",
+              "status": "FAIL"
+            },
+            {
+              "diagnostic": "",
+              "id": "ignored_work_directories",
+              "status": "FAIL"
+            },
+            {
+              "diagnostic": "CMake Error: The source directory \"/work/repo\" does not appear to contain CMakeLists.txt.\nSpecify --help for usage, or press the help button on the CMake GUI.\n",
+              "exit": 1,
+              "id": "configure",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "required_checks": [
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "NOT_ASSESSABLE"
+            },
+            "completeness": {
+              "missing": [
+                "build_install",
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "required_checks": [
+                "build_install",
+                "configure",
+                "consumer_build",
+                "consumer_configure",
+                "consumer_runtime",
+                "ignored_work_directories",
+                "utility_runtime",
+                "work_directories"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "required_checks": [
+                "consumer_runtime",
+                "utility_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "NOT_ASSESSABLE"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [
+                "naming_fallback",
+                "no_cpp_aggregation",
+                "umbrella_first"
+              ],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "FAIL"
+            },
+            "safety": {
+              "missing": [
+                "consumer_runtime"
+              ],
+              "required_checks": [
+                "consumer_runtime"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "NOT_ASSESSABLE"
+            }
+          },
+          "missing": [
+            "build_install",
+            "consumer_build",
+            "consumer_configure",
+            "consumer_runtime",
+            "utility_runtime"
+          ],
+          "post_files": {
+            "README.md": "1e53ad91bb26d1d72eec5cb212b802171c477b405392d29cbe8ef9bc3d9ec887"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "README.md": "1e53ad91bb26d1d72eec5cb212b802171c477b405392d29cbe8ef9bc3d9ec887"
+          },
+          "task": "greenfield",
+          "variant": "starter"
+        },
+        "status": "FAIL"
+      },
+      "task": "greenfield"
+    },
+    {
+      "mutant": {
+        "args": [
+          "--task",
+          "boundary",
+          "--variant",
+          "mutant"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:27.013641718Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:24.538143567Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/boundary/test.cpp:25: int main(int, char**): Assertion `read(\"outside\") == before' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "invalid_trace_execution",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "17    openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libasan.so.8\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libstdc++.so.6\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/lib/x86_64-linux-gnu/libm.so.6\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libubsan.so.1\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libgcc_s.so.1\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/lib/x86_64-linux-gnu/libc.so.6\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/proc/self/cmdline\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/environ\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"trace-root/../trace-outside\", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3\n",
+              "id": "reject_before_write",
+              "status": "FAIL"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "invalid_trace_execution",
+                "reject_before_write",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "invalid_trace_execution",
+                "reject_before_write",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "a4ec9d61e3eb26c66832c4e3762f3237af8b02666e015c9f472c44d24412e9d5"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "a4ec9d61e3eb26c66832c4e3762f3237af8b02666e015c9f472c44d24412e9d5"
+          },
+          "task": "boundary",
+          "variant": "mutant"
+        },
+        "status": "FAIL"
+      },
+      "oracle_control": "PASS",
+      "reference": {
+        "args": [
+          "--task",
+          "boundary",
+          "--variant",
+          "reference"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:23.598939337Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:21.265270557Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "runtime_contract",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "invalid_trace_execution",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "18    openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3\n18    openat(AT_FDCWD, \"/usr/local/lib64/libasan.so.8\", O_RDONLY|O_CLOEXEC) = 3\n18    openat(AT_FDCWD, \"/usr/local/lib64/libstdc++.so.6\", O_RDONLY|O_CLOEXEC) = 3\n18    openat(AT_FDCWD, \"/lib/x86_64-linux-gnu/libm.so.6\", O_RDONLY|O_CLOEXEC) = 3\n18    openat(AT_FDCWD, \"/usr/local/lib64/libubsan.so.1\", O_RDONLY|O_CLOEXEC) = 3\n18    openat(AT_FDCWD, \"/usr/local/lib64/libgcc_s.so.1\", O_RDONLY|O_CLOEXEC) = 3\n18    openat(AT_FDCWD, \"/lib/x86_64-linux-gnu/libc.so.6\", O_RDONLY|O_CLOEXEC) = 3\n18    openat(AT_FDCWD, \"/proc/self/cmdline\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/environ\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n18    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n",
+              "id": "reject_before_write",
+              "status": "PASS"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "invalid_trace_execution",
+                "reject_before_write",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": true,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "invalid_trace_execution",
+                "reject_before_write",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "1de7b8e8068983d74641fb136f5fc60d803d7786ace9741c0ae62f1332f32069"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "PASS",
+          "submitted_files": {
+            "api.hpp": "1de7b8e8068983d74641fb136f5fc60d803d7786ace9741c0ae62f1332f32069"
+          },
+          "task": "boundary",
+          "variant": "reference"
+        },
+        "status": "PASS"
+      },
+      "starter": {
+        "args": [
+          "--task",
+          "boundary",
+          "--variant",
+          "starter"
+        ],
+        "container_removed": true,
+        "container_state": {
+          "Dead": false,
+          "Error": "",
+          "ExitCode": 0,
+          "FinishedAt": "2026-11-12T03:07:29.597507569Z",
+          "OOMKilled": false,
+          "Paused": false,
+          "Pid": 0,
+          "Restarting": false,
+          "Running": false,
+          "StartedAt": "2026-11-12T03:07:27.945251879Z",
+          "Status": "exited"
+        },
+        "isolation_config": {
+          "Binds": null,
+          "CapDrop": [
+            "ALL"
+          ],
+          "Memory": 536870912,
+          "MemorySwap": 536870912,
+          "NanoCpus": 1000000000,
+          "NetworkMode": "none",
+          "PidsLimit": 64,
+          "Privileged": false,
+          "ReadonlyRootfs": true,
+          "SecurityOpt": [
+            "no-new-privileges"
+          ],
+          "Tmpfs": {
+            "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+          }
+        },
+        "result": {
+          "checks": [
+            {
+              "diagnostic": "Only api.hpp may change in this bounded task",
+              "id": "unrelated_diff",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "compile",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "test: /opt/preflight/fixtures/boundary/test.cpp:18: int main(int, char**): Assertion `store(\"root\", \"safe-1\", \"ok\")' failed.\n",
+              "exit": -6,
+              "id": "runtime_contract",
+              "status": "FAIL"
+            },
+            {
+              "diagnostic": "",
+              "exit": 0,
+              "id": "invalid_trace_execution",
+              "status": "PASS"
+            },
+            {
+              "diagnostic": "17    openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libasan.so.8\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libstdc++.so.6\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/lib/x86_64-linux-gnu/libm.so.6\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libubsan.so.1\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/usr/local/lib64/libgcc_s.so.1\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/lib/x86_64-linux-gnu/libc.so.6\", O_RDONLY|O_CLOEXEC) = 3\n17    openat(AT_FDCWD, \"/proc/self/cmdline\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/environ\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n17    openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY) = 3\n",
+              "id": "reject_before_write",
+              "status": "PASS"
+            }
+          ],
+          "complexity": "NOT_ASSESSABLE: separate blinded review after hard gates",
+          "generated_code_executed": false,
+          "machine_gates": {
+            "compatibility": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "PASS"
+            },
+            "completeness": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "invalid_trace_execution",
+                "reject_before_write",
+                "runtime_contract",
+                "unrelated_diff"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "economy": {
+              "method": "separate blinded semantic review after engineering gates",
+              "review_eligible": false,
+              "status": "NOT_ASSESSABLE"
+            },
+            "functionality": {
+              "missing": [],
+              "required_checks": [
+                "compile",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            },
+            "policy_adherence": {
+              "missing": [],
+              "required_checks": [],
+              "scope": "Sovetwave convention; not an engineering-correctness gate",
+              "status": "NOT_ASSESSABLE"
+            },
+            "safety": {
+              "missing": [],
+              "required_checks": [
+                "invalid_trace_execution",
+                "reject_before_write",
+                "runtime_contract"
+              ],
+              "scope": "shared task contract, exercised fixture path; not universal correctness",
+              "status": "FAIL"
+            }
+          },
+          "missing": [],
+          "post_files": {
+            "api.hpp": "42b2ee3133f3dde9b5db10652ac53128c04c9a3f743d2bacf485ebaf7ac023c0"
+          },
+          "safety_scope": "bounded exercised paths under ASan/UBSan, not universal defect absence",
+          "status": "FAIL",
+          "submitted_files": {
+            "api.hpp": "42b2ee3133f3dde9b5db10652ac53128c04c9a3f743d2bacf485ebaf7ac023c0"
+          },
+          "task": "boundary",
+          "variant": "starter"
+        },
+        "status": "FAIL"
+      },
+      "task": "boundary"
+    }
+  ],
+  "generated_code_executed": false,
+  "image": "sha256:cea81f5eb5bd1674af73139deb05970c8453d6050d59bb528e7fe5d37414df45",
+  "isolation_probe": {
+    "args": [
+      "--probe"
+    ],
+    "container_removed": true,
+    "container_state": {
+      "Dead": false,
+      "Error": "",
+      "ExitCode": 0,
+      "FinishedAt": "2026-11-12T03:06:38.875965497Z",
+      "OOMKilled": false,
+      "Paused": false,
+      "Pid": 0,
+      "Restarting": false,
+      "Running": false,
+      "StartedAt": "2026-11-12T03:06:37.907497559Z",
+      "Status": "exited"
+    },
+    "isolation_config": {
+      "Binds": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "Memory": 536870912,
+      "MemorySwap": 536870912,
+      "NanoCpus": 1000000000,
+      "NetworkMode": "none",
+      "PidsLimit": 64,
+      "Privileged": false,
+      "ReadonlyRootfs": true,
+      "SecurityOpt": [
+        "no-new-privileges"
+      ],
+      "Tmpfs": {
+        "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+      }
+    },
+    "result": {
+      "checks": [
+        {
+          "diagnostic": "",
+          "id": "reset_clean",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "unprivileged_uid",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/root/.ssh",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/root/.codex",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/var/run/docker.sock",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/host",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/repo",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "read_only_root",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "{'lo'}",
+          "id": "loopback_only",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "network_blocked",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "no_effective_caps",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "no_new_privileges",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "seccomp",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "{'memory.max': '536870912', 'pids.max': '64', 'cpu.max': '100000 100000'}",
+          "id": "cgroup_limits",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "process_limit_denies_fork",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "file_size_limit",
+          "status": "PASS"
+        }
+      ],
+      "fixture_lock_sha256": "ea9943c4362b22254bd721d964c38f4aa7545533ea86ec7c551f6a14e3f9d5cc",
+      "status": "PASS",
+      "toolchain": {
+        "cmake": "cmake version 3.25.1",
+        "compiler": "g++ (GCC) 13.4.0"
+      }
+    },
+    "status": "PASS"
+  },
+  "live_pilot_verdict": "HOLD",
+  "memory_probe": {
+    "args": [
+      "--memory-probe"
+    ],
+    "container_removed": true,
+    "container_state": {
+      "Dead": false,
+      "Error": "",
+      "ExitCode": 137,
+      "FinishedAt": "2026-11-12T03:07:35.992817678Z",
+      "OOMKilled": true,
+      "Paused": false,
+      "Pid": 0,
+      "Restarting": false,
+      "Running": false,
+      "StartedAt": "2026-11-12T03:07:35.002905679Z",
+      "Status": "exited"
+    },
+    "diagnostic": "",
+    "isolation_config": {
+      "Binds": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "Memory": 536870912,
+      "MemorySwap": 536870912,
+      "NanoCpus": 1000000000,
+      "NetworkMode": "none",
+      "PidsLimit": 64,
+      "Privileged": false,
+      "ReadonlyRootfs": true,
+      "SecurityOpt": [
+        "no-new-privileges"
+      ],
+      "Tmpfs": {
+        "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+      }
+    },
+    "status": "FAIL"
+  },
+  "model_calls": 0,
+  "offline": {
+    "errors": [],
+    "execution_ready": false,
+    "fixture_files": 36,
+    "model_calls": 0,
+    "paired_observations": 60,
+    "pairs": 30,
+    "skill_identities": {
+      "combined_candidate": {
+        "commit": "394ca374b20e9b40b285d05492fa9a317ec86463",
+        "file_count": 38,
+        "path_scope": "repository_relative",
+        "separator_hex": "00",
+        "sha256": "2d696b9b57d000c6cd4e9c7ecd283a22209cfdfc93e1cabcc680b377df6a5044"
+      },
+      "historical_release": {
+        "commit": "437c8ff116a96c69753bb7db40779d86fd892e00",
+        "file_count": 38,
+        "path_scope": "repository_relative",
+        "separator_hex": "00",
+        "sha256": "f2c7c17a96d0fb4399617b42207fa1c6cd5a5c3c51815a35118d92170c9d3231"
+      }
+    },
+    "status": "PASS"
+  },
+  "reset_probe": {
+    "args": [
+      "--probe"
+    ],
+    "container_removed": true,
+    "container_state": {
+      "Dead": false,
+      "Error": "",
+      "ExitCode": 0,
+      "FinishedAt": "2026-11-12T03:07:34.061711585Z",
+      "OOMKilled": false,
+      "Paused": false,
+      "Pid": 0,
+      "Restarting": false,
+      "Running": false,
+      "StartedAt": "2026-11-12T03:07:33.506710319Z",
+      "Status": "exited"
+    },
+    "isolation_config": {
+      "Binds": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "Memory": 536870912,
+      "MemorySwap": 536870912,
+      "NanoCpus": 1000000000,
+      "NetworkMode": "none",
+      "PidsLimit": 64,
+      "Privileged": false,
+      "ReadonlyRootfs": true,
+      "SecurityOpt": [
+        "no-new-privileges"
+      ],
+      "Tmpfs": {
+        "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+      }
+    },
+    "result": {
+      "checks": [
+        {
+          "diagnostic": "",
+          "id": "reset_clean",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "unprivileged_uid",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/root/.ssh",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/root/.codex",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/var/run/docker.sock",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/host",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "host_path_absent_or_denied:/repo",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "read_only_root",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "{'lo'}",
+          "id": "loopback_only",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "network_blocked",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "no_effective_caps",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "no_new_privileges",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "seccomp",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "{'memory.max': '536870912', 'pids.max': '64', 'cpu.max': '100000 100000'}",
+          "id": "cgroup_limits",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "process_limit_denies_fork",
+          "status": "PASS"
+        },
+        {
+          "diagnostic": "",
+          "id": "file_size_limit",
+          "status": "PASS"
+        }
+      ],
+      "fixture_lock_sha256": "ea9943c4362b22254bd721d964c38f4aa7545533ea86ec7c551f6a14e3f9d5cc",
+      "status": "PASS",
+      "toolchain": {
+        "cmake": "cmake version 3.25.1",
+        "compiler": "g++ (GCC) 13.4.0"
+      }
+    },
+    "status": "PASS"
+  },
+  "status": "PASS",
+  "termination_probe": {
+    "args": [
+      "--hang-child"
+    ],
+    "container_removed": true,
+    "container_state": {
+      "Dead": false,
+      "Error": "",
+      "ExitCode": 137,
+      "FinishedAt": "2026-11-12T03:07:32.531320898Z",
+      "OOMKilled": false,
+      "Paused": false,
+      "Pid": 0,
+      "Restarting": false,
+      "Running": false,
+      "StartedAt": "2026-11-12T03:07:30.545808418Z",
+      "Status": "exited"
+    },
+    "isolation_config": {
+      "Binds": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "Memory": 536870912,
+      "MemorySwap": 536870912,
+      "NanoCpus": 1000000000,
+      "NetworkMode": "none",
+      "PidsLimit": 64,
+      "Privileged": false,
+      "ReadonlyRootfs": true,
+      "SecurityOpt": [
+        "no-new-privileges"
+      ],
+      "Tmpfs": {
+        "/work": "rw,exec,nosuid,nodev,size=256m,mode=1777"
+      }
+    },
+    "status": "TIMEOUT"
+  }
+}

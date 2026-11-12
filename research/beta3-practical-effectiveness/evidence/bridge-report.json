@@ -1,0 +1,57 @@
+{
+  "candidate_execution": "NOT_EXECUTED",
+  "checks": [
+    {
+      "id": "allowlisted_environment",
+      "status": "PASS"
+    },
+    {
+      "id": "workspace_config_roots",
+      "status": "PASS"
+    },
+    {
+      "id": "clean_workspace",
+      "status": "PASS"
+    },
+    {
+      "id": "valid_transfer",
+      "status": "PASS"
+    },
+    {
+      "id": "forged_bytes_rejected",
+      "status": "PASS"
+    },
+    {
+      "id": "missing_manifest_rejected",
+      "status": "PASS"
+    },
+    {
+      "id": "oracle_path_rejected",
+      "status": "PASS"
+    },
+    {
+      "id": "incomplete_archive_rejected",
+      "status": "PASS"
+    },
+    {
+      "id": "background_process_rejected",
+      "status": "PASS"
+    },
+    {
+      "id": "output_flood_rejected",
+      "status": "PASS"
+    },
+    {
+      "id": "interrupted_transfer_rejected",
+      "status": "PASS"
+    },
+    {
+      "id": "timeout_cleanup_contract",
+      "status": "PASS"
+    }
+  ],
+  "grader_tamper_resistance": "NOT_ASSESSABLE",
+  "host_execution": "NOT_IMPLEMENTED",
+  "model_calls": 0,
+  "status": "PASS"
+}

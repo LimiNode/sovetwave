@@ -1,0 +1,1 @@
+Reserved follow-up worktree area; this marker alone is not a Git worktree.

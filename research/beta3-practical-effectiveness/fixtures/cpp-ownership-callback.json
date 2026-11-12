@@ -1,0 +1,12 @@
+{
+  "id": "cpp-ownership-callback",
+  "language": "C++17",
+  "fixture_status": "executable_controls_prepared",
+  "executable_fixture": "executable/fixtures/ownership",
+  "scenario": "A single-threaded synchronous event source returns move-only registration tokens; callback self-unsubscription, explicit reset, and token teardown after source destruction must be safe.",
+  "required_outputs": ["move-only registration", "no delivery after reset or token destruction", "idempotent self-unsubscription", "token may outlive source"],
+  "negative_controls": ["registration survives reset", "self-unsubscription waits for itself", "token dereferences destroyed source"],
+  "limitations": ["No asynchronous completion, concurrent publish, or source destruction inside publish is claimed"],
+  "combined_policy_coverage": ["RAII registration token", "self-unsubscription from an executing callback", "explicit unsubscribe when shutdown coordination is required"],
+  "oracle": {"kind": "isolated g++ test executable", "evidence": ["build", "move and reset tests", "self-unsubscription", "token after source teardown", "sanitizer result"]}
+}

@@ -1,0 +1,11 @@
+{
+  "id": "cpp-untrusted-boundary",
+  "language": "C++17",
+  "fixture_status": "executable_controls_prepared",
+  "executable_fixture": "executable/fixtures/boundary",
+  "scenario": "A function validates an untrusted flat filename and bounded payload before writing beneath a caller-owned pre-created root.",
+  "required_outputs": ["boundary validation", "rejection result", "no side effect before rejection", "accepted safe path"],
+  "negative_controls": ["path traversal", "symlink target", "oversized payload", "write before validation"],
+  "limitations": ["No concurrent path replacement", "No configuration override surface", "Validation rejection is side-effect-free; atomic rollback of operational I/O failure is not claimed"],
+  "oracle": {"kind": "isolated sandbox with filesystem trace", "evidence": ["input classification", "exit status", "pre/post tree hash", "side-effect trace"]}
+}

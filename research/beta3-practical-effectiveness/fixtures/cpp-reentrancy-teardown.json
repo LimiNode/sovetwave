@@ -1,0 +1,11 @@
+{
+  "id": "cpp-reentrancy-teardown",
+  "language": "C++17",
+  "fixture_status": "executable_controls_prepared",
+  "executable_fixture": "executable/fixtures/reentrancy",
+  "scenario": "A one-shot worker callback may request stop synchronously; an external coordinator joins and destroys the dispatcher.",
+  "required_outputs": ["accepted callback delivered", "reentrant stop completes", "external join", "idle and repeated independent lifecycle tests"],
+  "negative_controls": ["callback while holding stop mutex", "idle worker never wakes on stop"],
+  "limitations": ["No restart, multiple submissions, self-destruction, or multi-producer guarantees", "No TSan race-freedom claim"],
+  "oracle": {"kind": "isolated subprocess", "evidence": ["reentrant stop test", "idle shutdown", "timeout", "thread teardown result"]}
+}

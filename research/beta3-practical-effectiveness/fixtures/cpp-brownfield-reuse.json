@@ -1,0 +1,11 @@
+{
+  "id": "cpp-brownfield-reuse",
+  "language": "C++17",
+  "fixture_status": "executable_controls_prepared",
+  "executable_fixture": "executable/fixtures/brownfield",
+  "scenario": "An existing repository has a compatible helper, an established naming/layout profile, and a narrow request that does not justify a new abstraction.",
+  "required_outputs": ["repository inspection", "reuse decision", "minimal patch", "focused regression checks"],
+  "negative_controls": ["duplicate helper", "global naming migration", "new interface without a boundary"],
+  "combined_policy_coverage": ["existing .tmp and out conventions", "brownfield naming and layout preservation", "unrelated diff detection"],
+  "oracle": {"kind": "pinned repository plus bounded diff", "evidence": ["existing helper use", "tests", "public contract unchanged", "unrelated diff absent"]}
+}
