@@ -1,6 +1,6 @@
 # v0.5.0-beta.4 release readiness
 
-Status: `draft` / readiness review only  
+Status: `draft` / readiness review only
 Prepared: `2026-11-12`
 
 Candidate base: the already reviewed combined PR #71 tree
@@ -127,6 +127,34 @@ combined tree above; Windows/Python 3.11, POSIX smoke via Git Bash):
 | `bash tests/installers/smoke.sh` | PASS, Git Bash; not native Linux evidence |
 | `git diff --check` | PASS |
 
+### Package and actual upgrade checks
+
+A production-only ZIP was built with `git archive --format=zip
+--output=<zip> HEAD .claude-plugin skills/sovetwave output-styles install.ps1
+install.sh LICENSE README.md CHANGELOG.md docs/sovetwave-cover.png`.
+It contains exactly 47 tracked payload files, all byte-identical to their
+sources. It contains no `research/`, `evals/`, `tests/`, trusted graders,
+control evidence, cache files, or worktrees. The 38 skill files include all
+five updated production references. The source repository and GitHub's
+automatic source archives still contain research materials; only the selected
+installable payload excludes them. Neither installer copies research files.
+
+The archived beta.3 installer was used to create a real previous installation,
+then the candidate installer upgraded it with `-Force`. A separate fresh
+installation used the candidate without `-Force`, always with explicit
+temporary Codex/Claude target directories. For each path, both installed skill
+inventories and every SHA-256 were compared with the archived candidate, plus
+the installed Claude output style: 152 skill-file comparisons and two styles.
+Both fresh and beta.3-to-beta.4 paths passed on Windows PowerShell. The same
+paths are also checked via `install.sh` with explicit `CODEX_SKILLS_DIR` and
+`CLAUDE_CONFIG_DIR`, `--force` for upgrade, and byte comparisons using `cmp`.
+
+The initial package check used commit
+`4e3fa1fa00844f5829f97528855b107466865230`; subsequent readiness-report changes
+do not change any of its 47 production payload files. The handoff records the
+final PR head, rebuilt ZIP SHA-256, and exact-head CI separately to avoid a
+self-referential archive or commit hash in this tracked report.
+
 Both installer smoke suites cover fresh user/repository installation, refusal
 to overwrite without authorization, forced reinstallation, and rollback after
 injected failures at each of three targets. They do not invoke Codex, Claude,
@@ -144,6 +172,14 @@ Publication is allowed only when the candidate is refreshed onto the final
 release `main`, metadata agrees, all applicable local checks pass, and exact-
 head CI is green. The owner must separately authorize the tag and GitHub
 Release. The beta.3 tag and release are not modified.
+
+Remaining owner decisions: authorize integration of this already-combined
+release-prep PR and the disposition of #70/#71; after verifying the integrated
+revision, authorize the prerelease tag and publication separately. Live model
+calls and completion of #72 are not beta.4 gates. A missing/failed exact-head
+CI result is a preparation blocker until green; earlier branch CI cannot close
+that gate. No model calls, merge, tag, release publication, or historical
+benchmark/adjudication edits are part of this preparation.
 
 ## Post-release research boundary
 
