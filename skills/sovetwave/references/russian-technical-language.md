@@ -135,4 +135,45 @@ Bad: «это зависит от fabric и количества details».
 
 Good: «это зависит от устройства системы и от требуемой подробности описания».
 
+## Distinguish technical entities from their roles
+
+In CMake and architecture descriptions, preserve the formal name of an entity,
+but translate the ordinary role or relationship around it. A name such as a
+target, an exported package, or a source path can stay exact when it is a
+project or tool entity; an English compound that merely describes a check or a
+directory should not be copied into a Russian sentence.
+
+| Hybrid wording | Prefer when the meaning fits |
+|---|---|
+| `installed-consumer tests` | проверки использования установленной библиотеки внешним проектом |
+| `test subdirectory` | подкаталог с тестами |
+| `root umbrella` / `root-level domain umbrella` | зонтичный заголовок верхнего уровня / корневой заголовок домена |
+| `optional backend` | подключаемый модуль или реализация хранилища, если это его роль |
+| `optional contract module` | самостоятельный необязательный модуль с публичным контрактом |
+| `provider modules/targets` | модули и цели CMake конкретных поставщиков |
+| `provider-neutral` | не зависящий от конкретного поставщика |
+| `dependency contract` | контракт зависимостей / требования к зависимостям |
+| `install stage` | установка или установленный пакет |
+| `cross-domain include` | междоменные подключения заголовков |
+| `include policy` | правила подключения заголовков |
+| `header architecture` | организация заголовочных файлов |
+| `standalone headers` | самостоятельно подключаемые заголовки |
+| `source-only` | использование из исходников без установки |
+| `exported-package` | устанавливаемый пакет с экспортируемыми целями CMake |
+| `adapter target` | цель CMake соответствующего адаптера |
+| `consumer` | внешний проект или потребитель библиотеки, по контексту |
+
+At first mention, explain `umbrella header` as «зонтичный заголовок
+(`umbrella header`)» when the English name is useful for search or a source
+reference. Later use «зонтичный заголовок». Keep `API`, `ABI`, `RAII`, `CMake`,
+`CTest`, `CI`, `target` as a CMake entity, and formal identifiers unchanged.
+Do not translate them into invented Russian names merely to remove every
+English token. Conversely, do not leave a whole descriptive phrase in English
+when its role has a precise Russian formulation.
+
+For a concrete defect, name the observable contract rather than an abstract
+label: say «публичный заголовок устанавливается без соответствующей библиотеки»
+instead of «несогласована пакетная граница», and «не завершено формирование
+зонтичных заголовков основных доменов» instead of «не доведена topology».
+
 For a public Russian artifact, keep the same language discipline while omitting `heritage`, classroom atmosphere, and humour.

@@ -128,6 +128,44 @@
         "does not decline, transliterate, or replace formal names with invented Russian identifiers",
         "does not use the preservation rule as a reason to leave generic actions, roles, or experiment structure in English"
       ]
+    },
+    {
+      "id": "russian-cmake-architecture-roles",
+      "prompt": "Составь по-русски замечание к CMake-проекту. Нужно добавить installed-consumer tests: внешний проект должен подключить установленную библиотеку через `find_package()` и использовать публичные заголовки и экспортируемые цели CMake. Сейчас в отчёте написано `тестовый subdirectory`, `root-level domain umbrellas`, `provider-neutral adapter` и `adapter target`. Сохрани `CMake`, `find_package()`, имена целей и пути, но перепиши описательные роли естественно.",
+      "assertions": [
+        "keeps CMake, find_package(), formal target names, and paths exact",
+        "renders installed-consumer tests as checks where an external project uses the installed library",
+        "renders test subdirectory as подкаталог с тестами and root-level domain umbrellas as zonтичные заголовки верхнего уровня or an equally precise Russian description",
+        "renders provider-neutral adapter and adapter target as Russian role descriptions while preserving formal CMake entities",
+        "does not leave a hybrid Russian-English sentence when a precise Russian role description is available"
+      ]
+    },
+    {
+      "id": "russian-cmake-established-terms-preserved",
+      "relation": {
+        "kind": "contrast",
+        "base_case": "russian-cmake-architecture-roles",
+        "expect": "generic roles are translated, while established abbreviations and formal CMake entities remain exact"
+      },
+      "prompt": "Напиши короткую русскую проверку публичного пакета. В тексте обязательно сохрани `API`, `ABI`, `RAII`, `CMake`, `CTest`, `CI`, `find_package()` и слово `target` именно как сущность CMake. `umbrella header` объясни при первом упоминании как зонтичный заголовок, а `consumer` опиши как внешний проект. Не придумывай русские расшифровки и не оставляй английские описательные словосочетания без необходимости.",
+      "assertions": [
+        "preserves API, ABI, RAII, CMake, CTest, CI, find_package(), and target as a formal CMake entity",
+        "explains umbrella header once as зонтичный заголовок without replacing the searchable formal term",
+        "renders consumer as внешний проект or потребитель библиотеки according to context",
+        "does not mechanically translate established technical abbreviations",
+        "does not use preserved formal terms as an excuse to leave generic actions and roles in English"
+      ]
+    },
+    {
+      "id": "russian-cmake-concrete-defect-wording",
+      "prompt": "Переформулируй два замечания к установленному CMake-пакету без абстрактных гибридных ярлыков. Первое: публичный заголовок MDBX устанавливается без соответствующей библиотеки. Второе: не завершено формирование зонтичных заголовков основных доменов. Сохрани имена `MDBX`, `CMake` и `imtg::mdbx`, а обычное описание дефекта напиши естественно по-русски.",
+      "assertions": [
+        "states the first defect as a public header installed without its corresponding library or an equally concrete package mismatch",
+        "states the second defect as incomplete formation of top-level domain umbrella headers rather than topology jargon",
+        "preserves MDBX, CMake, and imtg::mdbx exactly",
+        "names the observable package or header contract instead of an abstract label",
+        "does not add unsupported line numbers, targets, or installation behavior"
+      ]
     }
   ]
 }
