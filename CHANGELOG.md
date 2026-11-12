@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.5.0-beta.4 — 2026-11-12
+
+- Added constructive C++ invariant guidance for state modeling, owner-thread
+  versus intentionally shared state, and lifecycle-safe RAII registration
+  tokens, including a conditional self-unsubscription teardown boundary.
+- Made the hierarchical umbrella-based C++ profile explicit for independent
+  translation units: an owning domain or subdomain umbrella comes first, with
+  private leaves, brownfield exceptions, and standalone entry points kept
+  within their documented contracts.
+- Made the house profile the fallback for new projects without a competing
+  style decision, including PascalCase classes, camelCase single-class file
+  stems, and repository-local build, temporary, and worktree directories;
+  added deliberate CMake target and shared data-domain guidance.
+- Added focused offline coverage for C++ lifecycle, CMake target selection,
+  naming, worktree, and umbrella-include conventions without claiming model
+  quality or runtime enforcement from fixture counts.
+- Kept benchmark research, host-enforcement adapters, and executable-oracle
+  infrastructure outside the distributable production skill.
+
+Limitations: no completed live A/B experiment or measured general improvement
+in coding-agent performance is claimed for beta.4. No production-grade universal
+Claude host enforcement is provided; research-only checks establish neither a
+universal fail-closed boundary nor a security guarantee.
+
 ## v0.5.0-beta.3 — 2026-11-08
 
 - Added evidence-bound architecture guidance that separates source entailment,
